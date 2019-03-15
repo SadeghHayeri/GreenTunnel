@@ -20,5 +20,9 @@
   "bugs": {
     "url": "https://github.com/SadeghHayeri/GreenTunnel/issues"
   },
-  "homepage": "https://github.com/SadeghHayeri/GreenTunnel#readme"
+  "homepage": "https://github.com/SadeghHayeri/GreenTunnel#readme",
+  "dependencies": {
+    "fs-extra": "^7.0.1",
+    "node-forge": "^0.8.1"
+  }
 }

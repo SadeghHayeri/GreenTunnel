@@ -62,3 +62,8 @@ typings/
 
 # idea
 .idea
+
+# secrets
+*.pem
+secret
+
