@@ -29,15 +29,23 @@ class HTTP {
 
 class HTTPRequest extends HTTP {
 
-    constructor(rawPacket) {
+    constructor(rawPacket=null) {
         super();
 
-        const packet = HTTPRequest.parseRequest(rawPacket);
-        this.method = packet.method;
-        this.path = packet.path;
-        this.httpVersion = packet.httpVersion;
-        this.headers = packet.headers;
-        this.payload = packet.payload;
+        if(rawPacket) {
+            const packet = HTTPRequest.parseRequest(rawPacket);
+            this.method = packet.method;
+            this.path = packet.path;
+            this.httpVersion = packet.httpVersion;
+            this.headers = packet.headers;
+            this.payload = packet.payload;
+        } else {
+            this.method = 'GET';
+            this.path = '/';
+            this.httpVersion = 'HTTP/1.1';
+            this.headers = {};
+            this.payload = '';
+        }
     }
 
     toString() {
@@ -63,15 +71,24 @@ class HTTPRequest extends HTTP {
 }
 
 class HTTPResponse extends HTTP {
-    constructor(rawPacket) {
+
+    constructor(rawPacket=null) {
         super();
 
-        const packet = HTTPRequest.parseRequest(rawPacket);
-        this.httpVersion = packet.httpVersion;
-        this.statusCode = packet.statusCode;
-        this.statusMessgae = packet.statusMessgae;
-        this.headers = packet.headers;
-        this.payload = packet.payload;
+        if(rawPacket) {
+            const packet = HTTPRequest.parseRequest(rawPacket);
+            this.httpVersion = packet.httpVersion;
+            this.statusCode = packet.statusCode;
+            this.statusMessgae = packet.statusMessgae;
+            this.headers = packet.headers;
+            this.payload = packet.payload;
+        } else {
+            this.httpVersion = 'HTTP/1.1';
+            this.statusCode = 200;
+            this.statusMessgae = 'OK';
+            this.headers = {};
+            this.payload = '';
+        }
     }
 
     toString() {
@@ -95,5 +112,42 @@ class HTTPResponse extends HTTP {
         return mainParts;
     }
 }
+
+
+HTTP.validMethods = [
+    'DELETE',
+    'GET',
+    'HEAD',
+    'POST',
+    'PUT',
+    'CONNECT',
+    'OPTIONS',
+    'TRACE',
+    'COPY',
+    'LOCK',
+    'MKCOL',
+    'MOVE',
+    'PROPFIND',
+    'PROPPATCH',
+    'SEARCH',
+    'UNLOCK',
+    'BIND',
+    'REBIND',
+    'UNBIND',
+    'ACL',
+    'REPORT',
+    'MKACTIVITY',
+    'CHECKOUT',
+    'MERGE',
+    'M-SEARCH',
+    'NOTIFY',
+    'SUBSCRIBE',
+    'UNSUBSCRIBE',
+    'PATCH',
+    'PURGE',
+    'MKCALENDAR',
+    'LINK',
+    'UNLINK'
+];
 
 module.exports = { HTTP, HTTPRequest, HTTPResponse };
