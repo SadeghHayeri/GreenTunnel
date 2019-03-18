@@ -8,6 +8,8 @@ body {
     flex-direction: column;
 
     font-family: 'prime', serif;
+    -webkit-app-region: drag;
+    cursor: default;
 }
 
 .bottom-banner {
@@ -19,6 +21,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    -webkit-app-region: drag;
 }
 
 .bottom-banner > p {
@@ -60,6 +63,7 @@ body {
     font-family: 'prime', serif;
     font-size: 25px;
     font-weight: bold;
+    color: #333;
 }
 
 .title > h2 {
@@ -69,8 +73,8 @@ body {
 }
 
 .center {
-    height: 210px;
-    width: 210px;
+    height: 230px;
+    width: 230px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -89,6 +93,7 @@ body {
     opacity: .8;
 
     transition: opacity .3s;
+    -webkit-app-region: no-drag;
 }
 
 .status-container:hover {
@@ -108,7 +113,21 @@ body {
 
 .status-container.green {
     border: 5px solid #72cc66;
-    box-shadow: 0 0 0 12px #e0f5dd;
+    animation: bigAndSmall 2s infinite;
+}
+
+@keyframes bigAndSmall {
+    0% {
+        box-shadow: 0 0 0 13px rgba(198, 244, 204, 0.5), 0 0 0 5px rgba(198, 244, 204, 0.9);
+    }
+
+    50% {
+        box-shadow: 0 0 0 5px rgba(198, 244, 204, 0.9), 0 0 0 13px rgba(198, 244, 204, 0.5);
+    }
+
+    100% {
+        box-shadow: 0 0 0 13px rgba(198, 244, 204, 0.5), 0 0 0 5px rgba(198, 244, 204, 0.9);
+    }
 }
 
 .status-container.red img {
@@ -117,23 +136,25 @@ body {
 }
 
 .status-container.green img {
-    /*filter: grayscale(1);*/
     opacity: .9;
 }
 
 .logo {
     width: 55px;
     height: 55px;
+    cursor: pointer;
 }
 
 .close-button {
     position: fixed;
     width: 15px;
     height: 15px;
-    top: 20px;
-    right: 20px;
+    top: 10px;
+    right: 10px;
     cursor: pointer;
     opacity: .7;
+    padding: 10px;
+    -webkit-app-region: no-drag;
 }
 
 .close-button:hover {
@@ -160,3 +181,9 @@ body {
 }
 #top-border { top: 0; }
 #bottom-border { bottom: 0; }
+
+*, *::after, *::before {
+    -webkit-user-select: none;
+    -webkit-user-drag: none;
+    cursor: default;
+}
