@@ -33,17 +33,6 @@ const menuItems = [
     },
 ];
 
-ipcMain.on('close-button', (event, arg) => {
-    app.hide();
-});
-
-ipcMain.on('on-off-button', (event, arg) => {
-    if(isOn)
-        turnOff();
-    else
-        turnOn();
-});
-
 function turnOff() {
     isOn = false;
 
@@ -74,6 +63,7 @@ function createWindow () {
         minimizable: debug,
         fullscreenable: debug,
         resizable: debug,
+        icon: './icons/icon.icns',
 
         title: 'Green Tunnel',
         frame: false,
@@ -111,4 +101,15 @@ app.on('ready', () => {
     tray.setIgnoreDoubleClickEvents(true);
     tray.setToolTip('Green Tunnel');
     tray.setContextMenu(Menu.buildFromTemplate(menuItems));
+});
+
+ipcMain.on('close-button', (event, arg) => {
+    app.hide();
+});
+
+ipcMain.on('on-off-button', (event, arg) => {
+    if(isOn)
+        turnOff();
+    else
+        turnOn();
 });
