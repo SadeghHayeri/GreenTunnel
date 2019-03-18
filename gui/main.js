@@ -2,20 +2,67 @@ const { app, BrowserWindow, Menu, Tray, shell, ipcMain } = require('electron');
 const debug = /--debug/.test(process.argv[2]);
 
 let win, tray;
+let isOn = true;
 
-console.log('hi!');
+const menuItems = [
+    {
+        label: 'Turn Off',
+        type: 'normal',
+        click: () => turnOff(),
+    },
+    {
+        label: 'Run At Login',
+        type: 'checkbox',
+    },
+    {
+        type: 'separator',
+    },
+    {
+        label: 'Source Code',
+        type: 'normal',
+        click: () => shell.openExternal('https://github.com/SadeghHayeri/GreenTunnel'),
+    },
+    {
+        label: 'Donate',
+        type: 'normal',
+    },
+    {
+        role: 'quit',
+        label: 'Quit',
+        type: 'normal',
+    },
+];
 
 ipcMain.on('close-button', (event, arg) => {
     app.hide();
 });
 
-let x = true;
 ipcMain.on('on-off-button', (event, arg) => {
-    event.sender.send('changeStatus', x);
-    x = !x;
+    if(isOn)
+        turnOff();
+    else
+        turnOn();
 });
 
-// win.webContents.send('ping', 'whoooooooh!');
+function turnOff() {
+    isOn = false;
+
+    menuItems[0].label = 'Enable';
+    menuItems[0].click = () => turnOn();
+    tray.setContextMenu(Menu.buildFromTemplate(menuItems));
+
+    win.webContents.send('changeStatus', isOn);
+}
+
+function turnOn() {
+    isOn = true;
+
+    menuItems[0].label = 'Disable';
+    menuItems[0].click = () => turnOff();
+    tray.setContextMenu(Menu.buildFromTemplate(menuItems));
+
+    win.webContents.send('changeStatus', isOn);
+}
 
 function createWindow () {
     win = new BrowserWindow({
@@ -61,36 +108,5 @@ app.on('ready', () => {
     tray = new Tray('./images/iconTemplate.png');
     tray.setIgnoreDoubleClickEvents(true);
     tray.setToolTip('Green Tunnel');
-    const menuItems = [
-        {
-            label: 'Turn Off',
-            type: 'normal',
-        },
-        {
-            label: 'Run At Login',
-            type: 'checkbox',
-        },
-        {
-            type: 'separator',
-        },
-        {
-            label: 'Source Code',
-            type: 'normal',
-            click: () => shell.openExternal('https://github.com/SadeghHayeri/GreenTunnel'),
-        },
-        {
-            label: 'Donate',
-            type: 'normal',
-        },
-        {
-            role: 'quit',
-            label: 'Quit',
-            type: 'normal',
-        },
-    ];
     tray.setContextMenu(Menu.buildFromTemplate(menuItems));
-
-
-    // menuItems[0].label = 'Disable';
-    // tray.setContextMenu(Menu.buildFromTemplate(menuItems));
 });
