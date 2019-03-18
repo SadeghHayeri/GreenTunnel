@@ -1,49 +1,96 @@
-const { app, BrowserWindow } = require('electron')
+const { app, BrowserWindow, Menu, Tray, shell, ipcMain } = require('electron');
+const debug = /--debug/.test(process.argv[2]);
 
-// Keep a global reference of the window object, if you don't, the window will
-// be closed automatically when the JavaScript object is garbage collected.
-let win
+let win, tray;
+
+console.log('hi!');
+
+ipcMain.on('close-button', (event, arg) => {
+    app.hide();
+});
+
+let x = true;
+ipcMain.on('on-off-button', (event, arg) => {
+    event.sender.send('changeStatus', x);
+    x = !x;
+});
+
+// win.webContents.send('ping', 'whoooooooh!');
 
 function createWindow () {
-    // Create the browser window.
-    win = new BrowserWindow({ width: 800, height: 600 })
+    win = new BrowserWindow({
+        width: 300,
+        height: 300,
+        maximizable: debug,
+        minimizable: debug,
+        fullscreenable: debug,
+        resizable: debug,
 
-    // and load the index.html of the app.
-    win.loadFile('./view/main-page/index.html')
+        title: 'Green Tunnel',
+        frame: false,
+        transparent: true,
+        webPreferences: {
+            nodeIntegration: true,
+        }
+    });
+    win.loadFile('./view/main-page/index.html');
 
-    // Open the DevTools.
-    win.webContents.openDevTools()
-
-    // Emitted when the window is closed.
     win.on('closed', () => {
-        // Dereference the window object, usually you would store windows
-        // in an array if your app supports multi windows, this is the time
-        // when you should delete the corresponding element.
         win = null
-    })
+    });
+
+    if(debug)
+        win.webContents.openDevTools()
 }
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
-app.on('ready', createWindow)
+app.on('ready', createWindow);
 
-// Quit when all windows are closed.
 app.on('window-all-closed', () => {
-    // On macOS it is common for applications and their menu bar
-    // to stay active until the user quits explicitly with Cmd + Q
     if (process.platform !== 'darwin') {
         app.quit()
     }
-})
+});
 
 app.on('activate', () => {
-    // On macOS it's common to re-create a window in the app when the
-    // dock icon is clicked and there are no other windows open.
     if (win === null) {
         createWindow()
     }
-})
+});
 
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.
+app.on('ready', () => {
+    tray = new Tray('./images/iconTemplate.png');
+    tray.setIgnoreDoubleClickEvents(true);
+    tray.setToolTip('Green Tunnel');
+    const menuItems = [
+        {
+            label: 'Turn Off',
+            type: 'normal',
+        },
+        {
+            label: 'Run At Login',
+            type: 'checkbox',
+        },
+        {
+            type: 'separator',
+        },
+        {
+            label: 'Source Code',
+            type: 'normal',
+            click: () => shell.openExternal('https://github.com/SadeghHayeri/GreenTunnel'),
+        },
+        {
+            label: 'Donate',
+            type: 'normal',
+        },
+        {
+            role: 'quit',
+            label: 'Quit',
+            type: 'normal',
+        },
+    ];
+    tray.setContextMenu(Menu.buildFromTemplate(menuItems));
+
+
+    // menuItems[0].label = 'Disable';
+    // tray.setContextMenu(Menu.buildFromTemplate(menuItems));
+});

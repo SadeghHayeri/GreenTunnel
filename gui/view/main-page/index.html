@@ -5,33 +5,34 @@
         <title>Green Tunnel</title>
         <link rel="stylesheet" href="styles/css-reset.css">
         <link rel="stylesheet" href="styles/main.css">
+
+        <script>window.$ = window.jQuery = require('jquery');</script>
         <script type ="text/javascript" src="./scripts/main.js"></script>
-        <script type="text/javascript" src="./scripts/tray.js"></script>
     </head>
 
     <body>
 
         <div class="center">
-            <div class="title green">
+            <div class="title toggle green">
                 <h1>Green Tunnel</h1>
-                <h2>is on</h2>
+                <h2 id="status-off-on">is on</h2>
             </div>
 
-            <div class="status-container green">
+            <div id="on-off-button" class="status-container toggle green">
                 <img class="logo" src="./images/logo.png" alt="">
             </div>
         </div>
 
-        <div id="left-border" class="border green"></div>
-        <div id="right-border" class="border green"></div>
-        <div id="top-border" class="border green"></div>
-        <div id="bottom-border" class="border green"></div>
+        <div id="left-border" class="border toggle green"></div>
+        <div id="right-border" class="border toggle green"></div>
+        <div id="top-border" class="border toggle green"></div>
+        <div id="bottom-border" class="border toggle green"></div>
 
-        <div class="bottom-banner green">
-            <p>Note: GreenTunnel do not hide your IP address</p>
+        <div class="bottom-banner toggle green">
+            <p>Note: GreenTunnel dose not hide your IP address</p>
         </div>
 
-        <img src="./images/cancel.png" class="close-button" alt="">
+        <img id="close-button" src="./images/cancel.png" class="close-button" alt="">
 
     </body>
 </html>
