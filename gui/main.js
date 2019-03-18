@@ -51,6 +51,7 @@ function turnOff() {
     menuItems[0].click = () => turnOn();
     tray.setContextMenu(Menu.buildFromTemplate(menuItems));
 
+    tray.setImage('./images/iconDisabledTemplate.png');
     win.webContents.send('changeStatus', isOn);
 }
 
@@ -61,6 +62,7 @@ function turnOn() {
     menuItems[0].click = () => turnOff();
     tray.setContextMenu(Menu.buildFromTemplate(menuItems));
 
+    tray.setImage('./images/iconTemplate.png');
     win.webContents.send('changeStatus', isOn);
 }
 
