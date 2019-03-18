@@ -21,6 +21,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    transition: all .3s;
     -webkit-app-region: drag;
 }
 
@@ -92,7 +93,7 @@ body {
     align-items: center;
     opacity: .8;
 
-    transition: opacity .3s;
+    transition: all .3s;
     -webkit-app-region: no-drag;
 }
 
@@ -114,6 +115,7 @@ body {
 .status-container.green {
     border: 5px solid #72cc66;
     animation: bigAndSmall 2s infinite;
+    animation-delay: .1s;
 }
 
 @keyframes bigAndSmall {
@@ -168,6 +170,7 @@ body {
 
 #top-border, #bottom-border, #left-border, #right-border {
     position: fixed;
+    transition: all .3s;
 }
 #left-border, #right-border {
     top: 0; bottom: 0;
