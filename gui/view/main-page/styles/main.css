@@ -152,13 +152,14 @@ body {
     top: 10px;
     right: 10px;
     cursor: pointer;
-    opacity: .7;
+    opacity: .4;
     padding: 10px;
     -webkit-app-region: no-drag;
+    transition: opacity .3s;
 }
 
 .close-button:hover {
-    opacity: .9;
+    opacity: .8;
 }
 
 .close-button:active {
