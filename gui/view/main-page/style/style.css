@@ -126,6 +126,24 @@ body {
     height: 75px;
 }
 
+.close-button {
+    position: fixed;
+    width: 20px;
+    height: 20px;
+    top: 20px;
+    right: 20px;
+    cursor: pointer;
+    opacity: .7;
+}
+
+.close-button:hover {
+    opacity: .9;
+}
+
+.close-button:active {
+    opacity: 1;
+}
+
 #top-border, #bottom-border, #left-border, #right-border {
     position: fixed;
 }
