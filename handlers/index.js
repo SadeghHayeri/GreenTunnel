@@ -10,7 +10,7 @@ class RequestHandler {
     }
 
     static handleNewSocket(socket) {
-
+        socket.resume();
         socket.once('data', (data) => {
             socket.pause();
             const strData = data.toString();
@@ -21,7 +21,7 @@ class RequestHandler {
                 else
                     HTTPHandler.handlerNewSocket(socket, data);
             } else {
-                console.log('UN-SUPPORT', strData)
+                console.log('UNSUPPORTED', strData)
             }
         })
 

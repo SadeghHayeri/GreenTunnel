@@ -4,7 +4,7 @@ const net = require('net');
 const CONFIG = require('./config');
 const RequestHandler = require('./handlers');
 
-const server = net.createServer((socket) => {
+const server = net.createServer({ pauseOnConnect: true }, (socket) => {
     console.log('client connected');
 
     socket.on('end', () => {

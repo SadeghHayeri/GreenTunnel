@@ -3,6 +3,7 @@ const { HTTPResponse } = require('../http-parser');
 const { URL } = require('url');
 const net = require('net');
 const { chunks, dnsOverTLSAsync } = require('../utils');
+const CONFIG = require('../config');
 
 class HTTPSHandler extends BaseHandler {
 
@@ -13,12 +14,14 @@ class HTTPSHandler extends BaseHandler {
         return packet
     }
 
-    static clientToServer(data) {
-        return data;
-    }
-
-    static serverToClient(data) {
-        return data;
+    static sendDataByCatch(socket, data, pairSocket=null) {
+        try {
+            socket.write(data)
+        } catch (e) {
+            console.error(e);
+            if(pairSocket)
+                pairSocket.destroy();
+        }
     }
 
     static async handlerNewSocket(clientSocket, firstChunk = null) {
@@ -29,38 +32,54 @@ class HTTPSHandler extends BaseHandler {
         const port = url.port || 443;
 
         const ip = await dnsOverTLSAsync(host);
+        if(ip && port) {
+            try {
+                const serverSocket = net.createConnection({host: ip, port: port}, () => {
+                    console.log('connected to server!');
 
-        const serverSocket = net.createConnection({host: ip, port: port}, () => {
-            console.log('connected to server!');
+                    clientSocket.once('data', (clientHello) => {
+                        chunks(clientHello, CONFIG.PROXY.CLIENT_HELLO_MTU).forEach((chunk) => {
+                            HTTPSHandler.sendDataByCatch(serverSocket, chunk, clientSocket);
+                        });
 
-            clientSocket.write(HTTPSHandler.getConnectionEstablishedPacket().toString());
-            clientSocket.resume();
-        });
+                        // setup for other packets
+                        clientSocket.on('data', (data) => {
+                            HTTPSHandler.sendDataByCatch(serverSocket, data, clientSocket);
+                        });
+                    });
 
-        clientSocket.once('data', (clientHello) => {
-            chunks(clientHello, 100).forEach((chunk) => {
-                serverSocket.write(chunk);
-            });
+                    clientSocket.on('end', () => {
+                        console.log('disconnected from client');
+                        serverSocket.destroy();
+                    });
 
-            // setup for other packets
-            clientSocket.on('data', (data) => {
-                serverSocket.write(data)
-            });
-        });
+                    clientSocket.on('error', (e) => {
+                        console.error(e)
+                    });
 
-        serverSocket.on('data', (data) => {
-            clientSocket.write(HTTPSHandler.serverToClient(data))
-        });
+                    HTTPSHandler.sendDataByCatch(clientSocket, HTTPSHandler.getConnectionEstablishedPacket().toString(), serverSocket);
+                    clientSocket.resume();
+                });
 
-        serverSocket.on('end', () => {
-            console.log('disconnected from server');
-            clientSocket.end();
-        });
+                serverSocket.on('data', (data) => {
+                    HTTPSHandler.sendDataByCatch(clientSocket, data, serverSocket);
+                });
 
-        clientSocket.on('end', () => {
-            console.log('disconnected from client');
-            serverSocket.end();
-        });
+                serverSocket.on('end', () => {
+                    console.log('disconnected from server');
+                    clientSocket.destroy();
+                });
+
+                serverSocket.on('error', (e) => {
+                    console.error(e);
+                });
+            } catch (e) {
+                console.error(e)
+            }
+        } else {
+            console.error('Bad IP or PORT: ', host, ip, port);
+            clientSocket.destroy();
+        }
     }
 }
 
