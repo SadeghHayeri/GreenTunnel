@@ -20,7 +20,7 @@ class HTTPSHandler extends BaseHandler {
         } catch (e) {
             console.error(e);
             if(pairSocket)
-                pairSocket.destroy();
+                pairSocket.end();
         }
     }
 
@@ -50,7 +50,7 @@ class HTTPSHandler extends BaseHandler {
 
                     clientSocket.on('end', () => {
                         console.log('disconnected from client');
-                        serverSocket.destroy();
+                        serverSocket.end();
                     });
 
                     clientSocket.on('error', (e) => {
@@ -67,7 +67,7 @@ class HTTPSHandler extends BaseHandler {
 
                 serverSocket.on('end', () => {
                     console.log('disconnected from server');
-                    clientSocket.destroy();
+                    clientSocket.end();
                 });
 
                 serverSocket.on('error', (e) => {
@@ -78,7 +78,7 @@ class HTTPSHandler extends BaseHandler {
             }
         } else {
             console.error('Bad IP or PORT: ', host, ip, port);
-            clientSocket.destroy();
+            clientSocket.end();
         }
     }
 }
