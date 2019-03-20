@@ -37,6 +37,9 @@ class SystemProxyManager {
             case 'win64':
                 await SystemProxyManager._win_set_proxy(ip, port);
                 break;
+            case 'unknown os':
+            default:
+                throw 'UNKNOWN OS TYPE ' + os.platform();
         }
     }
 
