@@ -2,6 +2,10 @@ const util = require('util');
 var os = require('os');
 const exec = util.promisify(require('child_process').exec);
 const Registry = require('winreg');
+const fs = require('fs-extra');
+
+const writeFile = util.promisify(fs.writeFile);
+const readFile = util.promisify(fs.readFile);
 
 class SystemProxyManager {
     static async _darwin_set_proxy(ip, port) {
@@ -18,9 +22,35 @@ class SystemProxyManager {
         await exec(`networksetup -setsecurewebproxystate ${wifiAdaptor} off`);
     }
 
-    static async _linux_set_proxy(ip, port) {}
+    static async _linux_find_PATH(env) {
+        for(let line of env.split('\n')) {
+            if (line.match('PATH'))
+                return line;
+        }
+        return '';
+    }
 
-    static async _linux_unset_proxy() {}
+    static async _linux_set_proxy(ip, port) {
+        const env = await readFile('/etc/environment', 'utf8');
+        const PATH = await SystemProxyManager._linux_find_PATH(env);
+
+        let newEnv = `${PATH}\n`;
+        newEnv += `http_proxy=http://${ip}:${port}/\n`;
+        newEnv += `https_proxy=https://${ip}:${port}/\n`;
+        newEnv += `HTTP_PROXY=http://${ip}:${port}/\n`;
+        newEnv += `HTTPS_PROXY=https://${ip}:${port}/\n`;
+        newEnv += `NO_PROXY=\"localhost\"`;
+
+        await writeFile('/etc/environment', newEnv);
+    }
+
+    static async _linux_unset_proxy() {
+        const env = await readFile('/etc/environment', 'utf8');
+        const PATH = await SystemProxyManager._linux_find_PATH(env);
+
+        let newEnv = `${PATH}\n`;
+        await writeFile('/etc/environment', newEnv);
+    }
 
     static async _win_set_proxy(ip, port) {
         const regKey = new Registry({
