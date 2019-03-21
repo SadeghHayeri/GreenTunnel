@@ -31,25 +31,38 @@ class SystemProxyManager {
     }
 
     static async _linux_set_proxy(ip, port) {
-        const env = await readFile('/etc/environment', 'utf8');
-        const PATH = await SystemProxyManager._linux_find_PATH(env);
 
-        let newEnv = `${PATH}\n`;
-        newEnv += `http_proxy=http://${ip}:${port}/\n`;
-        newEnv += `https_proxy=https://${ip}:${port}/\n`;
-        newEnv += `HTTP_PROXY=http://${ip}:${port}/\n`;
-        newEnv += `HTTPS_PROXY=https://${ip}:${port}/\n`;
-        newEnv += `NO_PROXY=\"localhost\"`;
+        // gnome proxy
+        await exec(`gsettings set org.gnome.system.proxy mode manual`);
+        await exec(`gsettings set org.gnome.system.proxy.http host ${ip}`);
+        await exec(`gsettings set org.gnome.system.proxy.http port ${port}`);
 
-        await writeFile('/etc/environment', newEnv);
+        // // etc/environment
+        // const env = await readFile('/etc/environment', 'utf8');
+        // const PATH = await SystemProxyManager._linux_find_PATH(env);
+        //
+        // let newEnv = `${PATH}\n`;
+        // newEnv += `http_proxy=${ip}:${port}\n`;
+        // newEnv += `https_proxy=${ip}:${port}\n`;
+        // newEnv += `no_proxy="localhost,127.0.0.1,localaddress,.localdomain.com"\n`
+        // newEnv += `HTTP_PROXY=${ip}:${port}\n`;
+        // newEnv += `HTTPS_PROXY=${ip}:${port}\n`;
+        // newEnv += `NO_PROXY="localhost,127.0.0.1,localaddress,.localdomain.com"\n`;
+        //
+        // await writeFile('/etc/environment', newEnv);
     }
 
     static async _linux_unset_proxy() {
-        const env = await readFile('/etc/environment', 'utf8');
-        const PATH = await SystemProxyManager._linux_find_PATH(env);
 
-        let newEnv = `${PATH}\n`;
-        await writeFile('/etc/environment', newEnv);
+        // gnome proxy
+        await exec(`gsettings set org.gnome.system.proxy mode none`);
+
+        // // etc/environment
+        // const env = await readFile('/etc/environment', 'utf8');
+        // const PATH = await SystemProxyManager._linux_find_PATH(env);
+        //
+        // let newEnv = `${PATH}\n`;
+        // await writeFile('/etc/environment', newEnv);
     }
 
     static async _win_set_proxy(ip, port) {
