@@ -28,12 +28,11 @@ class SystemProxyManager {
             key:  '\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings'
         });
 
-        const setRegKey = util.promisify(regKey.set);
-        await setRegKey('MigrateProxy', Registry.REG_DWORD, 1);
-        await setRegKey('ProxyEnable', Registry.REG_DWORD, 1);
-        await setRegKey('ProxyHttp1.1', Registry.REG_DWORD, 0);
-        await setRegKey('ProxyServer', Registry.REG_SZ, `${ip}:${port}`);
-        await setRegKey('ProxyOverride', Registry.REG_SZ, "*.local;<local>");
+        regKey.set('MigrateProxy', Registry.REG_DWORD, 1, (e) => {console.error(e)});
+        regKey.set('ProxyEnable', Registry.REG_DWORD, 1, (e) => {console.error(e)});
+        regKey.set('ProxyHttp1.1', Registry.REG_DWORD, 0, (e) => {console.error(e)});
+        regKey.set('ProxyServer', Registry.REG_SZ, `${ip}:${port}`, (e) => {console.error(e)});
+        regKey.set('ProxyOverride', Registry.REG_SZ, '*.local;<local>', (e) => {console.error(e)});
     }
 
     static async _win_unset_proxy() {
@@ -42,8 +41,7 @@ class SystemProxyManager {
             key:  '\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings'
         });
 
-        const setRegKey = util.promisify(regKey.set);
-        await setRegKey('ProxyEnable', Registry.REG_DWORD, 0);
+        regKey.set('ProxyEnable', Registry.REG_DWORD, 0, (e) => {console.error(e)});
     }
 
     static async set_proxy(ip, port) {
@@ -72,7 +70,7 @@ class SystemProxyManager {
             case 'linux':
                 await SystemProxyManager._linux_unset_proxy();
                 break;
-            case 'win':
+            case 'win32':
             case 'win64':
                 await SystemProxyManager._win_unset_proxy();
                 break;
