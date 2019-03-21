@@ -1,6 +1,7 @@
-const { app, BrowserWindow, Menu, Tray, shell, ipcMain } = require('electron');
+const { app, BrowserWindow, Menu, Tray, shell, ipcMain, nativeImage } = require('electron');
 const debug = /--debug/.test(process.argv[2]);
 const Proxy = require('../proxy');
+const path = require('path');
 
 let win, tray;
 let isOn = true;
@@ -43,7 +44,10 @@ async function turnOff() {
     menuItems[0].label = 'Enable';
     menuItems[0].click = () => turnOn();
     tray.setContextMenu(Menu.buildFromTemplate(menuItems));
-    tray.setImage('./images/iconDisabledTemplate.png');
+
+    const iconPath = path.join(__dirname, 'images/iconDisabledTemplate.png');
+    const trayIcon = nativeImage.createFromPath(iconPath);
+    tray.setImage(trayIcon);
 }
 
 async function turnOn() {
@@ -55,10 +59,16 @@ async function turnOn() {
     menuItems[0].label = 'Disable';
     menuItems[0].click = () => turnOff();
     tray.setContextMenu(Menu.buildFromTemplate(menuItems));
-    tray.setImage('./images/iconTemplate.png');
+
+    const iconPath = path.join(__dirname, 'images/iconTemplate.png');
+    const trayIcon = nativeImage.createFromPath(iconPath);
+    tray.setImage(trayIcon);
 }
 
 function createWindow () {
+    const iconPath = path.join(__dirname, 'icons/icon.icns');
+    const appIcon = nativeImage.createFromPath(iconPath);
+
     win = new BrowserWindow({
         width: 300,
         height: 300,
@@ -66,7 +76,7 @@ function createWindow () {
         minimizable: debug,
         fullscreenable: debug,
         resizable: debug,
-        icon: './icons/icon.icns',
+        icon: appIcon,
 
         title: 'Green Tunnel',
         frame: false,
@@ -100,7 +110,9 @@ app.on('activate', () => {
 });
 
 app.on('ready', () => {
-    tray = new Tray('./images/iconTemplate.png');
+    const iconPath = path.join(__dirname, 'images/iconTemplate.png');
+    const trayIcon = nativeImage.createFromPath(iconPath);
+    tray = new Tray(trayIcon);
     tray.setIgnoreDoubleClickEvents(true);
     tray.setToolTip('Green Tunnel');
     tray.setContextMenu(Menu.buildFromTemplate(menuItems));
