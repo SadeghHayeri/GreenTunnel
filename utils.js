@@ -2,7 +2,11 @@
 
 const { HTTP } = require('./http-parser');
 const dnstls = require('dns-over-tls');
+const doh = require('dns-over-http');
+const CONFIG = require('./config');
 const { promisify } = require('util');
+
+const dohQueryAsync = promisify(doh.query);
 
 
 function isStartOfHTTPPacket(rawInput) {
@@ -45,4 +49,15 @@ function dnsOverTLSAsync(hostname) {
         })
 }
 
-module.exports = { isStartOfHTTPPacket, chunks, dnsOverTLSAsync };
+
+async function dnsOverHTTPSAsync(hostname) {
+    try {
+        const result = await dohQueryAsync({url: CONFIG.DNS.DNS_OVER_HTTPS_URL}, [{type: 'A', name: hostname}]);
+        return result.answers[0].data;
+    }
+    catch (e) {
+        throw 'DNS RECORD NOT FOUND ' + hostname;
+    }
+}
+
+module.exports = { isStartOfHTTPPacket, chunks, dnsOverTLSAsync, dnsOverHTTPSAsync };
