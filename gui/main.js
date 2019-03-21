@@ -1,5 +1,6 @@
 const { app, BrowserWindow, Menu, Tray, shell, ipcMain } = require('electron');
 const debug = /--debug/.test(process.argv[2]);
+const Proxy = require('../proxy');
 
 let win, tray;
 let isOn = true;
@@ -33,26 +34,28 @@ const menuItems = [
     },
 ];
 
-function turnOff() {
+async function turnOff() {
     isOn = false;
+
+    await Proxy.stopProxyServer();
+    win.webContents.send('changeStatus', isOn);
 
     menuItems[0].label = 'Enable';
     menuItems[0].click = () => turnOn();
     tray.setContextMenu(Menu.buildFromTemplate(menuItems));
-
     tray.setImage('./images/iconDisabledTemplate.png');
-    win.webContents.send('changeStatus', isOn);
 }
 
-function turnOn() {
+async function turnOn() {
     isOn = true;
+
+    await Proxy.startProxyServer();
+    win.webContents.send('changeStatus', isOn);
 
     menuItems[0].label = 'Disable';
     menuItems[0].click = () => turnOff();
     tray.setContextMenu(Menu.buildFromTemplate(menuItems));
-
     tray.setImage('./images/iconTemplate.png');
-    win.webContents.send('changeStatus', isOn);
 }
 
 function createWindow () {
@@ -113,3 +116,5 @@ ipcMain.on('on-off-button', (event, arg) => {
     else
         turnOn();
 });
+
+turnOn();
