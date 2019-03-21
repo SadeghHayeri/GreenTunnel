@@ -106,6 +106,14 @@ app.on('ready', () => {
     tray.setContextMenu(Menu.buildFromTemplate(menuItems));
 });
 
+app.on('before-quit', async (e) => {
+    if(isOn) {
+        e.preventDefault();
+        await turnOff();
+        app.quit();
+    }
+});
+
 ipcMain.on('close-button', (event, arg) => {
     app.hide();
 });
