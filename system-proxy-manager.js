@@ -1,6 +1,7 @@
 const util = require('util');
 var os = require('os');
 const exec = util.promisify(require('child_process').exec);
+const Registry = require('winreg');
 
 class SystemProxyManager {
     static async _darwin_set_proxy(ip, port) {
@@ -21,9 +22,29 @@ class SystemProxyManager {
 
     static async _linux_unset_proxy() {}
 
-    static async _win_set_proxy(ip, port) {}
+    static async _win_set_proxy(ip, port) {
+        const regKey = new Registry({
+            hive: Registry.HKEY_CURRENT_USER,
+            key:  '\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings'
+        });
 
-    static async _win_unset_proxy() {}
+        const setRegKey = util.promisify(regKey.set);
+        await regKey.set('MigrateProxy', Registry.REG_DWORD, 1);
+        await regKey.set('ProxyEnable', Registry.REG_DWORD, 1);
+        await regKey.set('ProxyHttp1.1', Registry.REG_DWORD, 0);
+        await regKey.set('ProxyServer', Registry.REG_SZ, `${ip}:${port}`);
+        await regKey.set('ProxyOverride', Registry.REG_SZ, "*.local;<local>");
+    }
+
+    static async _win_unset_proxy() {
+        const regKey = new Registry({
+            hive: Registry.HKEY_CURRENT_USER,
+            key:  '\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings'
+        });
+
+        const setRegKey = util.promisify(regKey.set);
+        await regKey.set('ProxyEnable', Registry.REG_DWORD, 0);
+    }
 
     static async set_proxy(ip, port) {
         switch (os.platform()) {
