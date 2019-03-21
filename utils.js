@@ -35,24 +35,32 @@ function chunks(buffer, chunkSize) {
     return result;
 }
 
-function dnsOverTLSAsync(hostname) {
-    return dnstls.query(hostname)
-        .then((res) => {
-            for(let id in res.answers) {
-                const answer = res.answers[id];
-                if (answer.type === 'A' && answer.class === 'IN')
-                    return answer.data;
-            }
-        })
-        .catch((err) => {
-            return err;
-        })
+const DNS_CACHE = {};
+
+async function dnsOverTLSAsync(hostname) {
+
+    if(DNS_CACHE.hasOwnProperty(hostname))
+        return DNS_CACHE[hostname];
+
+    const query = await dnstls.query(hostname);
+    for(let id in query.answers) {
+        const answer = query.answers[id];
+        if (answer.type === 'A' && answer.class === 'IN') {
+            DNS_CACHE[hostname] = answer.data;
+            return answer.data;
+        }
+    }
 }
 
 
 async function dnsOverHTTPSAsync(hostname) {
+
+    if(DNS_CACHE.hasOwnProperty(hostname))
+        return DNS_CACHE[hostname];
+
     try {
         const result = await dohQueryAsync({url: CONFIG.DNS.DNS_OVER_HTTPS_URL}, [{type: 'A', name: hostname}]);
+        DNS_CACHE[hostname] = result.answers[0].data;
         return result.answers[0].data;
     }
     catch (e) {
