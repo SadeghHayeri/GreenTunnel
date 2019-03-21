@@ -25,6 +25,7 @@
     "dns-over-http": "^0.1.2",
     "dns-over-tls": "0.0.6",
     "fs-extra": "^7.0.1",
-    "node-forge": "^0.8.1"
+    "node-forge": "^0.8.1",
+    "validator": "^10.11.0"
   }
 }

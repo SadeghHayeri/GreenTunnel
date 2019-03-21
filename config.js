@@ -6,7 +6,7 @@ module.exports = {
 
     },
     DNS: {
-        TYPE: 'DNS_OVER_TLS', // 'DNS_OVER_HTTPS'
+        TYPE: 'DNS_OVER_HTTPS', // 'DNS_OVER_TLS' or 'DNS_OVER_HTTPS'
         DNS_OVER_HTTPS_URL: 'https://cloudflare-dns.com/dns-query',
     }
 };

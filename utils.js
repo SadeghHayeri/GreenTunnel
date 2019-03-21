@@ -5,6 +5,7 @@ const dnstls = require('dns-over-tls');
 const doh = require('dns-over-http');
 const CONFIG = require('./config');
 const { promisify } = require('util');
+const validator = require('validator');
 
 const dohQueryAsync = promisify(doh.query);
 
@@ -55,13 +56,24 @@ async function dnsOverTLSAsync(hostname) {
 
 async function dnsOverHTTPSAsync(hostname) {
 
-    if(DNS_CACHE.hasOwnProperty(hostname))
-        return DNS_CACHE[hostname];
+    if(DNS_CACHE.hasOwnProperty(hostname)) {
+        if(validator.isIP(DNS_CACHE[hostname]))
+            return DNS_CACHE[hostname];
+        else
+            return await dnsOverHTTPSAsync(DNS_CACHE[hostname]);
+    }
 
     try {
         const result = await dohQueryAsync({url: CONFIG.DNS.DNS_OVER_HTTPS_URL}, [{type: 'A', name: hostname}]);
-        DNS_CACHE[hostname] = result.answers[0].data;
-        return result.answers[0].data;
+        for (let ans of result.answers)
+            DNS_CACHE[ans.name] = ans.data;
+
+        const answer = result.answers[0].data;
+
+        if(validator.isIP(answer))
+            return answer;
+        else
+            return await dnsOverHTTPSAsync(answer);
     }
     catch (e) {
         throw 'DNS RECORD NOT FOUND ' + hostname;

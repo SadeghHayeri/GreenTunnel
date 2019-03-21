@@ -4,6 +4,7 @@ const { URL } = require('url');
 const net = require('net');
 const { chunks, dnsOverTLSAsync, dnsOverHTTPSAsync } = require('../utils');
 const CONFIG = require('../config');
+const dns = require('dns');
 
 class HTTPSHandler extends BaseHandler {
 
@@ -24,6 +25,20 @@ class HTTPSHandler extends BaseHandler {
         }
     }
 
+    static dnsLookup(hostname, options, callback) {
+        if(CONFIG.DNS.TYPE === 'DNS_OVER_HTTPS') {
+            dnsOverHTTPSAsync(hostname)
+                .then((data) => {
+                    callback(null, data, 4)
+                })
+        } else {
+            dnsOverTLSAsync(hostname)
+                .then((data) => {
+                    callback(null, data, 4)
+                });
+        }
+    }
+
     static async handlerNewSocket(clientSocket, firstChunk = null) {
         const firstLine = firstChunk.toString().split('\r\n')[0];
         const url = new URL('https://' + firstLine.split(/\s+/)[1]);
@@ -31,13 +46,8 @@ class HTTPSHandler extends BaseHandler {
         const host = url.hostname;
         const port = url.port || 443;
 
-        console.info(host, port);
-
         try {
-            const ip = (CONFIG.DNS.TYPE === 'DNS_OVER_HTTPS' ) ? await dnsOverHTTPSAsync(host) : await dnsOverTLSAsync(host);
-            console.error(ip);
-
-            const serverSocket = net.createConnection({host: ip, port: port}, () => {
+            const serverSocket = net.createConnection({host, port, lookup: HTTPSHandler.dnsLookup}, () => {
                 console.log('connected to server!');
 
                 clientSocket.once('data', (clientHello) => {
