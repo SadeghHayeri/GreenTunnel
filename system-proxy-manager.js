@@ -29,11 +29,11 @@ class SystemProxyManager {
         });
 
         const setRegKey = util.promisify(regKey.set);
-        await regKey.set('MigrateProxy', Registry.REG_DWORD, 1);
-        await regKey.set('ProxyEnable', Registry.REG_DWORD, 1);
-        await regKey.set('ProxyHttp1.1', Registry.REG_DWORD, 0);
-        await regKey.set('ProxyServer', Registry.REG_SZ, `${ip}:${port}`);
-        await regKey.set('ProxyOverride', Registry.REG_SZ, "*.local;<local>");
+        await setRegKey('MigrateProxy', Registry.REG_DWORD, 1);
+        await setRegKey('ProxyEnable', Registry.REG_DWORD, 1);
+        await setRegKey('ProxyHttp1.1', Registry.REG_DWORD, 0);
+        await setRegKey('ProxyServer', Registry.REG_SZ, `${ip}:${port}`);
+        await setRegKey('ProxyOverride', Registry.REG_SZ, "*.local;<local>");
     }
 
     static async _win_unset_proxy() {
@@ -43,7 +43,7 @@ class SystemProxyManager {
         });
 
         const setRegKey = util.promisify(regKey.set);
-        await regKey.set('ProxyEnable', Registry.REG_DWORD, 0);
+        await setRegKey('ProxyEnable', Registry.REG_DWORD, 0);
     }
 
     static async set_proxy(ip, port) {
