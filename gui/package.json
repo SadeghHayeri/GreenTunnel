@@ -12,6 +12,7 @@
     "electron": "^4.1.0"
   },
   "dependencies": {
+    "electron-window-state": "^5.0.3",
     "jquery": "^3.3.1"
   }
 }

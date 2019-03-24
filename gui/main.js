@@ -1,4 +1,5 @@
 const { app, BrowserWindow, Menu, Tray, shell, ipcMain, nativeImage } = require('electron');
+const windowStateKeeper = require('electron-window-state');
 const debug = /--debug/.test(process.argv[2]);
 const Proxy = require('../proxy');
 const path = require('path');
@@ -69,9 +70,13 @@ function createWindow () {
     const iconPath = path.join(__dirname, 'icons/icon.icns');
     const appIcon = nativeImage.createFromPath(iconPath);
 
+    const stateManager = windowStateKeeper();
+
     win = new BrowserWindow({
         width: 300,
         height: 300,
+        x: stateManager.x,
+        y: stateManager.y,
         maximizable: debug,
         minimizable: debug,
         fullscreenable: debug,
@@ -86,6 +91,10 @@ function createWindow () {
             nodeIntegration: true,
         }
     });
+
+    // save states
+    stateManager.manage(win);
+
     win.loadFile('./view/main-page/index.html');
 
     win.on('ready-to-show', function() {
