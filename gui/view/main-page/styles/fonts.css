@@ -1,0 +1,11 @@
+@font-face {
+    font-family: 'Prime-Light';
+    src: url('../fonts/Prime/Prime-Light.woff2') format('woff2'),
+    url('../fonts/Prime/Prime-Light.woff') format('woff');
+}
+
+@font-face {
+    font-family: 'Prime-Regular';
+    src: url('../fonts/Prime/Prime-Regular.woff2') format('woff2'),
+    url('../fonts/Prime/Prime-Regular.woff') format('woff');
+}

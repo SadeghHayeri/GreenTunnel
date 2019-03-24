@@ -7,7 +7,7 @@ body {
     justify-content: center;
     flex-direction: column;
 
-    font-family: 'prime', serif;
+    font-family: 'Prime-Light', serif;
     -webkit-app-region: drag;
     cursor: default;
 }
@@ -61,7 +61,7 @@ body {
 }
 
 .title > h1 {
-    font-family: 'prime', serif;
+    font-family: 'Prime-Regular', serif;
     font-size: 25px;
     font-weight: bold;
     color: #333;
