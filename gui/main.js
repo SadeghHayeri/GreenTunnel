@@ -77,6 +77,7 @@ function createWindow () {
         fullscreenable: debug,
         resizable: debug,
         icon: appIcon,
+        show: false,
 
         title: 'Green Tunnel',
         frame: false,
@@ -86,6 +87,11 @@ function createWindow () {
         }
     });
     win.loadFile('./view/main-page/index.html');
+
+    win.on('ready-to-show', function() {
+        win.show();
+        win.focus();
+    });
 
     win.on('closed', () => {
         win = null
