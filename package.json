@@ -1,6 +1,6 @@
 {
   "name": "green-tunnel",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -28,5 +28,9 @@
     "node-forge": "^0.8.1",
     "validator": "^10.11.0",
     "winreg": "^1.2.4"
+  },
+  "bin": {
+    "green-tunnel": "./cli.js",
+    "gt": "./cli.js"
   }
 }

@@ -1,3 +1,6 @@
+# GUI
+gui
+
 # Logs
 logs
 *.log
@@ -67,5 +70,3 @@ typings/
 *.pem
 secret
 
-# build
-gui/release-builds
