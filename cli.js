@@ -2,13 +2,14 @@
 const updateNotifier = require('update-notifier');
 const proxy = require('./proxy');
 const pkg = require('./package.json');
+const debug = require('debug')('cli');
 
 updateNotifier({pkg}).notify();
 
 process.on('SIGINT', async () => {
-    console.log("Caught interrupt signal");
+    debug("Caught interrupt signal");
     await proxy.stopProxyServer();
-    console.log('Successfully Closed!');
+    debug('Successfully Closed!');
     process.exit();
 });
 

@@ -2,9 +2,10 @@ const BaseHandler = require('./BaseHandler');
 const { HTTPResponse } = require('../http-parser');
 const { URL } = require('url');
 const net = require('net');
+const debug = require('debug')('http-handler');
+
 const { chunks, dnsOverTLSAsync, dnsOverHTTPSAsync } = require('../utils');
 const CONFIG = require('../config');
-const dns = require('dns');
 
 class HTTPSHandler extends BaseHandler {
 
@@ -19,7 +20,7 @@ class HTTPSHandler extends BaseHandler {
         try {
             socket.write(data)
         } catch (e) {
-            console.error(e);
+            debug('ERROR', e);
             if(pairSocket)
                 pairSocket.end();
         }
@@ -48,7 +49,7 @@ class HTTPSHandler extends BaseHandler {
 
         try {
             const serverSocket = net.createConnection({host, port, lookup: HTTPSHandler.dnsLookup}, () => {
-                console.log('connected to server!');
+                debug('connected to server!');
 
                 clientSocket.once('data', (clientHello) => {
                     chunks(clientHello, CONFIG.PROXY.CLIENT_HELLO_MTU).forEach((chunk) => {
@@ -62,12 +63,12 @@ class HTTPSHandler extends BaseHandler {
                 });
 
                 clientSocket.on('end', () => {
-                    console.log('disconnected from client');
+                    debug('disconnected from client');
                     serverSocket.end();
                 });
 
                 clientSocket.on('error', (e) => {
-                    console.error(e)
+                    debug('ERROR', e)
                 });
 
                 HTTPSHandler.sendDataByCatch(clientSocket, HTTPSHandler.getConnectionEstablishedPacket().toString(), serverSocket);
@@ -79,15 +80,15 @@ class HTTPSHandler extends BaseHandler {
             });
 
             serverSocket.on('end', () => {
-                console.log('disconnected from server');
+                debug('disconnected from server');
                 clientSocket.end();
             });
 
             serverSocket.on('error', (e) => {
-                console.error(e);
+                debug('ERROR', e);
             });
         } catch (e) {
-            console.error(e)
+            debug('ERROR', e)
         }
     }
 }

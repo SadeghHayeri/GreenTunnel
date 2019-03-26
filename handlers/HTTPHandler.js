@@ -2,6 +2,8 @@ const BaseHandler = require('./BaseHandler');
 const { HTTP, HTTPRequest, HTTPResponse } = require('../http-parser');
 const { URL } = require('url');
 const net = require('net');
+const debug = require('debug')('http-handler');
+
 const { isStartOfHTTPPacket } = require('../utils');
 
 class HTTPHandler extends BaseHandler {
@@ -33,7 +35,7 @@ class HTTPHandler extends BaseHandler {
         const port = url.port || 80;
 
         const serverSocket = net.createConnection({host: host, port: port}, () => {
-            console.log('connected to server!');
+            debug('connected to server!');
 
             serverSocket.write(HTTPHandler.clientToServer(firstChunk));
             clientSocket.resume();
@@ -43,12 +45,12 @@ class HTTPHandler extends BaseHandler {
         clientSocket.on('data', (data) => { serverSocket.write(HTTPHandler.clientToServer(data)) });
 
         serverSocket.on('end', () => {
-            console.log('disconnected from server');
+            debug('disconnected from server');
             clientSocket.end();
         });
 
         clientSocket.on('end', () => {
-            console.log('disconnected from client');
+            debug('disconnected from client');
             serverSocket.end();
         });
     }

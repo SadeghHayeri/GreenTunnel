@@ -3,11 +3,13 @@ var os = require('os');
 const exec = util.promisify(require('child_process').exec);
 const Registry = require('winreg');
 const fs = require('fs-extra');
+const debug = require('debug')('system-proxy-manager');
 
 const writeFile = util.promisify(fs.writeFile);
 const readFile = util.promisify(fs.readFile);
 
 class SystemProxyManager {
+    //‌ TODO: Support for lan connections too.
     static async _darwin_set_proxy(ip, port) {
         const wifiAdaptor = (await exec('networksetup -listnetworkserviceorder | grep \'Wi-Fi\' -B 1 | cut -d\')\' -f2')).stdout.trim();
 
@@ -71,11 +73,11 @@ class SystemProxyManager {
             key:  '\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings'
         });
 
-        regKey.set('MigrateProxy', Registry.REG_DWORD, 1, (e) => {console.error(e)});
-        regKey.set('ProxyEnable', Registry.REG_DWORD, 1, (e) => {console.error(e)});
-        regKey.set('ProxyHttp1.1', Registry.REG_DWORD, 0, (e) => {console.error(e)});
-        regKey.set('ProxyServer', Registry.REG_SZ, `${ip}:${port}`, (e) => {console.error(e)});
-        regKey.set('ProxyOverride', Registry.REG_SZ, '*.local;<local>', (e) => {console.error(e)});
+        regKey.set('MigrateProxy', Registry.REG_DWORD, 1, (e) => {debug(e)});
+        regKey.set('ProxyEnable', Registry.REG_DWORD, 1, (e) => {debug(e)});
+        regKey.set('ProxyHttp1.1', Registry.REG_DWORD, 0, (e) => {debug(e)});
+        regKey.set('ProxyServer', Registry.REG_SZ, `${ip}:${port}`, (e) => {debug(e)});
+        regKey.set('ProxyOverride', Registry.REG_SZ, '*.local;<local>', (e) => {debug(e)});
     }
 
     static async _win_unset_proxy() {
@@ -84,7 +86,7 @@ class SystemProxyManager {
             key:  '\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings'
         });
 
-        regKey.set('ProxyEnable', Registry.REG_DWORD, 0, (e) => {console.error(e)});
+        regKey.set('ProxyEnable', Registry.REG_DWORD, 0, (e) => {debug(e)});
     }
 
     static async set_proxy(ip, port) {

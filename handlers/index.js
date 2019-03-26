@@ -1,6 +1,8 @@
 const { isStartOfHTTPPacket } = require('../utils');
 const HTTPHandler = require('./HTTPHandler');
 const HTTPSHandler = require('./HTTPSHandler');
+const debug = require('debug')('base-handler');
+
 
 class RequestHandler {
 
@@ -21,7 +23,7 @@ class RequestHandler {
                 else
                     HTTPHandler.handlerNewSocket(socket, data);
             } else {
-                console.log('UNSUPPORTED', strData)
+                debug('ERROR, UNSUPPORTED', strData)
             }
         })
 
