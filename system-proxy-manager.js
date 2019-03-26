@@ -9,17 +9,17 @@ const readFile = util.promisify(fs.readFile);
 
 class SystemProxyManager {
     static async _darwin_set_proxy(ip, port) {
-        const wifiAdaptor = (await exec('networksetup -listallnetworkservices')).stdout.split('\n')[1];
+        const wifiAdaptor = (await exec('networksetup -listnetworkserviceorder | grep \'Wi-Fi\' -B 1 | cut -d\')\' -f2')).stdout.trim();
 
-        await exec(`networksetup -setwebproxy ${wifiAdaptor} ${ip} ${port}`);
-        await exec(`networksetup -setsecurewebproxy ${wifiAdaptor} ${ip} ${port}`);
+        await exec(`networksetup -setwebproxy '${wifiAdaptor}' ${ip} ${port}`);
+        await exec(`networksetup -setsecurewebproxy '${wifiAdaptor}' ${ip} ${port}`);
     }
 
     static async _darwin_unset_proxy() {
-        const wifiAdaptor = (await exec('networksetup -listallnetworkservices')).stdout.split('\n')[1];
+        const wifiAdaptor = (await exec('networksetup -listnetworkserviceorder | grep \'Wi-Fi\' -B 1 | cut -d\')\' -f2')).stdout.trim();
 
-        await exec(`networksetup -setwebproxystate ${wifiAdaptor} off`);
-        await exec(`networksetup -setsecurewebproxystate ${wifiAdaptor} off`);
+        await exec(`networksetup -setwebproxystate '${wifiAdaptor}' off`);
+        await exec(`networksetup -setsecurewebproxystate '${wifiAdaptor}' off`);
     }
 
     static async _linux_find_PATH(env) {
