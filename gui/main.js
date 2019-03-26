@@ -1,7 +1,7 @@
 const { app, BrowserWindow, Menu, Tray, shell, ipcMain, nativeImage } = require('electron');
 const windowStateKeeper = require('electron-window-state');
 const debug = /--debug/.test(process.argv[2]);
-const Proxy = require('../proxy');
+const proxy = require('green-tunnel');
 const path = require('path');
 
 let win, tray;
@@ -39,7 +39,7 @@ const menuItems = [
 async function turnOff() {
     isOn = false;
 
-    await Proxy.stopProxyServer();
+    await proxy.stopProxyServer();
     win.webContents.send('changeStatus', isOn);
 
     menuItems[0].label = 'Enable';
@@ -54,7 +54,7 @@ async function turnOff() {
 async function turnOn() {
     isOn = true;
 
-    await Proxy.startProxyServer();
+    await proxy.startProxyServer();
     win.webContents.send('changeStatus', isOn);
 
     menuItems[0].label = 'Disable';
