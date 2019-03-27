@@ -12,7 +12,7 @@ updateNotifier({pkg}).notify();
 const MAIN_COLOR = '84C66F';
 
 function printBanner() {
-    console.log('                \n' +
+    console.log('\n\n' +
         '                          [0m[48;5;113m    [0m      \n' +
         '                       [0m[48;5;113m          [0m   \n' +
         '                      [0m[48;5;113m            [0m  \n' +
@@ -25,7 +25,8 @@ function printBanner() {
 
 function printAlert() {
     console.log('\n');
-    console.log('    ' + chalk.bgHex(MAIN_COLOR).black(' Note: GreenTunnel does not hide your IP address '))
+    console.log('    ' + chalk.bgHex(MAIN_COLOR).black(' Note: GreenTunnel does not hide your IP address '));
+    console.log('      ' + chalk.hex(MAIN_COLOR)(' https://github.com/SadeghHayeri/GreenTunnel '));
 }
 
 function showSpiner() {
