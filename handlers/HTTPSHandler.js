@@ -47,49 +47,45 @@ class HTTPSHandler extends BaseHandler {
         const host = url.hostname;
         const port = url.port || 443;
 
-        try {
-            const serverSocket = net.createConnection({host, port, lookup: HTTPSHandler.dnsLookup}, () => {
-                debug('connected to server!');
+        const serverSocket = net.createConnection({host, port, lookup: HTTPSHandler.dnsLookup}, () => {
+            debug('connected to server!');
 
-                clientSocket.once('data', (clientHello) => {
-                    chunks(clientHello, CONFIG.PROXY.CLIENT_HELLO_MTU).forEach((chunk) => {
-                        HTTPSHandler.sendDataByCatch(serverSocket, chunk, clientSocket);
-                    });
-
-                    // setup for other packets
-                    clientSocket.on('data', (data) => {
-                        HTTPSHandler.sendDataByCatch(serverSocket, data, clientSocket);
-                    });
+            clientSocket.once('data', (clientHello) => {
+                chunks(clientHello, CONFIG.PROXY.CLIENT_HELLO_MTU).forEach((chunk) => {
+                    HTTPSHandler.sendDataByCatch(serverSocket, chunk, clientSocket);
                 });
 
-                clientSocket.on('end', () => {
-                    debug('disconnected from client');
-                    serverSocket.end();
+                // setup for other packets
+                clientSocket.on('data', (data) => {
+                    HTTPSHandler.sendDataByCatch(serverSocket, data, clientSocket);
                 });
-
-                clientSocket.on('error', (e) => {
-                    debug('ERROR', e)
-                });
-
-                HTTPSHandler.sendDataByCatch(clientSocket, HTTPSHandler.getConnectionEstablishedPacket().toString(), serverSocket);
-                clientSocket.resume();
             });
 
-            serverSocket.on('data', (data) => {
-                HTTPSHandler.sendDataByCatch(clientSocket, data, serverSocket);
+            clientSocket.on('end', () => {
+                debug('disconnected from client');
+                serverSocket.end();
             });
 
-            serverSocket.on('end', () => {
-                debug('disconnected from server');
-                clientSocket.end();
+            clientSocket.on('error', (e) => {
+                debug('ERROR', e)
             });
 
-            serverSocket.on('error', (e) => {
-                debug('ERROR', e);
-            });
-        } catch (e) {
-            debug('ERROR', e)
-        }
+            HTTPSHandler.sendDataByCatch(clientSocket, HTTPSHandler.getConnectionEstablishedPacket().toString(), serverSocket);
+            clientSocket.resume();
+        });
+
+        serverSocket.on('data', (data) => {
+            HTTPSHandler.sendDataByCatch(clientSocket, data, serverSocket);
+        });
+
+        serverSocket.on('end', () => {
+            debug('disconnected from server');
+            clientSocket.end();
+        });
+
+        serverSocket.on('error', (e) => {
+            debug('ERROR', e);
+        });
     }
 }
 

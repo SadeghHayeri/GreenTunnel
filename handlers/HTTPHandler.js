@@ -41,6 +41,11 @@ class HTTPHandler extends BaseHandler {
             clientSocket.resume();
         });
 
+        serverSocket.on('error', (e) => {
+            clientSocket.end();
+            debug('ERROR', e);
+        });
+
         serverSocket.on('data', (data) => { clientSocket.write(HTTPHandler.serverToClient(data)) });
         clientSocket.on('data', (data) => { serverSocket.write(HTTPHandler.clientToServer(data)) });
 
