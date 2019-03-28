@@ -54,17 +54,17 @@ async function dnsOverTLSAsync(hostname) {
 }
 
 
-async function dnsOverHTTPSAsync(hostname) {
+async function dnsOverHTTPSAsync(hostname, dnsServer) {
 
     if(DNS_CACHE.hasOwnProperty(hostname)) {
         if(validator.isIP(DNS_CACHE[hostname]))
             return DNS_CACHE[hostname];
         else
-            return await dnsOverHTTPSAsync(DNS_CACHE[hostname]);
+            return await dnsOverHTTPSAsync(DNS_CACHE[hostname], dnsServer);
     }
 
     try {
-        const result = await dohQueryAsync({url: CONFIG.DNS.DNS_OVER_HTTPS_URL}, [{type: 'A', name: hostname}]);
+        const result = await dohQueryAsync({url: dnsServer}, [{type: 'A', name: hostname}]);
         for (let ans of result.answers)
             DNS_CACHE[ans.name] = ans.data;
 
@@ -73,7 +73,7 @@ async function dnsOverHTTPSAsync(hostname) {
         if(validator.isIP(answer))
             return answer;
         else
-            return await dnsOverHTTPSAsync(answer);
+            return await dnsOverHTTPSAsync(answer, dnsServer);
     }
     catch (e) {
         throw 'DNS RECORD NOT FOUND ' + hostname;
@@ -83,7 +83,7 @@ async function dnsOverHTTPSAsync(hostname) {
 function dnsLookup(dnsType, dnsServer) {
     return (hostname, options, callback) => {
         if(CONFIG.DNS.TYPE === 'DNS_OVER_HTTPS') {
-            dnsOverHTTPSAsync(hostname)
+            dnsOverHTTPSAsync(hostname, dnsServer)
                 .then((data) => {
                     callback(null, data, 4)
                 })

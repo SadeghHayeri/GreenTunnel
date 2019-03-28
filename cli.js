@@ -25,8 +25,9 @@ var argv = require('yargs')
 
     .default('dnsServer', CONFIG.DNS.DNS_OVER_HTTPS_URL)
 
+    .example('$0')
     .example('$0 --ip 127.0.0.1 --port 8000')
-    .example('$0 --dnsType DNS_OVER_TLS')
+    .example('$0 --dnsServer https://doh.securedns.eu/dns-query')
     .epilog('ISSUES:  https://github.com/SadeghHayeri/GreenTunnel/issues')
 
     .argv;
