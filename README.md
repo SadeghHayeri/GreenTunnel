@@ -1,13 +1,13 @@
 # Green Tunnel
 <p align="center">
-    <img src="assets/logo.png" alt="green tunnel logo" width="400">
+    <img src="assets/logo.png" alt="green tunnel logo" width="200">
 </p>
 <p align="center">
-    <img src="https://img.shields.io/github/license/SadeghHayeri/GreenTunnel.svg?colorB=red&style=for-the-badge"> <img src="https://img.shields.io/github/repo-size/SadeghHayeri/GreenTunnel.svg?colorB=blue&style=for-the-badge">
+    <img src="https://img.shields.io/github/license/SadeghHayeri/GreenTunnel.svg?color=Green&style=flat-square"> <img src="https://img.shields.io/github/repo-size/SadeghHayeri/GreenTunnel.svg?color=Green&style=flat-square">
 </p>
 GreenTunnel is an local proxy server that tries to bypass DPI (Deep Packet Inspection) systems found in many ISPs (Internet Service Providers) which block access to certain websites.
 <p align="center">
-    <img src="assets/demo.gif" alt="green tunnel demo" width="600">
+    <img src="assets/demo.gif" alt="green tunnel demo" style="margin-top: 20px;">
 </p>
 ### How to use
 ##### Graphical user interface (GUI)
