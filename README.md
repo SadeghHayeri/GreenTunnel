@@ -37,6 +37,7 @@ Options:
   --dnsServer                         [default: "https://cloudflare-dns.com/dns-query"]
 
 Examples:
+  gt #run with default options
   gt --ip 127.0.0.1 --port 8000
   gt --dnsType DNS_OVER_TLS
 
