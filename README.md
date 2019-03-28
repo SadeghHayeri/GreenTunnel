@@ -6,7 +6,7 @@
     <img src="https://img.shields.io/github/license/SadeghHayeri/GreenTunnel.svg?color=Green&style=flat-square"> <img src="https://img.shields.io/github/repo-size/SadeghHayeri/GreenTunnel.svg?color=Green&style=flat-square">
 </p>
 
-GreenTunnel is a local proxy server that tries to bypass DPI (Deep Packet Inspection) systems found in many ISPs (Internet Service Providers) which block access to certain websites.
+GreenTunnel bypasses DPI (Deep Packet Inspection) systems found in many ISPs (Internet Service Providers) which block access to certain websites.
 
 <p align="center">
     <img src="assets/demo.gif" alt="green tunnel demo" style="margin-top: 20px;">
@@ -17,11 +17,11 @@ GreenTunnel is a local proxy server that tries to bypass DPI (Deep Packet Inspec
 You can simply choose the suitable installation for your OS in the [releases](http://google.com "releases") section.
 
 ### Command-line interface (CLI)
-The easiest way to install GreenTunnel is using [npm](https://www.npmjs.org/ "npm"):
+You can install GreenTunnel using [npm](https://www.npmjs.org/ "npm"):
 ```
-$ npm install --global green-tunnel
+$ npm i -g green-tunnel
 ```
-then you can run it useing `gt` or `green-tunnel` commands.
+after installation you can run it using `gt` or `green-tunnel` commands.
 
 ```
 $ gt --help
@@ -45,7 +45,7 @@ ISSUES:  https://github.com/SadeghHayeri/GreenTunnel/issues
 ```
 
 ### Tested on
-- MacOS Mojava 10.14 with node 8 and npm 6
+- MacOS Mojave 10.14 with node 8 and npm 6
 - Ubuntu 18.04 with node 8 and npm 6
 - Windows 10 with node 8 and npm 6
 
@@ -59,7 +59,7 @@ GreenTunnel use [DNS over HTTPS](https://en.wikipedia.org/wiki/DNS_over_HTTPS "d
 
 ###### HTTP
 There are gaps in providers in DPI.  They happen from what the DPI rules write for ordinary user programs, omitting all possible cases that are permissible by standards.  This is done for simplicity and speed.
-Some DPIs cannot recognize the http request if it is divided into TCP segments.  For example, a request of the form
+Some DPIs cannot recognize the HTTP request if it is divided into TCP segments.  For example, a request of the form
 
 ```
 GET / HTTP/1.0`
@@ -68,8 +68,8 @@ Host: www.youtube.com
 ```
 we send it in 2 parts: first comes `GET / HTTP/1.0 \n Host: www.you` and second sends as `tube.com \n ...`. in this example ISP can not found blocked word **youtube** in packets and bypass it!
 
-###### HTTTPS
-Server Name Indication (SNI) is an extension to TLS (Transport Layer Security) that indicates the actual destination hostname a client is attempting to access over HTTPS. For this Web Filter feature, SNI hostname information is used for blocking access to specific sites over HTTPS. For example, if the administrator chooses to block the hostname **youtube** using this feature, all Website access attempts over HTTPS that contain **youtube** like **www.youtube.com** in the SNI would be blocked. However access to the same hostname over HTTP would not be blocked by this feature. GreenTunnel tries to split first **CLIENT-HELLO** packet to small chunks and ISPs can't parse packet and found SNI field so bypass traffic!
+###### HTTPS
+Server Name Indication (SNI) is an extension to TLS (Transport Layer Security) that indicates the actual destination hostname a client is attempting to access over HTTPS. For this Web Filter feature, SNI hostname information is used for blocking access to specific sites over HTTPS. For example, if the administrator chooses to block the hostname **youtube** using this feature, all Website access attempts over HTTPS that contain **youtube** like **www.youtube.com** in the SNI would be blocked. However, access to the same hostname over HTTP would not be blocked by this feature. GreenTunnel tries to split first **CLIENT-HELLO** packet into small chunks and ISPs can't parse packet and found SNI field so bypass traffic!
 
 
 ## Development notes
@@ -79,7 +79,7 @@ However, please make sure you follow a few rules listed below to ensure that you
 
 - ⇄ Pull requests and ★ Stars are always welcome.
 - For bugs and feature requests, please create an issue.
-- Make sure your pull request has a informative title. You should use prefixes like ADD:, FIX:, etc at the start of the title which describe the changes followed by a one-line description of the changes. Example: ADD: Added a new feature to GreenTunnel
+- Make sure your pull request has an informative title. You should use prefixes like `ADD:`, `FIX:`, etc at the start of the title which describes the changes followed by a one-line description of the changes. Example: ADD: Added a new feature to GreenTunnel
 - Commits in your fork should be informative, as well. Make sure you don't combine too many changes into a single commit.
 
 ## TODO List
