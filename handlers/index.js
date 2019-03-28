@@ -11,7 +11,7 @@ class RequestHandler {
         return firstWord.toUpperCase() === 'CONNECT';
     }
 
-    static handleNewSocket(socket) {
+    static handleNewSocket(socket, dnsType, dnsServer) {
         socket.resume();
         socket.once('data', (data) => {
             socket.pause();
@@ -19,9 +19,9 @@ class RequestHandler {
 
             if(isStartOfHTTPPacket(strData)) {
                 if(RequestHandler.isConnectMethod(strData))
-                    HTTPSHandler.handlerNewSocket(socket, data);
+                    HTTPSHandler.handlerNewSocket(socket, dnsType, dnsServer, data);
                 else
-                    HTTPHandler.handlerNewSocket(socket, data);
+                    HTTPHandler.handlerNewSocket(socket, dnsType, dnsServer, data);
             } else {
                 debug('ERROR, UNSUPPORTED', strData)
             }

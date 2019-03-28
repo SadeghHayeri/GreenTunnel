@@ -7,7 +7,7 @@ const SystemProxyManager = require('./system-proxy-manager');
 const debug = require('debug')('green-tunnel-proxy');
 
 class Proxy {
-    static async startProxyServer() {
+    static async startProxyServer(ip, port, dnsType, dnsServer) {
         Proxy.server = net.createServer({ pauseOnConnect: true }, (socket) => {
             debug('client connected');
 
@@ -15,7 +15,7 @@ class Proxy {
                 debug('client disconnected')
             });
 
-            RequestHandler.handleNewSocket(socket);
+            RequestHandler.handleNewSocket(socket, dnsType, dnsServer);
         });
 
         Proxy.server.on('error', (err) => {
@@ -26,11 +26,11 @@ class Proxy {
             debug('server closed');
         });
 
-        Proxy.server.listen(CONFIG.PROXY.PORT, CONFIG.PROXY.IP, () => {
+        Proxy.server.listen(port, ip, () => {
             debug('server bound');
         });
 
-        await SystemProxyManager.set_proxy(CONFIG.PROXY.IP, CONFIG.PROXY.PORT);
+        await SystemProxyManager.set_proxy(ip, port);
     }
 
     static async stopProxyServer() {

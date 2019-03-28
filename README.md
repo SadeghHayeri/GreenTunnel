@@ -6,7 +6,7 @@
     <img src="https://img.shields.io/github/license/SadeghHayeri/GreenTunnel.svg?color=Green&style=flat-square"> <img src="https://img.shields.io/github/repo-size/SadeghHayeri/GreenTunnel.svg?color=Green&style=flat-square">
 </p>
 
-GreenTunnel is an local proxy server that tries to bypass DPI (Deep Packet Inspection) systems found in many ISPs (Internet Service Providers) which block access to certain websites.
+GreenTunnel is a local proxy server that tries to bypass DPI (Deep Packet Inspection) systems found in many ISPs (Internet Service Providers) which block access to certain websites.
 
 <p align="center">
     <img src="assets/demo.gif" alt="green tunnel demo" style="margin-top: 20px;">
@@ -24,26 +24,23 @@ $ npm install --global green-tunnel
 then you can run it useing `gt` or `green-tunnel` commands.
 
 ```
-GreenTunnel bypass DPI (Deep Packet Inspection) systems found in many ISPs.
+$ gt --help
+Usage: green-tunnel [options]
+Usage: gt [options]
 
-  Usage:
+Options:
+  --help       Show help                                                      [boolean]
+  --version    Show version number                                            [boolean]
+  --ip         ip address to bind proxy server                   [default: "127.0.0.1"]
+  --port       port address to bind proxy server                    [default: "random"]
+  --dnsType     [choices: "DNS_OVER_HTTPS", "DNS_OVER_TLS"] [default: "DNS_OVER_HTTPS"]
+  --dnsServer                         [default: "https://cloudflare-dns.com/dns-query"]
 
-    green-tunnel [arguments]
-	gt [arguments]
+Examples:
+  gt --ip 127.0.0.1 --port 8000
+  gt --dnsType DNS_OVER_TLS
 
-  Flags:
-    -h, --help          show usage information
-    -v, --version       print the current version
-    -S, --save          update package.json dependencies
-    -D, --save-dev      update package.json devDependencies
-    -O, --save-optional update package.json optionalDependencies
-    -r, --registry      use a custom registry
-                        (default: http://registry.npmjs.org/)
-    -b, --build         execute lifecycle scripts upon completion
-                        (e.g. postinstall)
-
-  README:  https://github.com/alexanderGugel/ied
-  ISSUES:  https://github.com/alexanderGugel/ied/issues
+ISSUES:  https://github.com/SadeghHayeri/GreenTunnel/issues
 ```
 
 ### Tested on
@@ -87,7 +84,7 @@ However, please make sure you follow a few rules listed below to ensure that you
 ## TODO List
 - [ ] enable/disable proxy on windows
 - [ ] HTTPHandler
-- [ ] add CLI arguments
+- [X] add CLI arguments
 - [ ] catch all exceptions
 - [ ] add preferences menu
 

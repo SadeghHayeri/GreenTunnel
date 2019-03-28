@@ -28,11 +28,13 @@
     "dns-over-http": "^0.1.2",
     "dns-over-tls": "0.0.6",
     "fs-extra": "^7.0.1",
+    "get-port": "^4.2.0",
     "node-forge": "^0.8.1",
     "ora": "^3.2.0",
     "update-notifier": "^2.5.0",
     "validator": "^10.11.0",
-    "winreg": "^1.2.4"
+    "winreg": "^1.2.4",
+    "yargs": "^13.2.2"
   },
   "bin": {
     "green-tunnel": "./cli.js",

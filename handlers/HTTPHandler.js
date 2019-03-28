@@ -4,7 +4,7 @@ const { URL } = require('url');
 const net = require('net');
 const debug = require('debug')('green-tunnel-http-handler');
 
-const { isStartOfHTTPPacket } = require('../utils');
+const { isStartOfHTTPPacket, dnsLookup } = require('../utils');
 
 class HTTPHandler extends BaseHandler {
 
@@ -27,14 +27,14 @@ class HTTPHandler extends BaseHandler {
         return data;
     }
 
-    static handlerNewSocket(clientSocket, firstChunk = null) {
+    static handlerNewSocket(clientSocket, dnsType, dnsServer, firstChunk = null) {
         const firstLine = firstChunk.toString().split('\r\n')[0];
         const url = new URL(firstLine.split(/\s+/)[1]);
 
         const host = url.hostname;
         const port = url.port || 80;
 
-        const serverSocket = net.createConnection({host: host, port: port}, () => {
+        const serverSocket = net.createConnection({host: host, port: port, lookup: dnsLookup(dnsType, dnsServer)}, () => {
             debug('connected to server!');
 
             serverSocket.write(HTTPHandler.clientToServer(firstChunk));

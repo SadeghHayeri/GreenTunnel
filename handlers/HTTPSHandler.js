@@ -4,7 +4,7 @@ const { URL } = require('url');
 const net = require('net');
 const debug = require('debug')('green-tunnel-https-handler');
 
-const { chunks, dnsOverTLSAsync, dnsOverHTTPSAsync } = require('../utils');
+const { chunks, dnsLookup } = require('../utils');
 const CONFIG = require('../config');
 
 class HTTPSHandler extends BaseHandler {
@@ -26,28 +26,14 @@ class HTTPSHandler extends BaseHandler {
         }
     }
 
-    static dnsLookup(hostname, options, callback) {
-        if(CONFIG.DNS.TYPE === 'DNS_OVER_HTTPS') {
-            dnsOverHTTPSAsync(hostname)
-                .then((data) => {
-                    callback(null, data, 4)
-                })
-        } else {
-            dnsOverTLSAsync(hostname)
-                .then((data) => {
-                    callback(null, data, 4)
-                });
-        }
-    }
-
-    static async handlerNewSocket(clientSocket, firstChunk = null) {
+    static async handlerNewSocket(clientSocket, dnsType, dnsServer, firstChunk = null) {
         const firstLine = firstChunk.toString().split('\r\n')[0];
         const url = new URL('https://' + firstLine.split(/\s+/)[1]);
 
         const host = url.hostname;
         const port = url.port || 443;
 
-        const serverSocket = net.createConnection({host, port, lookup: HTTPSHandler.dnsLookup}, () => {
+        const serverSocket = net.createConnection({host, port, lookup: dnsLookup(dnsType, dnsServer)}, () => {
             debug('connected to server!');
 
             clientSocket.once('data', (clientHello) => {

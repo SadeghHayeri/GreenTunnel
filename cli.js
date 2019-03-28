@@ -6,6 +6,30 @@ const chalk = require('chalk');
 const clear = require('clear');
 const debug = require('debug')('green-tunnel-cli');
 const ora = require('ora');
+const getPort = require('get-port');
+
+const CONFIG = require('./config');
+
+var argv = require('yargs')
+    .usage('Usage: green-tunnel [options]')
+    .usage('Usage: gt [options]')
+
+    .default('ip',   CONFIG.PROXY.DEFAULT_IP)
+    .describe('ip', 'ip address to bind proxy server')
+
+    .default('port', 'random')
+    .describe('port', 'port address to bind proxy server')
+
+    .default('dnsType', CONFIG.DNS.TYPE)
+    .choices('dnsType', ['DNS_OVER_HTTPS', 'DNS_OVER_TLS'])
+
+    .default('dnsServer', CONFIG.DNS.DNS_OVER_HTTPS_URL)
+
+    .example('$0 --ip 127.0.0.1 --port 8000')
+    .example('$0 --dnsType DNS_OVER_TLS')
+    .epilog('ISSUES:  https://github.com/SadeghHayeri/GreenTunnel/issues')
+
+    .argv;
 
 updateNotifier({pkg}).notify();
 
@@ -29,7 +53,7 @@ function printAlert() {
     console.log('      ' + chalk.hex(MAIN_COLOR)(' https://github.com/SadeghHayeri/GreenTunnel '));
 }
 
-function showSpiner() {
+function showSpinner() {
     console.log('');
     const spinner = ora({
         indent: 27,
@@ -38,12 +62,12 @@ function showSpiner() {
     }).start();
 }
 
-function main() {
+async function main() {
     clear();
 
     printBanner();
     printAlert();
-    showSpiner();
+    showSpinner();
 
     process.on('SIGINT', async () => {
         debug("Caught interrupt signal");
@@ -53,7 +77,8 @@ function main() {
         process.exit();
     });
 
-    proxy.startProxyServer();
+    const port = argv.port === 'random' ? await getPort({ port: CONFIG.PROXY.DEFAULT_PORT }) : argv.port;
+    proxy.startProxyServer(argv.ip, port, argv.dnsType, argv.dnsServer);
 }
 
 main();

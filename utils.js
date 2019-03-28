@@ -80,4 +80,20 @@ async function dnsOverHTTPSAsync(hostname) {
     }
 }
 
-module.exports = { isStartOfHTTPPacket, chunks, dnsOverTLSAsync, dnsOverHTTPSAsync };
+function dnsLookup(dnsType, dnsServer) {
+    return (hostname, options, callback) => {
+        if(CONFIG.DNS.TYPE === 'DNS_OVER_HTTPS') {
+            dnsOverHTTPSAsync(hostname)
+                .then((data) => {
+                    callback(null, data, 4)
+                })
+        } else {
+            dnsOverTLSAsync(hostname)
+                .then((data) => {
+                    callback(null, data, 4)
+                });
+        }
+    }
+}
+
+module.exports = { isStartOfHTTPPacket, chunks, dnsLookup};
