@@ -2,7 +2,7 @@ const BaseHandler = require('./BaseHandler');
 const { HTTPResponse } = require('../http-parser');
 const { URL } = require('url');
 const net = require('net');
-const debug = require('debug')('http-handler');
+const debug = require('debug')('green-tunnel-https-handler');
 
 const { chunks, dnsOverTLSAsync, dnsOverHTTPSAsync } = require('../utils');
 const CONFIG = require('../config');

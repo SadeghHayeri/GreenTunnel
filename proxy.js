@@ -4,7 +4,7 @@ const net = require('net');
 const CONFIG = require('./config');
 const RequestHandler = require('./handlers');
 const SystemProxyManager = require('./system-proxy-manager');
-const debug = require('debug')('proxy-service');
+const debug = require('debug')('green-tunnel-proxy');
 
 class Proxy {
     static async startProxyServer() {

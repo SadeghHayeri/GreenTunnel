@@ -4,7 +4,7 @@ const proxy = require('./proxy');
 const pkg = require('./package.json');
 const chalk = require('chalk');
 const clear = require('clear');
-const debug = require('debug')('cli');
+const debug = require('debug')('green-tunnel-cli');
 const ora = require('ora');
 
 updateNotifier({pkg}).notify();

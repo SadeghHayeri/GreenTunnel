@@ -2,7 +2,7 @@ const BaseHandler = require('./BaseHandler');
 const { HTTP, HTTPRequest, HTTPResponse } = require('../http-parser');
 const { URL } = require('url');
 const net = require('net');
-const debug = require('debug')('http-handler');
+const debug = require('debug')('green-tunnel-http-handler');
 
 const { isStartOfHTTPPacket } = require('../utils');
 

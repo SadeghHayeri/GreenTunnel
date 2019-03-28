@@ -3,7 +3,7 @@ var os = require('os');
 const exec = util.promisify(require('child_process').exec);
 const Registry = require('winreg');
 const fs = require('fs-extra');
-const debug = require('debug')('system-proxy-manager');
+const debug = require('debug')('green-tunnel-proxy-manager');
 
 const writeFile = util.promisify(fs.writeFile);
 const readFile = util.promisify(fs.readFile);

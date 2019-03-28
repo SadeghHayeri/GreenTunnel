@@ -1,7 +1,7 @@
 const { isStartOfHTTPPacket } = require('../utils');
 const HTTPHandler = require('./HTTPHandler');
 const HTTPSHandler = require('./HTTPSHandler');
-const debug = require('debug')('base-handler');
+const debug = require('debug')('green-tunnel-base-handler');
 
 
 class RequestHandler {
