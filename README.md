@@ -1,7 +1,14 @@
 # Green Tunnel
-
+<p align="center">
+    <img src="assets/logo.png" alt="green tunnel logo" width="400">
+</p>
+<p align="center">
+    <img src="https://img.shields.io/github/license/SadeghHayeri/GreenTunnel.svg?colorB=red&style=for-the-badge"> <img src="https://img.shields.io/github/repo-size/SadeghHayeri/GreenTunnel.svg?colorB=blue&style=for-the-badge">
+</p>
 GreenTunnel is an local proxy server that tries to bypass DPI (Deep Packet Inspection) systems found in many ISPs (Internet Service Providers) which block access to certain websites.
-
+<p align="center">
+    <img src="assets/demo.gif" alt="green tunnel demo" width="600">
+</p>
 ### How to use
 ##### Graphical user interface (GUI)
 You can simply choose the suitable installation for your OS in the [releases](http://google.com "releases") section.
