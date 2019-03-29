@@ -4,6 +4,13 @@ const debug = /--debug/.test(process.argv[2]);
 const proxy = require('green-tunnel');
 const path = require('path');
 
+// if (require('electron-squirrel-startup')) return;
+const setupEvents = require('./installers/windows/setupEvents');
+
+if (setupEvents.handleSquirrelEvent()) {
+    return;
+}
+
 let win, tray;
 let isOn = true;
 

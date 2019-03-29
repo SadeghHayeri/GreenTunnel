@@ -1,0 +1,12 @@
+{
+  "productName": "Green Tunnel",
+  "dest": "release-builds/",
+  "description": "bypasses DPI (Deep Packet Inspection) systems found in many ISPs (Internet Service Providers)",
+  "icon": "icons/png/1024x1024.png",
+  "categories": [
+    "Utility"
+  ],
+  "lintianOverrides": [
+    "changelog-file-missing-in-native-package"
+  ]
+}

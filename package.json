@@ -27,6 +27,7 @@
     "debug": "^4.1.1",
     "dns-over-http": "^0.1.2",
     "dns-over-tls": "0.0.6",
+    "electron-squirrel-startup": "^1.0.0",
     "fs-extra": "^7.0.1",
     "get-port": "^4.2.0",
     "node-forge": "^0.8.1",
