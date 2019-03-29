@@ -14,7 +14,7 @@ GreenTunnel bypasses DPI (Deep Packet Inspection) systems found in many ISPs (In
 
 ## How to use
 ### Graphical user interface (GUI)
-You can simply choose the suitable installation for your OS in the [releases](http://google.com "releases") section.
+You can simply choose the suitable installation for your OS in the [releases](https://github.com/SadeghHayeri/GreenTunnel/releases "releases") section.
 
 ### Command-line interface (CLI)
 You can install GreenTunnel using [npm](https://www.npmjs.org/ "npm"):
@@ -39,7 +39,7 @@ Options:
 Examples:
   gt #run with default options
   gt --ip 127.0.0.1 --port 8000
-  gt --dnsType DNS_OVER_TLS
+  gt --dnsServer https://doh.securedns.eu/dns-query
 
 ISSUES:  https://github.com/SadeghHayeri/GreenTunnel/issues
 ```
