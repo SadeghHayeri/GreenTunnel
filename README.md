@@ -88,6 +88,7 @@ However, please make sure you follow a few rules listed below to ensure that you
 - [X] add CLI arguments
 - [ ] catch all exceptions
 - [ ] add preferences menu
+- [ ] fix close button
 
 ## License
 Licensed under the MIT license. See [LICENSE](https://github.com/SadeghHayeri/GreenTunnel/blob/master/LICENSE "LICENSE").
