@@ -28,7 +28,8 @@ var argv = require('yargs')
     .example('$0')
     .example('$0 --ip 127.0.0.1 --port 8000')
     .example('$0 --dnsServer https://doh.securedns.eu/dns-query')
-    .epilog('ISSUES:  https://github.com/SadeghHayeri/GreenTunnel/issues')
+    .epilog('ISSUES:  https://github.com/SadeghHayeri/GreenTunnel/issues\n' +
+        'DONATE:  https://github.com/SadeghHayeri/GreenTunnel#donation')
 
     .argv;
 

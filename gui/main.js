@@ -35,6 +35,7 @@ const menuItems = [
     {
         label: 'Donate',
         type: 'normal',
+        click: () => shell.openExternal('https://github.com/SadeghHayeri/GreenTunnel#donation'),
     },
     {
         role: 'quit',
