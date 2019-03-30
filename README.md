@@ -90,6 +90,13 @@ However, please make sure you follow a few rules listed below to ensure that you
 - [ ] add preferences menu
 - [ ] fix close button
 
+## Donation
+> Love GreenTunnel? Please consider donating to sustain my activities.
+> **Bitcoin:** 3C5sj5BJ3n5gYJR27uxowdsgGCq2vjdhn5
+
+[![](https://img.shields.io/badge/Buy%20me%20a%20coffee-IRR%20|%20PayPing-Red.svg?style=for-the-badge&logo=ko-fi)](https://payping.ir/d/TXTS)
+[![](https://img.shields.io/badge/Buy%20me%20a%20coffee-USD%20|%20PayPal-Red.svg?style=for-the-badge&logo=ko-fi)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=HJ5TBXVYTHS7N&currency_code=USD&source=url)
+
 ## License
 Licensed under the MIT license. See [LICENSE](https://github.com/SadeghHayeri/GreenTunnel/blob/master/LICENSE "LICENSE").
 
