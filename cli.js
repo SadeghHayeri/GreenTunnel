@@ -33,8 +33,6 @@ var argv = require('yargs')
 
     .argv;
 
-updateNotifier({pkg}).notify();
-
 const MAIN_COLOR = '84C66F';
 
 function printBanner() {
@@ -68,6 +66,7 @@ async function main() {
     clear();
 
     printBanner();
+    updateNotifier({pkg}).notify();
     printAlert();
     showSpinner();
 
