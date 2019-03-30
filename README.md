@@ -13,7 +13,7 @@ GreenTunnel bypasses DPI (Deep Packet Inspection) systems found in many ISPs (In
 </p>
 
 ## How to use
-### Graphical user interface (GUI)
+### Graphical user interface (GUI) - *beta version* -
 You can simply choose the suitable installation for your OS in the [releases](https://github.com/SadeghHayeri/GreenTunnel/releases "releases") section.
 
 ### Command-line interface (CLI)
