@@ -1,7 +1,7 @@
-import net from 'net';
 import {URL} from 'url';
-import HTTPRequest from '../http/request';
 import {isStartOfHTTPRequest} from '../http/utils';
+import {createConnection} from '../utils/socket';
+import HTTPRequest from '../http/request';
 import getLogger from '../logger';
 
 const {debug} = getLogger('http-handler');
@@ -12,14 +12,12 @@ export default async function handleHTTP(clientSocket, firstChunk, proxy) {
 
 	const host = url.hostname;
 	const port = url.port || 80;
-	const ip = await proxy.dns.lookup(host);
 
-	// ServerSocket
+	// -- ServerSocket --
 
-	const serverSocket = net.createConnection({host: ip, port}, () => {
-		serverSocket.write(interceptRequest(firstChunk));
-		clientSocket.resume();
-	});
+	const serverSocket = await createConnection({host, port}, proxy.dns);
+
+	serverSocket.write(interceptRequest(firstChunk));
 
 	serverSocket.on('data', data => {
 		clientSocket.write(data);
@@ -34,7 +32,7 @@ export default async function handleHTTP(clientSocket, firstChunk, proxy) {
 		clientSocket.end();
 	});
 
-	// ClientSocket
+	// -- clientSocket --
 
 	clientSocket.on('data', data => {
 		serverSocket.write(interceptRequest(data));
@@ -43,6 +41,8 @@ export default async function handleHTTP(clientSocket, firstChunk, proxy) {
 	clientSocket.on('end', () => {
 		serverSocket.end();
 	});
+
+	clientSocket.resume();
 }
 
 function interceptRequest(data) {

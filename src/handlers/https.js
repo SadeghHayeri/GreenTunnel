@@ -1,7 +1,7 @@
 import {URL} from 'url';
-import net from 'net';
-import HTTPResponse from '../http/response';
 import {bufferToChunks} from '../utils/buffer';
+import {createConnection} from '../utils/socket';
+import HTTPResponse from '../http/response';
 import getLogger from '../logger';
 
 const {debug} = getLogger('https-handler');
@@ -12,30 +12,10 @@ export default async function handleHTTPS(clientSocket, firstChunk, proxy) {
 
 	const host = url.hostname;
 	const port = url.port || 443;
-	const ip = await proxy.dns.lookup(host);
 
-	const serverSocket = net.createConnection({host: ip, port}, () => {
-		clientSocket.once('data', clientHello => {
-			for (const chunk of bufferToChunks(clientHello, proxy.config.proxy.clientHelloMTU)) {
-				sendDataByCatch(serverSocket, chunk, clientSocket);
-			}
+	// -- ServerSocket --
 
-			clientSocket.on('data', data => {
-				sendDataByCatch(serverSocket, data, clientSocket);
-			});
-		});
-
-		clientSocket.on('end', () => {
-			serverSocket.end();
-		});
-
-		clientSocket.on('error', e => {
-			debug('clientSocket error: ' + e);
-		});
-
-		sendDataByCatch(clientSocket, getConnectionEstablishedPacket().toString(), serverSocket);
-		clientSocket.resume();
-	});
+	const serverSocket = await createConnection({host, port}, proxy.dns);
 
 	serverSocket.on('data', data => {
 		sendDataByCatch(clientSocket, data, serverSocket);
@@ -48,6 +28,30 @@ export default async function handleHTTPS(clientSocket, firstChunk, proxy) {
 	serverSocket.on('error', e => {
 		debug('serverSocket error: ' + e);
 	});
+
+	// -- clientSocket --
+
+	clientSocket.once('data', clientHello => {
+		const chunks = bufferToChunks(clientHello, proxy.config.proxy.clientHelloMTU);
+		for (const chunk of chunks) {
+			sendDataByCatch(serverSocket, chunk, clientSocket);
+		}
+
+		clientSocket.on('data', data => {
+			sendDataByCatch(serverSocket, data, clientSocket);
+		});
+	});
+
+	clientSocket.on('end', () => {
+		serverSocket.end();
+	});
+
+	clientSocket.on('error', e => {
+		debug('clientSocket error: ' + e);
+	});
+
+	sendDataByCatch(clientSocket, getConnectionEstablishedPacket().toString(), serverSocket);
+	clientSocket.resume();
 }
 
 function getConnectionEstablishedPacket() {
