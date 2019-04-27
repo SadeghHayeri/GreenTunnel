@@ -1,6 +1,6 @@
 import {URL} from 'url';
 import {bufferToChunks} from '../utils/buffer';
-import {createConnection} from '../utils/socket';
+import {createConnection, closeSocket, tryWrite} from '../utils/socket';
 import HTTPResponse from '../http/response';
 import getLogger from '../logger';
 
@@ -17,16 +17,21 @@ export default async function handleHTTPS(clientSocket, firstChunk, proxy) {
 
 	const serverSocket = await createConnection({host, port}, proxy.dns);
 
+	const close = () => {
+		closeSocket(clientSocket);
+		closeSocket(serverSocket);
+	};
+
 	serverSocket.on('data', data => {
-		sendDataByCatch(clientSocket, data, serverSocket);
+		tryWrite(clientSocket, data, close);
 	});
 
 	serverSocket.on('end', () => {
-		clientSocket.end();
+		close();
 	});
 
-	serverSocket.on('error', e => {
-		debug('serverSocket error: ' + e);
+	serverSocket.on('error', error => {
+		close(error);
 	});
 
 	// -- clientSocket --
@@ -34,23 +39,24 @@ export default async function handleHTTPS(clientSocket, firstChunk, proxy) {
 	clientSocket.once('data', clientHello => {
 		const chunks = bufferToChunks(clientHello, proxy.config.proxy.clientHelloMTU);
 		for (const chunk of chunks) {
-			sendDataByCatch(serverSocket, chunk, clientSocket);
+			tryWrite(serverSocket, chunk, close);
 		}
 
 		clientSocket.on('data', data => {
-			sendDataByCatch(serverSocket, data, clientSocket);
+			tryWrite(serverSocket, data, close);
 		});
 	});
 
 	clientSocket.on('end', () => {
-		serverSocket.end();
+		close();
 	});
 
-	clientSocket.on('error', e => {
-		debug('clientSocket error: ' + e);
+	clientSocket.on('error', error => {
+		close(error);
 	});
 
-	sendDataByCatch(clientSocket, getConnectionEstablishedPacket().toString(), serverSocket);
+	tryWrite(clientSocket, getConnectionEstablishedPacket(), close);
+
 	clientSocket.resume();
 }
 
@@ -58,16 +64,6 @@ function getConnectionEstablishedPacket() {
 	const packet = new HTTPResponse();
 	packet.statusCode = 200;
 	packet.statusMessgae = 'Connection Established';
-	return packet;
+	return packet.toString();
 }
 
-function sendDataByCatch(socket, data, pairSocket = null) {
-	try {
-		socket.write(data);
-	} catch (e) {
-		debug('send error:' + e);
-		if (pairSocket) {
-			pairSocket.end();
-		}
-	}
-}

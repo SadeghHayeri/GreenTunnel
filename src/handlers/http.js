@@ -1,10 +1,8 @@
 import {URL} from 'url';
 import {isStartOfHTTPRequest} from '../http/utils';
-import {createConnection} from '../utils/socket';
+import {createConnection, closeSocket, tryWrite} from '../utils/socket';
 import HTTPRequest from '../http/request';
 import getLogger from '../logger';
-
-const {debug} = getLogger('http-handler');
 
 export default async function handleHTTP(clientSocket, firstChunk, proxy) {
 	const firstLine = firstChunk.toString().split('\r\n')[0];
@@ -17,29 +15,33 @@ export default async function handleHTTP(clientSocket, firstChunk, proxy) {
 
 	const serverSocket = await createConnection({host, port}, proxy.dns);
 
-	serverSocket.write(interceptRequest(firstChunk));
+	const close = () => {
+		closeSocket(clientSocket);
+		closeSocket(serverSocket);
+	};
+
+	tryWrite(serverSocket, interceptRequest(firstChunk), close);
 
 	serverSocket.on('data', data => {
-		clientSocket.write(data);
+		tryWrite(clientSocket, data, close);
 	});
 
-	serverSocket.on('error', e => {
-		clientSocket.end();
-		debug('serverSocket error: ' + e);
+	serverSocket.on('error', error => {
+		close(error);
 	});
 
 	serverSocket.on('end', () => {
-		clientSocket.end();
+		close();
 	});
 
 	// -- clientSocket --
 
 	clientSocket.on('data', data => {
-		serverSocket.write(interceptRequest(data));
+		tryWrite(serverSocket, interceptRequest(data), close);
 	});
 
 	clientSocket.on('end', () => {
-		serverSocket.end();
+		close();
 	});
 
 	clientSocket.resume();
