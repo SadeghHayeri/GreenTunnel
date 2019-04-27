@@ -32,6 +32,7 @@ export default class BaseDNS {
 			throw new Error('[DNS] Cannot resolve hostname ' + hostname);
 		}
 
+		debug('DNS Lookup:', hostname, ip);
 		this.cache.set(hostname, ip);
 		return ip;
 	}
