@@ -2,9 +2,6 @@ import {URL} from 'url';
 import {bufferToChunks} from '../utils/buffer';
 import {createConnection, closeSocket, tryWrite} from '../utils/socket';
 import HTTPResponse from '../http/response';
-import getLogger from '../logger';
-
-const {debug} = getLogger('https-handler');
 
 export default async function handleHTTPS(clientSocket, firstChunk, proxy) {
 	const firstLine = firstChunk.toString().split('\r\n')[0];
