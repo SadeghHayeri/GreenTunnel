@@ -20,6 +20,8 @@ export default class BaseDNS {
 			return ip;
 		}
 
+		const t = new Date();
+
 		ip = hostname;
 		for (let depth = 0; !_isIP(ip) && depth < 5; depth++) {
 			ip = await this._lookup(ip).catch(error => {
@@ -32,7 +34,7 @@ export default class BaseDNS {
 			throw new Error('[DNS] Cannot resolve hostname ' + hostname);
 		}
 
-		debug('DNS Lookup:', hostname, ip);
+		debug(`DNS Lookup ${hostname}: ${ip} (${new Date() - t} ms)`);
 		this.cache.set(hostname, ip);
 		return ip;
 	}
