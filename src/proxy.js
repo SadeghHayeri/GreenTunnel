@@ -26,8 +26,8 @@ export default class Proxy {
 
 	async start() {
 		this.server = net.createServer({pauseOnConnect: true}, clientSocket => {
-			handleRequest(clientSocket, this).catch(e => {
-				error(e);
+			handleRequest(clientSocket, this).catch(err => {
+				error(String(err));
 			});
 		});
 
