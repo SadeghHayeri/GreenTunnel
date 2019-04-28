@@ -7,7 +7,7 @@ export default function getConfig(_config = {}) {
 			..._config.proxy
 		},
 		dns: {
-			type: 'https', // 'DNS_OVER_TLS' or 'DNS_OVER_HTTPS'
+			type: 'https', // 'tls' or 'https'
 			server: 'https://cloudflare-dns.com/dns-query',
 			..._config.dns
 		}
