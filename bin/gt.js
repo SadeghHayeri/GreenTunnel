@@ -6,11 +6,11 @@ const ora = require('ora');
 const yargs = require('yargs');
 const env = require('std-env');
 const consola = require('consola');
-const debug = require('debug')('green-tunnel-cli');
-const esm = require('esm')(module);
 const pkg = require('../package.json');
-const Proxy = esm('../src/proxy').default;
-const defaultConfig = esm('../src/config').default();
+const {Proxy, getConfig, getLogger} = require('../src/index.cjs');
+
+const defaultConfig = getConfig();
+const {debug} = getLogger('cli');
 
 const {argv} = yargs
 	.usage('Usage: green-tunnel [options]')

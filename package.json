@@ -21,10 +21,11 @@
     "bin",
     "src"
   ],
-  "main": "proxy.js",
+  "main": "src/index.cjs.js",
+  "module": "src/index.js",
   "bin": {
-    "green-tunnel": "bin/cli.js",
-    "gt": "bin/cli.js"
+    "green-tunnel": "bin/gt.js",
+    "gt": "bin/gt.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -33,15 +34,10 @@
     "chalk": "^2.4.2",
     "clear": "^0.1.0",
     "consola": "^2.6.0",
-    "debug": "^4.1.1",
     "dns-over-http": "^0.1.2",
     "dns-over-tls": "0.0.6",
-    "electron-squirrel-startup": "^1.0.0",
     "esm": "^3.2.22",
-    "fs-extra": "^7.0.1",
-    "get-port": "^4.2.0",
     "lru-cache": "^5.1.1",
-    "node-forge": "^0.8.1",
     "ora": "^3.2.0",
     "std-env": "^2.2.1",
     "update-notifier": "^2.5.0",
