@@ -24,7 +24,7 @@ export default class Proxy {
 			new DNSOverTLS(this.config.dns.server);
 	}
 
-	async start() {
+	async start(_setProxy) {
 		this.server = net.createServer({pauseOnConnect: true}, clientSocket => {
 			handleRequest(clientSocket, this).catch(err => {
 				error(String(err));
@@ -39,12 +39,17 @@ export default class Proxy {
 			debug('server closed');
 		});
 
-		this.server.listen(this.config.proxy.port, this.config.proxy.ip, async () => {
-			const {address, port} = this.server.address();
-			success('Proxy listening on', address + ':' + port);
+		await new Promise(resolve => {
+			this.server.listen(this.config.proxy.port, this.config.proxy.ip, () => resolve());
+		});
+
+		const {address, port} = this.server.address();
+		success('Proxy listening on', address + ':' + port);
+
+		if (_setProxy) {
 			await setProxy(address, port);
 			this.proxySet = true;
-		});
+		}
 	}
 
 	async stop() {
@@ -54,6 +59,7 @@ export default class Proxy {
 
 		if (this.proxySet) {
 			await unsetProxy();
+			this.proxySet = false;
 		}
 	}
 }
