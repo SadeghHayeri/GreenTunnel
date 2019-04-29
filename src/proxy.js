@@ -44,8 +44,6 @@ export default class Proxy {
 		});
 
 		const {address, port} = this.server.address();
-		success('Proxy listening on', address + ':' + port);
-
 		if (_setProxy) {
 			await setProxy(address, port);
 			this.proxySet = true;
