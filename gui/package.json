@@ -23,6 +23,6 @@
   "dependencies": {
     "electron-window-state": "^5.0.3",
     "green-tunnel": "^1.2.9",
-    "jquery": "^3.3.1"
+    "jquery": ">=3.4.0"
   }
 }
