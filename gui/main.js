@@ -12,7 +12,7 @@ if (setupEvents.handleSquirrelEvent()) {
 }
 
 let win, tray, proxy;
-let isOn = true;
+let isOn = false;
 
 const menuItems = [
     {
@@ -70,8 +70,8 @@ async function turnOn() {
         await turnOff()
     }
 
-    proxy = new Proxy()
-    await proxy.start()
+    proxy = new Proxy();
+    await proxy.start();
 
     win.webContents.send('changeStatus', isOn);
 
@@ -84,7 +84,7 @@ async function turnOn() {
     tray.setImage(trayIcon);
 }
 
-function createWindow () {
+function createWindow() {
     const iconPath = path.join(__dirname, 'icons/icon.icns');
     const appIcon = nativeImage.createFromPath(iconPath);
 
@@ -118,6 +118,7 @@ function createWindow () {
     win.on('ready-to-show', function() {
         win.show();
         win.focus();
+        turnOn();
     });
 
     win.on('closed', () => {
@@ -127,8 +128,6 @@ function createWindow () {
     if(debug)
         win.webContents.openDevTools()
 }
-
-app.on('ready', createWindow);
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
@@ -143,6 +142,7 @@ app.on('activate', () => {
 });
 
 app.on('ready', () => {
+    createWindow();
     const iconPath = path.join(__dirname, 'images/iconTemplate.png');
     const trayIcon = nativeImage.createFromPath(iconPath);
     tray = new Tray(trayIcon);
@@ -169,5 +169,3 @@ ipcMain.on('on-off-button', (event, arg) => {
     else
         turnOn();
 });
-
-turnOn();
