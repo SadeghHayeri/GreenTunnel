@@ -2,43 +2,51 @@
   "name": "green-tunnel",
   "version": "1.2.9",
   "description": "",
-  "main": "proxy.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/SadeghHayeri/GreenTunnel.git"
-  },
   "keywords": [
     "HTTPS",
     "SNI",
     "VPN"
   ],
-  "author": "Sadegh Hayeri",
-  "license": "MIT",
+  "homepage": "https://github.com/SadeghHayeri/GreenTunnel#readme",
   "bugs": {
     "url": "https://github.com/SadeghHayeri/GreenTunnel/issues"
   },
-  "homepage": "https://github.com/SadeghHayeri/GreenTunnel#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SadeghHayeri/GreenTunnel.git"
+  },
+  "license": "MIT",
+  "author": "Sadegh Hayeri",
+  "files": [
+    "bin",
+    "src"
+  ],
+  "main": "src/index.cjs.js",
+  "module": "src/index.js",
+  "bin": {
+    "green-tunnel": "bin/gt.js",
+    "gt": "bin/gt.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
   "dependencies": {
     "chalk": "^2.4.2",
     "clear": "^0.1.0",
-    "debug": "^4.1.1",
+    "consola": "^2.6.0",
     "dns-over-http": "^0.1.2",
     "dns-over-tls": "0.0.6",
-    "electron-squirrel-startup": "^1.0.0",
-    "fs-extra": "^7.0.1",
-    "get-port": "^4.2.0",
-    "node-forge": "^0.8.1",
+    "esm": "^3.2.22",
+    "lru-cache": "^5.1.1",
     "ora": "^3.2.0",
+    "std-env": "^2.2.1",
     "update-notifier": "^2.5.0",
     "validator": "^10.11.0",
     "winreg": "^1.2.4",
     "yargs": "^13.2.2"
   },
-  "bin": {
-    "green-tunnel": "./cli.js",
-    "gt": "./cli.js"
+  "devDependencies": {
+    "eslint": "^5.16.0",
+    "eslint-config-xo": "^0.26.0"
   }
 }

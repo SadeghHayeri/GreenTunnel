@@ -1,0 +1,8 @@
+{
+  "extends": "xo/esnext",
+  "rules": {
+    "no-await-in-loop": 0,
+    "guard-for-in": 0,
+    "require-atomic-updates": 0
+  }
+}

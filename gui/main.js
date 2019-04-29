@@ -1,7 +1,7 @@
 const { app, BrowserWindow, Menu, Tray, shell, ipcMain, nativeImage } = require('electron');
 const windowStateKeeper = require('electron-window-state');
 const debug = /--debug/.test(process.argv[2]);
-const proxy = require('green-tunnel');
+const { Proxy } = require('green-tunnel');
 const path = require('path');
 
 // if (require('electron-squirrel-startup')) return;
@@ -11,7 +11,7 @@ if (setupEvents.handleSquirrelEvent()) {
     return;
 }
 
-let win, tray;
+let win, tray, proxy;
 let isOn = true;
 
 const menuItems = [
@@ -47,7 +47,11 @@ const menuItems = [
 async function turnOff() {
     isOn = false;
 
-    await proxy.stopProxyServer();
+    if (proxy) {
+        await proxy.stop();
+        proxy = null
+    }
+
     win.webContents.send('changeStatus', isOn);
 
     menuItems[0].label = 'Enable';
@@ -62,7 +66,13 @@ async function turnOff() {
 async function turnOn() {
     isOn = true;
 
-    await proxy.startProxyServer();
+    if (proxy) {
+        await turnOff()
+    }
+
+    proxy = new Proxy()
+    await proxy.start()
+
     win.webContents.send('changeStatus', isOn);
 
     menuItems[0].label = 'Disable';
