@@ -3,6 +3,7 @@ const windowStateKeeper = require('electron-window-state');
 const debug = /--debug/.test(process.argv[2]);
 const { Proxy } = require('green-tunnel');
 const path = require('path');
+const os = require('os');
 
 // if (require('electron-squirrel-startup')) return;
 const setupEvents = require('./installers/windows/setupEvents');
@@ -160,7 +161,10 @@ app.on('before-quit', async (e) => {
 });
 
 ipcMain.on('close-button', (event, arg) => {
-    app.hide();
+    if(os.platform() === 'darwin')
+        app.hide();
+    else
+        app.quit();
 });
 
 ipcMain.on('on-off-button', (event, arg) => {
