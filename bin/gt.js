@@ -31,19 +31,19 @@ const {argv} = yargs
 	.example('$0 --ip 127.0.0.1 --port 8000')
 	.example('$0 --dnsServer https://doh.securedns.eu/dns-query')
 	.epilog('ISSUES:  https://github.com/SadeghHayeri/GreenTunnel/issues\n' +
-        'DONATE:  https://github.com/SadeghHayeri/GreenTunnel#donation');
+		'DONATE:  https://github.com/SadeghHayeri/GreenTunnel#donation');
 
 const MAIN_COLOR = '84C66F';
 
 function printBanner() {
-	console.log('\n\n' +
-        '                          [0m[48;5;113m    [0m      \n' +
-        '                       [0m[48;5;113m          [0m   \n' +
-        '                      [0m[48;5;113m            [0m  \n' +
-        '                      [0m[48;5;113m     [0m  [0m[48;5;113m     [0m  \n' +
-        '                      [0m[48;5;113m   [0m      [0m[48;5;113m   [0m  \n' +
-        '                      [0m[48;5;113m [0m          [0m[48;5;113m [0m  \n' +
-         '[0m');
+	console.log();
+	console.log('                          ' + chalk.bgHex(MAIN_COLOR)('    '));
+	console.log('                       ' + chalk.bgHex(MAIN_COLOR)('          '));
+	console.log('                      ' + chalk.bgHex(MAIN_COLOR)('            '));
+	console.log('                      ' + chalk.bgHex(MAIN_COLOR)('     ') + '  ' + chalk.bgHex(MAIN_COLOR)('     '));
+	console.log('                      ' + chalk.bgHex(MAIN_COLOR)('   ') + '      ' + chalk.bgHex(MAIN_COLOR)('   '));
+	console.log('                      ' + chalk.bgHex(MAIN_COLOR)(' ') + '          ' + chalk.bgHex(MAIN_COLOR)(' '));
+	console.log();
 	console.log('                      ' + chalk.hex(MAIN_COLOR).bold('Green') + ' ' + chalk.bold.white('Tunnel'));
 }
 
