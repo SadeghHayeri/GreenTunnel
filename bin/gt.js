@@ -47,10 +47,11 @@ function printBanner() {
 	console.log('                      ' + chalk.hex(MAIN_COLOR).bold('Green') + ' ' + chalk.bold.white('Tunnel'));
 }
 
-function printAlert() {
+function printAlert(proxy) {
 	console.log('\n');
 	console.log('    ' + chalk.bgHex(MAIN_COLOR).black(' Note: GreenTunnel does not hide your IP address '));
 	console.log('      ' + chalk.hex(MAIN_COLOR)(' https://github.com/SadeghHayeri/GreenTunnel '));
+	console.log('\n      ' + chalk.white(` GreenTunnel is running at ${proxy.server.address().address}:${proxy.server.address().port}. `));
 }
 
 function showSpinner() {
@@ -64,14 +65,6 @@ function showSpinner() {
 
 async function main() {
 	const minimal = env.minimal || env.debug;
-
-	if (!minimal) {
-		clear();
-		printBanner();
-		updateNotifier({pkg}).notify();
-		printAlert();
-		showSpinner();
-	}
 
 	const proxy = new Proxy({
 		proxy: {
@@ -104,7 +97,15 @@ async function main() {
 	process.on('unhandledRejection', errorTrap);
 	process.on('uncaughtException', errorTrap);
 
-	await proxy.start();
+	await proxy.start(true);
+
+	if (!minimal) {
+		clear();
+		printBanner();
+		updateNotifier({pkg}).notify();
+		printAlert(proxy);
+		showSpinner();
+	}
 }
 
 main().catch(console.error);
