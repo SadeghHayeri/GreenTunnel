@@ -31,26 +31,27 @@ const {argv} = yargs
 	.example('$0 --ip 127.0.0.1 --port 8000')
 	.example('$0 --dnsServer https://doh.securedns.eu/dns-query')
 	.epilog('ISSUES:  https://github.com/SadeghHayeri/GreenTunnel/issues\n' +
-        'DONATE:  https://github.com/SadeghHayeri/GreenTunnel#donation');
+		'DONATE:  https://github.com/SadeghHayeri/GreenTunnel#donation');
 
 const MAIN_COLOR = '84C66F';
 
 function printBanner() {
-	console.log('\n\n' +
-        '                          [0m[48;5;113m    [0m      \n' +
-        '                       [0m[48;5;113m          [0m   \n' +
-        '                      [0m[48;5;113m            [0m  \n' +
-        '                      [0m[48;5;113m     [0m  [0m[48;5;113m     [0m  \n' +
-        '                      [0m[48;5;113m   [0m      [0m[48;5;113m   [0m  \n' +
-        '                      [0m[48;5;113m [0m          [0m[48;5;113m [0m  \n' +
-         '[0m');
+	console.log();
+	console.log('                          ' + chalk.bgHex(MAIN_COLOR)('    '));
+	console.log('                       ' + chalk.bgHex(MAIN_COLOR)('          '));
+	console.log('                      ' + chalk.bgHex(MAIN_COLOR)('            '));
+	console.log('                      ' + chalk.bgHex(MAIN_COLOR)('     ') + '  ' + chalk.bgHex(MAIN_COLOR)('     '));
+	console.log('                      ' + chalk.bgHex(MAIN_COLOR)('   ') + '      ' + chalk.bgHex(MAIN_COLOR)('   '));
+	console.log('                      ' + chalk.bgHex(MAIN_COLOR)(' ') + '          ' + chalk.bgHex(MAIN_COLOR)(' '));
+	console.log();
 	console.log('                      ' + chalk.hex(MAIN_COLOR).bold('Green') + ' ' + chalk.bold.white('Tunnel'));
 }
 
-function printAlert() {
+function printAlert(proxy) {
 	console.log('\n');
 	console.log('    ' + chalk.bgHex(MAIN_COLOR).black(' Note: GreenTunnel does not hide your IP address '));
 	console.log('      ' + chalk.hex(MAIN_COLOR)(' https://github.com/SadeghHayeri/GreenTunnel '));
+	console.log('\n      ' + chalk.white(` GreenTunnel is running at ${proxy.server.address().address}:${proxy.server.address().port}. `));
 }
 
 function showSpinner() {
@@ -64,14 +65,6 @@ function showSpinner() {
 
 async function main() {
 	const minimal = env.minimal || env.debug;
-
-	if (!minimal) {
-		clear();
-		printBanner();
-		updateNotifier({pkg}).notify();
-		printAlert();
-		showSpinner();
-	}
 
 	const proxy = new Proxy({
 		proxy: {
@@ -104,7 +97,15 @@ async function main() {
 	process.on('unhandledRejection', errorTrap);
 	process.on('uncaughtException', errorTrap);
 
-	await proxy.start();
+	await proxy.start(true);
+
+	if (!minimal) {
+		clear();
+		printBanner();
+		updateNotifier({pkg}).notify();
+		printAlert(proxy);
+		showSpinner();
+	}
 }
 
 main().catch(console.error);

@@ -13,14 +13,14 @@ const {debug} = getLogger('system-proxy');
 
 // TODO: Support for lan connections too
 async function darwinSetProxy(ip, port) {
-	const wifiAdaptor = (await exec('networksetup -listnetworkserviceorder | grep \'Wi-Fi\' -B 1 | cut -d\')\' -f2')).stdout.trim();
+	const wifiAdaptor = (await exec(`sh -c "networksetup -listnetworkserviceorder | grep \`route -n get 0.0.0.0 | grep 'interface' | cut -d ':' -f2\` -B 1 | head -n 1 | cut -d ' ' -f2"`)).stdout.trim();
 
 	await exec(`networksetup -setwebproxy '${wifiAdaptor}' ${ip} ${port}`);
 	await exec(`networksetup -setsecurewebproxy '${wifiAdaptor}' ${ip} ${port}`);
 }
 
 async function darwinUnsetProxy() {
-	const wifiAdaptor = (await exec('networksetup -listnetworkserviceorder | grep \'Wi-Fi\' -B 1 | cut -d\')\' -f2')).stdout.trim();
+	const wifiAdaptor = (await exec(`sh -c "networksetup -listnetworkserviceorder | grep \`route -n get 0.0.0.0 | grep 'interface' | cut -d ':' -f2\` -B 1 | head -n 1 | cut -d ' ' -f2"`)).stdout.trim();
 
 	await exec(`networksetup -setwebproxystate '${wifiAdaptor}' off`);
 	await exec(`networksetup -setsecurewebproxystate '${wifiAdaptor}' off`);
