@@ -39,8 +39,8 @@ jobs:
       - name: Fix GUI Naming
         working-directory: ./gui
         run: |
-          sed -i 's/green-tunnel-gui/green-tunnel/g' package.json
-          sed -i 's/green-tunnel-gui/green-tunnel/g' package-lock.json
+          sed -i '' 's/green-tunnel-gui/green-tunnel/g' package.json
+          sed -i '' 's/green-tunnel-gui/green-tunnel/g' package-lock.json
 
       - name: Generate new icons files
         working-directory: ./gui
@@ -76,8 +76,8 @@ jobs:
       - name: Fix GUI Naming
         working-directory: ./gui
         run: |
-          sed -i 's/green-tunnel-gui/green-tunnel/g' package.json
-          sed -i 's/green-tunnel-gui/green-tunnel/g' package-lock.json
+          powershell -Command "(gc package.json) -replace 'green-tunnel-gui', 'green-tunnel' | Out-File -encoding ASCII package.json"
+          powershell -Command "(gc package-lock.json) -replace 'green-tunnel-gui', 'green-tunnel' | Out-File -encoding ASCII package-lock.json"
 
       - name: Generate new icons files
         working-directory: ./gui
