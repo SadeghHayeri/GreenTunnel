@@ -5,7 +5,7 @@ on:
     tags:
       - v*
 
-jobs:        
+jobs:
   publish-npm:
     runs-on: ubuntu-latest
     steps:
@@ -18,7 +18,7 @@ jobs:
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
-  
+
   build-for-mac:
     runs-on: macOS-latest
     needs: [publish-npm]
@@ -27,19 +27,29 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 12
-      
+
       - name: Install Dependencies
         working-directory: ./gui
         run: npm ci
-          
+
+      - name: Update GreenTunnel Core
+        working-directory: ./gui
+        run: npm install green-tunnel --save
+
+      - name: Fix GUI Naming
+        working-directory: ./gui
+        run: |
+          sed -i 's/green-tunnel-gui/green-tunnel/g' package.json
+          sed -i 's/green-tunnel-gui/green-tunnel/g' package-lock.json
+
       - name: Generate new icons files
         working-directory: ./gui
         run: npm run generate-icons
-      
+
       - name: Build for MacOS
         working-directory: ./gui
         run: npm run package-mac
-      
+
       - name: Zip
         working-directory: ./gui/release-builds/green-tunnel-darwin-x64
         run: zip -r green-tunnel-macos.zip green-tunnel.app
@@ -49,7 +59,7 @@ jobs:
         with:
           name: builds
           path: ./gui/release-builds/green-tunnel-darwin-x64/green-tunnel-macos.zip
-        
+
   build-for-windows:
     runs-on: windows-latest
     needs: [publish-npm]
@@ -58,29 +68,35 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 12
-          
-      - name: Install Dependencies
+
+      - name: Update GreenTunnel Core
         working-directory: ./gui
-        run: npm ci
-          
+        run: npm install green-tunnel --save
+
+      - name: Fix GUI Naming
+        working-directory: ./gui
+        run: |
+          sed -i 's/green-tunnel-gui/green-tunnel/g' package.json
+          sed -i 's/green-tunnel-gui/green-tunnel/g' package-lock.json
+
       - name: Generate new icons files
         working-directory: ./gui
         run: npm run generate-icons
-      
+
       - name: Build for Windows
         working-directory: ./gui
         run: npm run package-win
-      
+
       - name: Add Windows Installer
         working-directory: ./gui
         run: npm run windows-installer
-        
+
       - name: Save to Artifact
         uses: actions/upload-artifact@v1
         with:
           name: builds
           path: ./gui/release-builds/green-tunnel/windows-installer/green-tunnel-installer.exe
-  
+
   build-for-linux:
     runs-on: ubuntu-latest
     needs: [publish-npm]
@@ -89,29 +105,39 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 12
-          
+
       - name: Install Dependencies
         working-directory: ./gui
         run: |
           npm ci
           npm install -g electron-installer-debian
-          
+
+      - name: Update GreenTunnel Core
+        working-directory: ./gui
+        run: npm install green-tunnel --save
+
+      - name: Fix GUI Naming
+        working-directory: ./gui
+        run: |
+          sed -i 's/green-tunnel-gui/green-tunnel/g' package.json
+          sed -i 's/green-tunnel-gui/green-tunnel/g' package-lock.json
+
       - name: Generate new icons files
         working-directory: ./gui
         run: npm run generate-icons
-      
+
       - name: Build for Linux
         working-directory: ./gui
         run: npm run package-linux
-      
+
       - name: Add Linux Installer
         working-directory: ./gui
         run: npm run linux-installer
-    
+
       - name: Zip
         working-directory: ./gui/release-builds
         run: zip -r green-tunnel-debian.zip *.deb
-      
+
       - name: Save to Artifact
         uses: actions/upload-artifact@v1
         with:
@@ -140,7 +166,7 @@ jobs:
           release_name: Release ${{ github.ref }}
           draft: false
           prerelease: false
-      
+
       - name: Upload MacOS Release
         uses: actions/upload-release-asset@v1.0.1
         env:
@@ -150,7 +176,7 @@ jobs:
           asset_path: builds/green-tunnel-macos.zip
           asset_name: green-tunnel-macos.zip
           asset_content_type: application/app
-      
+
       - name: Upload Windows Release
         uses: actions/upload-release-asset@v1.0.1
         env:
@@ -160,7 +186,7 @@ jobs:
           asset_path: builds/green-tunnel-windows.zip
           asset_name: green-tunnel-windows.zip
           asset_content_type: application/zip
-      
+
       - name: Upload Linux Release
         uses: actions/upload-release-asset@v1.0.1
         env:
