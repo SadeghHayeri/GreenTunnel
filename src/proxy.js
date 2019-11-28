@@ -11,10 +11,8 @@ const {debug, error, success} = getLogger('proxy');
 export default class Proxy {
 	constructor(_config) {
 		this.config = getConfig(_config);
-
 		this.server = undefined;
 		this.proxySet = false;
-
 		this.initDNS();
 	}
 
@@ -24,7 +22,10 @@ export default class Proxy {
 			new DNSOverTLS(this.config.dns.server);
 	}
 
-	async start(_setProxy) {
+	async start(options = {}) {
+		options.verboseMode = options.verboseMode === undefined ? false : options.verboseMode;
+		options.setProxy = options.setProxy === undefined ? false : options.setProxy;
+
 		this.server = net.createServer({pauseOnConnect: true}, clientSocket => {
 			handleRequest(clientSocket, this).catch(err => {
 				error(String(err));
@@ -44,7 +45,7 @@ export default class Proxy {
 		});
 
 		const {address, port} = this.server.address();
-		if (_setProxy) {
+		if (options.setProxy) {
 			await setProxy(address, port);
 			this.proxySet = true;
 		}

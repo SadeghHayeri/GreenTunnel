@@ -4,7 +4,6 @@ const chalk = require('chalk');
 const clear = require('clear');
 const ora = require('ora');
 const yargs = require('yargs');
-const env = require('std-env');
 const consola = require('consola');
 const pkg = require('../package.json');
 const {Proxy, getConfig, getLogger} = require('../src/index.cjs');
@@ -15,17 +14,45 @@ const {debug} = getLogger('cli');
 const {argv} = yargs
 	.usage('Usage: green-tunnel [options]')
 	.usage('Usage: gt [options]')
+	.alias('help', 'h')
+	.alias('version', 'V')
 
-	.default('ip', defaultConfig.proxy.ip)
-	.describe('ip', 'ip address to bind proxy server')
+	.option('ip', {
+		type: 'string',
+		describe: 'ip address to bind proxy server',
+		default: '127.0.0.1'
+	})
 
-	.default('port', 5000)
-	.describe('port', 'port address to bind proxy server')
+	.option('port', {
+		type: 'number',
+		describe: 'port address to bind proxy server',
+		default: 5000
+	})
 
-	.default('dnsType', defaultConfig.dns.type)
-	.choices('dnsType', ['https', 'tls'])
+	.option('dns-type', {
+		type: 'string',
+		choices: ['https', 'tls'],
+		default: defaultConfig.dns.type
+	})
 
-	.default('dnsServer', defaultConfig.dns.server)
+	.option('dns-server', {
+		type: 'string',
+		default: defaultConfig.dns.server,
+	})
+
+	.option('verbose', {
+		alias: 'v',
+		type: 'boolean',
+		describe: 'make the operation more talkative',
+		default: false
+	})
+
+	.option('silent', {
+		alias: 's',
+		type: 'boolean',
+		describe: 'run in silent mode',
+		default: false
+	})
 
 	.example('$0')
 	.example('$0 --ip 127.0.0.1 --port 8000')
@@ -64,8 +91,6 @@ function showSpinner() {
 }
 
 async function main() {
-	const minimal = env.minimal || env.debug;
-
 	const proxy = new Proxy({
 		proxy: {
 			ip: argv.ip,
@@ -82,7 +107,7 @@ async function main() {
 		await proxy.stop();
 		debug('Successfully Closed!');
 
-		if (!minimal) {
+		if (!argv.silent) {
 			clear();
 		}
 
@@ -97,9 +122,9 @@ async function main() {
 	process.on('unhandledRejection', errorTrap);
 	process.on('uncaughtException', errorTrap);
 
-	await proxy.start(true);
+	await proxy.start({setProxy: true, verboseMode: argv.verbose});
 
-	if (!minimal) {
+	if (!argv.silent) {
 		clear();
 		printBanner();
 		updateNotifier({pkg}).notify();
