@@ -19,7 +19,7 @@ const {argv} = yargs
 	.default('ip', defaultConfig.proxy.ip)
 	.describe('ip', 'ip address to bind proxy server')
 
-	.default('port', 'random')
+	.default('port', 5000)
 	.describe('port', 'port address to bind proxy server')
 
 	.default('dnsType', defaultConfig.dns.type)
