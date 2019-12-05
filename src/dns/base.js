@@ -1,8 +1,9 @@
 import LRU from 'lru-cache';
 import {isIP} from 'validator';
 import getLogger from '../logger';
+import config from '../config';
 
-const {debug} = getLogger('dns');
+const logger = getLogger('dns');
 
 function _isIP(v) {
 	return v && isIP(v);
@@ -10,33 +11,36 @@ function _isIP(v) {
 
 export default class BaseDNS {
 	constructor() {
-		this.cache = new LRU();
+		this.cache = new LRU(config.dns.cacheSize);
 	}
 
 	async lookup(hostname) {
-		let ip = this.cache.get(hostname);
-
-		if (ip) {
-			return ip;
-		}
-
-		const t = new Date();
-
-		ip = hostname;
-		for (let depth = 0; !_isIP(ip) && depth < 5; depth++) {
-			ip = await this._lookup(ip).catch(error => {
-				debug(error);
+		try {
+			let ip = this.cache.get(hostname);
+			if (ip) {
 				return ip;
-			});
-		}
+			}
 
-		if (!_isIP(ip)) {
-			throw new Error('[DNS] Cannot resolve hostname ' + hostname);
-		}
+			const t = new Date();
 
-		debug(`DNS Lookup ${hostname}: ${ip} (${new Date() - t} ms)`);
-		this.cache.set(hostname, ip);
-		return ip;
+			ip = hostname;
+			for (let depth = 0; !_isIP(ip) && depth < 5; depth++) {
+				ip = await this._lookup(ip).catch(error => {
+					logger.error(error);
+					return ip;
+				});
+			}
+
+			if (!_isIP(ip)) {
+				throw new Error(`BAD IP FORMAT (${ip})`);
+			}
+
+			logger.success(`[DNS] ${hostname} -> ${ip} (${new Date() - t} ms)`);
+			this.cache.set(hostname, ip);
+			return ip;
+		} catch (error) {
+			logger.error(`[DNS] cannot resolve hostname ${hostname} (${error})`);
+		}
 	}
 }
 
