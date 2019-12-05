@@ -36,7 +36,7 @@ export default async function handleHTTPS(clientSocket, firstChunk, proxy) {
 	});
 
 	serverSocket.on('error', error => {
-		logger.error(`[HTTPS ERROR] server error ${error}`);
+		logger.debug(`[HTTPS ERROR] server error ${error}`);
 		close(error);
 	});
 
@@ -61,7 +61,7 @@ export default async function handleHTTPS(clientSocket, firstChunk, proxy) {
 	});
 
 	clientSocket.on('error', error => {
-		logger.error(`[HTTPS ERROR] client error ${error}`);
+		logger.debug(`[HTTPS ERROR] client error ${error}`);
 		close(error);
 	});
 

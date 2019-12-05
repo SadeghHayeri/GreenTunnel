@@ -1,15 +1,15 @@
 #!/usr/bin/env node
+
 const updateNotifier = require('update-notifier');
 const chalk = require('chalk');
 const clear = require('clear');
 const ora = require('ora');
 const yargs = require('yargs');
-const consola = require('consola');
 const pkg = require('../package.json');
 const {Proxy, config, getLogger} = require('../src/index.cjs');
 
 const {env} = process;
-const {debug} = getLogger('cli');
+const logger = getLogger('cli');
 
 const {argv} = yargs
 	.usage('Usage: green-tunnel [options]')
@@ -96,9 +96,9 @@ async function main() {
 	});
 
 	const exitTrap = async () => {
-		debug('Caught interrupt signal');
+		logger.debug('Caught interrupt signal');
 		await proxy.stop();
-		debug('Successfully Closed!');
+		logger.debug('Successfully Closed!');
 
 		if (!argv.silent) {
 			clear();
@@ -108,7 +108,7 @@ async function main() {
 	};
 
 	const errorTrap = error => {
-		consola.error(error);
+		logger.error(error);
 	};
 
 	process.on('SIGINT', exitTrap);
@@ -126,4 +126,4 @@ async function main() {
 	}
 }
 
-main().catch(console.error);
+main().catch(logger.error);

@@ -9,7 +9,7 @@ export async function createConnection(opts, dns) {
 	const t = new Date();
 	return new Promise(resolve => {
 		const socket = net.createConnection({...opts, host: ip}, () => {
-			logger.success(`[Socket] connected to ${opts.host} (${ip}) (${new Date() - t} ms)`);
+			logger.debug(`[Socket] connected to ${opts.host} (${ip}) (${new Date() - t} ms)`);
 			resolve(socket);
 		});
 	});

@@ -134,7 +134,7 @@ export async function setProxy(ip, port) {
 		const systemProxy = getSystemProxy();
 		await systemProxy.SetProxy(ip, port);
 	} catch (error) {
-		logger.error(`[SYSTEM PROXY] error on SetProxy (${error})`)
+		logger.debug(`[SYSTEM PROXY] error on SetProxy (${error})`)
 	}
 }
 
@@ -143,6 +143,6 @@ export async function unsetProxy() {
 		const systemProxy = getSystemProxy();
 		await systemProxy.UnsetProxy();
 	} catch (error) {
-		logger.error(`[SYSTEM PROXY] error on UnsetProxy (${error})`)
+		logger.debug(`[SYSTEM PROXY] error on UnsetProxy (${error})`)
 	}
 }

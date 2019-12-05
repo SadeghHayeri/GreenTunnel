@@ -26,7 +26,7 @@ export default class BaseDNS {
 			ip = hostname;
 			for (let depth = 0; !_isIP(ip) && depth < 5; depth++) {
 				ip = await this._lookup(ip).catch(error => {
-					logger.error(error);
+					logger.debug(error);
 					return ip;
 				});
 			}
@@ -35,11 +35,11 @@ export default class BaseDNS {
 				throw new Error(`BAD IP FORMAT (${ip})`);
 			}
 
-			logger.success(`[DNS] ${hostname} -> ${ip} (${new Date() - t} ms)`);
+			logger.debug(`[DNS] ${hostname} -> ${ip} (${new Date() - t} ms)`);
 			this.cache.set(hostname, ip);
 			return ip;
 		} catch (error) {
-			logger.error(`[DNS] cannot resolve hostname ${hostname} (${error})`);
+			logger.debug(`[DNS] cannot resolve hostname ${hostname} (${error})`);
 		}
 	}
 }

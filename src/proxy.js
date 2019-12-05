@@ -28,12 +28,12 @@ export default class Proxy {
 
 		this.server = net.createServer({pauseOnConnect: true}, clientSocket => {
 			handleRequest(clientSocket, this).catch(err => {
-				logger.error(String(err));
+				logger.debug(String(err));
 			});
 		});
 
 		this.server.on('error', err => {
-			logger.debug(err.toString());
+			logger.error(err.toString());
 		});
 
 		this.server.on('close', () => {
@@ -45,12 +45,12 @@ export default class Proxy {
 		});
 
 		const {address, port} = this.server.address();
-		logger.success(`server listen on ${address} port ${port}`);
+		logger.debug(`server listen on ${address} port ${port}`);
 
 		if (options.setProxy) {
 			await setProxy(address, port);
 			this.isSystemProxySet = true;
-			logger.success('system proxy set');
+			logger.debug('system proxy set');
 		}
 	}
 
@@ -62,7 +62,7 @@ export default class Proxy {
 		if (this.isSystemProxySet) {
 			await unsetProxy();
 			this.isSystemProxySet = false;
-			logger.success('system proxy unset');
+			logger.debug('system proxy unset');
 		}
 	}
 }
