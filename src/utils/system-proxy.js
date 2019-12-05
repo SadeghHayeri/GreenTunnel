@@ -9,8 +9,12 @@ const logger = getLogger('system-proxy');
 const exec = util.promisify(_exec);
 
 class SystemProxy {
-	static async setProxy(ip, port);
-	static async unsetProxy(ip, port);
+	static async setProxy(ip, port) {
+		throw new Error('You have to implement the method setProxy!');
+	}
+	static async unsetProxy() {
+		throw new Error('You have to implement the method unsetProxy!');
+	}
 }
 
 // TODO: Add path http_proxy and https_proxy
