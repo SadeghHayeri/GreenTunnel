@@ -1,11 +1,24 @@
 import util from 'util';
 import os from 'os';
-import {exec as _exec} from 'child_process';
+import path from 'path';
+import {exec as _exec, spawn} from 'child_process';
 import Registry from 'winreg';
 import getLogger from '../logger';
 
 const exec = util.promisify(_exec);
 const {debug} = getLogger('system-proxy');
+
+function asyncRegSet(regKey, name, type, value) {
+	return new Promise((resolve, reject) => {
+		regKey.set(name, type, value, e => {
+			if (e) {
+				reject(e);
+			} else {
+				resolve();
+			}
+		})
+	});
+}
 
 // Const fs = require('fs-extra');
 // Const writeFile = util.promisify(fs.writeFile);
@@ -69,38 +82,54 @@ async function linuxUnsetProxy() {
 	// await writeFile('/etc/environment', newEnv);
 }
 
+function winResetProxySettings() {
+	return new Promise((resolve, reject) => {
+		var scriptPath = path.join(__dirname, '..', 'scripts', 'windows', 'wininet-reset-settings.ps1');
+		const child = spawn("powershell.exe", [scriptPath]);
+		child.stdout.setEncoding('utf8');
+		child.stdout.on("data", (data) => {
+			if (data.includes('True')) {
+				resolve();
+			} else {
+				reject(data);
+			}
+		});
+
+		child.stderr.on("data", (err) => {
+			reject(err);
+		});
+
+		child.stdin.end();
+	});
+}
+
 async function winSetProxy(ip, port) {
 	const regKey = new Registry({
-		hive: Registry.HKEY_CURRENT_USER,
+		hive: Registry.HKCU,
 		key: '\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings'
 	});
 
-	regKey.set('MigrateProxy', Registry.REG_DWORD, 1, e => {
-		debug(e);
-	});
-	regKey.set('ProxyEnable', Registry.REG_DWORD, 1, e => {
-		debug(e);
-	});
-	regKey.set('ProxyHttp1.1', Registry.REG_DWORD, 0, e => {
-		debug(e);
-	});
-	regKey.set('ProxyServer', Registry.REG_SZ, `${ip}:${port}`, e => {
-		debug(e);
-	});
-	regKey.set('ProxyOverride', Registry.REG_SZ, '*.local;<local>', e => {
-		debug(e);
-	});
+	await Promise.all([
+		asyncRegSet(regKey, 'MigrateProxy', Registry.REG_DWORD, 1),
+		asyncRegSet(regKey, 'ProxyEnable', Registry.REG_DWORD, 1),
+		asyncRegSet(regKey, 'ProxyHttp1.1', Registry.REG_DWORD, 0),
+		asyncRegSet(regKey, 'ProxyServer', Registry.REG_SZ, `${ip}:${port}`),
+		asyncRegSet(regKey, 'ProxyOverride', Registry.REG_SZ, '*.local;<local>'),
+	])
+	await winResetProxySettings();
 }
 
 async function winUnsetProxy() {
 	const regKey = new Registry({
-		hive: Registry.HKEY_CURRENT_USER,
+		hive: Registry.HKCU,
 		key: '\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings'
 	});
 
-	regKey.set('ProxyEnable', Registry.REG_DWORD, 0, e => {
-		debug(e);
-	});
+	await Promise.all([
+		asyncRegSet(regKey, 'ProxyEnable', Registry.REG_DWORD, 0),
+		asyncRegSet(regKey, 'ProxyServer', Registry.REG_SZ, ``),
+	])
+	await winResetProxySettings();
 }
 
 export async function setProxy(ip, port) {
