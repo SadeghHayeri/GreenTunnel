@@ -34,14 +34,14 @@ class LinuxSystemProxy extends SystemProxy {
 // TODO: Support for lan connections too
 // TODO: move scripts to ../scripts/darwin
 class DarwinSystemProxy extends SystemProxy {
-	static async SetProxy(ip, port) {
+	static async setProxy(ip, port) {
 		const wifiAdaptor = (await exec(`sh -c "networksetup -listnetworkserviceorder | grep \`route -n get 0.0.0.0 | grep 'interface' | cut -d ':' -f2\` -B 1 | head -n 1 | cut -d ' ' -f2"`)).stdout.trim();
 
 		await exec(`networksetup -setwebproxy '${wifiAdaptor}' ${ip} ${port}`);
 		await exec(`networksetup -setsecurewebproxy '${wifiAdaptor}' ${ip} ${port}`);
 	}
 
-	static async UnsetProxy() {
+	static async unsetProxy() {
 		const wifiAdaptor = (await exec(`sh -c "networksetup -listnetworkserviceorder | grep \`route -n get 0.0.0.0 | grep 'interface' | cut -d ':' -f2\` -B 1 | head -n 1 | cut -d ' ' -f2"`)).stdout.trim();
 
 		await exec(`networksetup -setwebproxystate '${wifiAdaptor}' off`);
@@ -51,7 +51,7 @@ class DarwinSystemProxy extends SystemProxy {
 
 
 class WindowsSystemProxy extends SystemProxy{
-	static async SetProxy(ip, port) {
+	static async setProxy(ip, port) {
 		const regKey = new Registry({
 			hive: Registry.HKCU,
 			key: '\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings'
@@ -67,7 +67,7 @@ class WindowsSystemProxy extends SystemProxy{
 		await WindowsSystemProxy._resetWininetProxySettings();
 	}
 
-	static async UnsetProxy() {
+	static async unsetProxy() {
 		const regKey = new Registry({
 			hive: Registry.HKCU,
 			key: '\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings'
