@@ -5,165 +5,140 @@ import {exec as _exec, spawn} from 'child_process';
 import Registry from 'winreg';
 import getLogger from '../logger';
 
+const logger = getLogger('system-proxy');
 const exec = util.promisify(_exec);
-const {debug} = getLogger('system-proxy');
 
-function asyncRegSet(regKey, name, type, value) {
-	return new Promise((resolve, reject) => {
-		regKey.set(name, type, value, e => {
-			if (e) {
-				reject(e);
-			} else {
-				resolve();
-			}
-		})
-	});
+class SystemProxy {
+	static async setProxy(ip, port);
+	static async unsetProxy(ip, port);
 }
 
-// Const fs = require('fs-extra');
-// Const writeFile = util.promisify(fs.writeFile);
-// const readFile = util.promisify(fs.readFile);
+// TODO: Add path http_proxy and https_proxy
+// TODO: Support for non-gnome
+class LinuxSystemProxy extends SystemProxy {
+	static async setProxy(ip, port) {
+		await exec('gsettings set org.gnome.system.proxy mode manual');
+		await exec(`gsettings set org.gnome.system.proxy.http host ${ip}`);
+		await exec(`gsettings set org.gnome.system.proxy.http port ${port}`);
+	}
+
+	static async unsetProxy() {
+		await exec('gsettings set org.gnome.system.proxy mode none');
+	}
+}
 
 // TODO: Support for lan connections too
-async function darwinSetProxy(ip, port) {
-	const wifiAdaptor = (await exec(`sh -c "networksetup -listnetworkserviceorder | grep \`route -n get 0.0.0.0 | grep 'interface' | cut -d ':' -f2\` -B 1 | head -n 1 | cut -d ' ' -f2"`)).stdout.trim();
+// TODO: move scripts to ../scripts/darwin
+class DarwinSystemProxy extends SystemProxy {
+	static async SetProxy(ip, port) {
+		const wifiAdaptor = (await exec(`sh -c "networksetup -listnetworkserviceorder | grep \`route -n get 0.0.0.0 | grep 'interface' | cut -d ':' -f2\` -B 1 | head -n 1 | cut -d ' ' -f2"`)).stdout.trim();
 
-	await exec(`networksetup -setwebproxy '${wifiAdaptor}' ${ip} ${port}`);
-	await exec(`networksetup -setsecurewebproxy '${wifiAdaptor}' ${ip} ${port}`);
+		await exec(`networksetup -setwebproxy '${wifiAdaptor}' ${ip} ${port}`);
+		await exec(`networksetup -setsecurewebproxy '${wifiAdaptor}' ${ip} ${port}`);
+	}
+
+	static async UnsetProxy() {
+		const wifiAdaptor = (await exec(`sh -c "networksetup -listnetworkserviceorder | grep \`route -n get 0.0.0.0 | grep 'interface' | cut -d ':' -f2\` -B 1 | head -n 1 | cut -d ' ' -f2"`)).stdout.trim();
+
+		await exec(`networksetup -setwebproxystate '${wifiAdaptor}' off`);
+		await exec(`networksetup -setsecurewebproxystate '${wifiAdaptor}' off`);
+	}
 }
 
-async function darwinUnsetProxy() {
-	const wifiAdaptor = (await exec(`sh -c "networksetup -listnetworkserviceorder | grep \`route -n get 0.0.0.0 | grep 'interface' | cut -d ':' -f2\` -B 1 | head -n 1 | cut -d ' ' -f2"`)).stdout.trim();
 
-	await exec(`networksetup -setwebproxystate '${wifiAdaptor}' off`);
-	await exec(`networksetup -setsecurewebproxystate '${wifiAdaptor}' off`);
-}
-
-// Async function linuxFindPATH(env) {
-// 	for (const line of env.split('\n')) {
-// 		if (line.match('PATH')) {
-// 			return line;
-// 		}
-// 	}
-
-// 	return '';
-// }
-
-async function linuxSetProxy(ip, port) {
-	// Gnome proxy
-	await exec('gsettings set org.gnome.system.proxy mode manual');
-	await exec(`gsettings set org.gnome.system.proxy.http host ${ip}`);
-	await exec(`gsettings set org.gnome.system.proxy.http port ${port}`);
-
-	// // etc/environment
-	// const env = await readFile('/etc/environment', 'utf8');
-	// const PATH = await SystemProxyManager._linux_find_PATH(env);
-	//
-	// let newEnv = `${PATH}\n`;
-	// newEnv += `http_proxy=${ip}:${port}\n`;
-	// newEnv += `https_proxy=${ip}:${port}\n`;
-	// newEnv += `no_proxy="localhost,127.0.0.1,localaddress,.localdomain.com"\n`
-	// newEnv += `HTTP_PROXY=${ip}:${port}\n`;
-	// newEnv += `HTTPS_PROXY=${ip}:${port}\n`;
-	// newEnv += `NO_PROXY="localhost,127.0.0.1,localaddress,.localdomain.com"\n`;
-	//
-	// await writeFile('/etc/environment', newEnv);
-}
-
-async function linuxUnsetProxy() {
-	// Gnome proxy
-	await exec('gsettings set org.gnome.system.proxy mode none');
-
-	// // etc/environment
-	// const env = await readFile('/etc/environment', 'utf8');
-	// const PATH = await SystemProxyManager._linux_find_PATH(env);
-	//
-	// let newEnv = `${PATH}\n`;
-	// await writeFile('/etc/environment', newEnv);
-}
-
-function winResetProxySettings() {
-	return new Promise((resolve, reject) => {
-		var scriptPath = path.join(__dirname, '..', 'scripts', 'windows', 'wininet-reset-settings.ps1');
-		const child = spawn("powershell.exe", [scriptPath]);
-		child.stdout.setEncoding('utf8');
-		child.stdout.on("data", (data) => {
-			if (data.includes('True')) {
-				resolve();
-			} else {
-				reject(data);
-			}
+class WindowsSystemProxy extends SystemProxy{
+	static async SetProxy(ip, port) {
+		const regKey = new Registry({
+			hive: Registry.HKCU,
+			key: '\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings'
 		});
 
-		child.stderr.on("data", (err) => {
-			reject(err);
+		await Promise.all([
+			WindowsSystemProxy._asyncRegSet(regKey, 'MigrateProxy', Registry.REG_DWORD, 1),
+			WindowsSystemProxy._asyncRegSet(regKey, 'ProxyEnable', Registry.REG_DWORD, 1),
+			WindowsSystemProxy._asyncRegSet(regKey, 'ProxyHttp1.1', Registry.REG_DWORD, 0),
+			WindowsSystemProxy._asyncRegSet(regKey, 'ProxyServer', Registry.REG_SZ, `${ip}:${port}`),
+			WindowsSystemProxy._asyncRegSet(regKey, 'ProxyOverride', Registry.REG_SZ, '*.local;<local>'),
+		]);
+		await WindowsSystemProxy._resetWininetProxySettings();
+	}
+
+	static async UnsetProxy() {
+		const regKey = new Registry({
+			hive: Registry.HKCU,
+			key: '\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings'
 		});
 
-		child.stdin.end();
-	});
+		await Promise.all([
+			WindowsSystemProxy._asyncRegSet(regKey, 'ProxyEnable', Registry.REG_DWORD, 0),
+			WindowsSystemProxy._asyncRegSet(regKey, 'ProxyServer', Registry.REG_SZ, ``),
+		]);
+		await WindowsSystemProxy._resetWininetProxySettings();
+	}
+
+	static _asyncRegSet(regKey, name, type, value) {
+		return new Promise((resolve, reject) => {
+			regKey.set(name, type, value, e => {
+				if (e) {
+					reject(e);
+				} else {
+					resolve();
+				}
+			})
+		});
+	}
+
+	static _resetWininetProxySettings() {
+		return new Promise((resolve, reject) => {
+			const scriptPath = path.join(__dirname, '..', 'scripts', 'windows', 'wininet-reset-settings.ps1');
+			const child = spawn("powershell.exe", [scriptPath]);
+			child.stdout.setEncoding('utf8');
+			child.stdout.on("data", (data) => {
+				if (data.includes('True')) {
+					resolve();
+				} else {
+					reject(data);
+				}
+			});
+
+			child.stderr.on("data", (err) => {
+				reject(err);
+			});
+
+			child.stdin.end();
+		});
+	}
 }
 
-async function winSetProxy(ip, port) {
-	const regKey = new Registry({
-		hive: Registry.HKCU,
-		key: '\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings'
-	});
-
-	await Promise.all([
-		asyncRegSet(regKey, 'MigrateProxy', Registry.REG_DWORD, 1),
-		asyncRegSet(regKey, 'ProxyEnable', Registry.REG_DWORD, 1),
-		asyncRegSet(regKey, 'ProxyHttp1.1', Registry.REG_DWORD, 0),
-		asyncRegSet(regKey, 'ProxyServer', Registry.REG_SZ, `${ip}:${port}`),
-		asyncRegSet(regKey, 'ProxyOverride', Registry.REG_SZ, '*.local;<local>'),
-	])
-	await winResetProxySettings();
-}
-
-async function winUnsetProxy() {
-	const regKey = new Registry({
-		hive: Registry.HKCU,
-		key: '\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings'
-	});
-
-	await Promise.all([
-		asyncRegSet(regKey, 'ProxyEnable', Registry.REG_DWORD, 0),
-		asyncRegSet(regKey, 'ProxyServer', Registry.REG_SZ, ``),
-	])
-	await winResetProxySettings();
-}
-
-export async function setProxy(ip, port) {
+function getSystemProxy() {
 	switch (os.platform()) {
 		case 'darwin':
-			await darwinSetProxy(ip, port);
-			break;
+			return DarwinSystemProxy;
 		case 'linux':
-			await linuxSetProxy(ip, port);
-			break;
+			return LinuxSystemProxy;
 		case 'win32':
 		case 'win64':
-			await winSetProxy(ip, port);
-			break;
+			return WindowsSystemProxy;
 		case 'unknown os':
 		default:
 			throw new Error(`UNKNOWN OS TYPE ${os.platform()}`);
 	}
 }
 
+export async function setProxy(ip, port) {
+	try {
+		const systemProxy = getSystemProxy();
+		await systemProxy.SetProxy(ip, port);
+	} catch (error) {
+		logger.error(`[SYSTEM PROXY] error on SetProxy (${error})`)
+	}
+}
+
 export async function unsetProxy() {
-	switch (os.platform()) {
-		case 'darwin':
-			await darwinUnsetProxy();
-			break;
-		case 'linux':
-			await linuxUnsetProxy();
-			break;
-		case 'win32':
-		case 'win64':
-			await winUnsetProxy();
-			break;
-		case 'unknown os':
-		default:
-			throw new Error(`UNKNOWN OS TYPE ${os.platform()}`);
+	try {
+		const systemProxy = getSystemProxy();
+		await systemProxy.UnsetProxy();
+	} catch (error) {
+		logger.error(`[SYSTEM PROXY] error on UnsetProxy (${error})`)
 	}
 }

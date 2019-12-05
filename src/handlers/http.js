@@ -2,6 +2,9 @@ import {URL} from 'url';
 import {isStartOfHTTPRequest} from '../http/utils';
 import {createConnection, closeSocket, tryWrite} from '../utils/socket';
 import HTTPRequest from '../http/request';
+import getLogger from '../logger';
+
+const logger = getLogger('https-handler');
 
 export default async function handleHTTP(clientSocket, firstChunk, proxy) {
 	const firstLine = firstChunk.toString().split('\r\n')[0];
@@ -9,6 +12,8 @@ export default async function handleHTTP(clientSocket, firstChunk, proxy) {
 
 	const host = url.hostname;
 	const port = url.port || 80;
+
+	logger.debug(`[HTTP REQUEST] ${url.host}`);
 
 	// -- ServerSocket --
 

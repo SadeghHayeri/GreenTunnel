@@ -3,16 +3,16 @@ import {setProxy, unsetProxy} from './utils/system-proxy';
 import handleRequest from './handlers/request';
 import DNSOverTLS from './dns/tls';
 import DNSOverHTTPS from './dns/https';
-import getConfig from './config';
+import config from './config';
 import getLogger from './logger';
 
-const {debug, error, success} = getLogger('proxy');
+const logger = getLogger('proxy');
 
 export default class Proxy {
-	constructor(_config) {
-		this.config = getConfig(_config);
+	constructor(customConfig) {
+		this.config = {...config, ...customConfig};
 		this.server = undefined;
-		this.proxySet = false;
+		this.isSystemProxySet = false;
 		this.initDNS();
 	}
 
@@ -23,31 +23,34 @@ export default class Proxy {
 	}
 
 	async start(options = {}) {
-		options.verboseMode = options.verboseMode === undefined ? false : options.verboseMode;
+		options.debugMode = options.debugMode === undefined ? false : options.debugMode;
 		options.setProxy = options.setProxy === undefined ? false : options.setProxy;
 
 		this.server = net.createServer({pauseOnConnect: true}, clientSocket => {
 			handleRequest(clientSocket, this).catch(err => {
-				error(String(err));
+				logger.error(String(err));
 			});
 		});
 
 		this.server.on('error', err => {
-			debug(err.toString());
+			logger.debug(err.toString());
 		});
 
 		this.server.on('close', () => {
-			debug('server closed');
+			logger.debug('server closed');
 		});
 
 		await new Promise(resolve => {
-			this.server.listen(this.config.proxy.port, this.config.proxy.ip, () => resolve());
+			this.server.listen(this.config.port, this.config.ip, () => resolve());
 		});
 
 		const {address, port} = this.server.address();
+		logger.success(`server listen on ${address} port ${port}`);
+
 		if (options.setProxy) {
 			await setProxy(address, port);
-			this.proxySet = true;
+			this.isSystemProxySet = true;
+			logger.success('system proxy set');
 		}
 	}
 
@@ -56,9 +59,10 @@ export default class Proxy {
 			this.server.close();
 		}
 
-		if (this.proxySet) {
+		if (this.isSystemProxySet) {
 			await unsetProxy();
-			this.proxySet = false;
+			this.isSystemProxySet = false;
+			logger.success('system proxy unset');
 		}
 	}
 }

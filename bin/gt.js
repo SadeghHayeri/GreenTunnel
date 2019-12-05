@@ -6,9 +6,9 @@ const ora = require('ora');
 const yargs = require('yargs');
 const consola = require('consola');
 const pkg = require('../package.json');
-const {Proxy, getConfig, getLogger} = require('../src/index.cjs');
+const {Proxy, config, getLogger} = require('../src/index.cjs');
 
-const defaultConfig = getConfig();
+const {env} = process;
 const {debug} = getLogger('cli');
 
 const {argv} = yargs
@@ -26,25 +26,18 @@ const {argv} = yargs
 	.option('port', {
 		type: 'number',
 		describe: 'port address to bind proxy server',
-		default: 5000
+		default: config.port
 	})
 
 	.option('dns-type', {
 		type: 'string',
 		choices: ['https', 'tls'],
-		default: defaultConfig.dns.type
+		default: config.dns.type
 	})
 
 	.option('dns-server', {
 		type: 'string',
-		default: defaultConfig.dns.server,
-	})
-
-	.option('verbose', {
-		alias: 'v',
-		type: 'boolean',
-		describe: 'make the operation more talkative',
-		default: false
+		default: config.dns.server
 	})
 
 	.option('silent', {
@@ -94,7 +87,7 @@ async function main() {
 	const proxy = new Proxy({
 		proxy: {
 			ip: argv.ip,
-			port: parseInt(argv.port, 10) || 0
+			port: parseInt(argv.port, 10)
 		},
 		dns: {
 			type: argv.dnsType,
@@ -122,9 +115,9 @@ async function main() {
 	process.on('unhandledRejection', errorTrap);
 	process.on('uncaughtException', errorTrap);
 
-	await proxy.start({setProxy: true, verboseMode: argv.verbose});
+	await proxy.start({setProxy: true, debugMode: env.DEBUG});
 
-	if (!argv.silent) {
+	if (!argv.silent && !env.DEBUG) {
 		clear();
 		printBanner();
 		updateNotifier({pkg}).notify();
