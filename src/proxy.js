@@ -23,7 +23,6 @@ export default class Proxy {
 	}
 
 	async start(options = {}) {
-		options.debugMode = options.debugMode === undefined ? false : options.debugMode;
 		options.setProxy = options.setProxy === undefined ? false : options.setProxy;
 
 		this.server = net.createServer({pauseOnConnect: true}, clientSocket => {

@@ -4,11 +4,11 @@ const updateNotifier = require('update-notifier');
 const chalk = require('chalk');
 const clear = require('clear');
 const ora = require('ora');
+const debug = require('debug');
 const yargs = require('yargs');
 const pkg = require('../package.json');
 const {Proxy, config, getLogger} = require('../src/index.cjs');
 
-const {env} = process;
 const logger = getLogger('cli');
 
 const {argv} = yargs
@@ -45,6 +45,13 @@ const {argv} = yargs
 		type: 'boolean',
 		describe: 'run in silent mode',
 		default: false
+	})
+
+	.option('verbose', {
+		alias: 'v',
+		type: 'string',
+		describe: 'debug mode',
+		default: ''
 	})
 
 	.example('$0')
@@ -84,11 +91,13 @@ function showSpinner() {
 }
 
 async function main() {
+	if (argv.verbose) {
+		debug.enable(argv.verbose);
+	}
+
 	const proxy = new Proxy({
-		proxy: {
-			ip: argv.ip,
-			port: parseInt(argv.port, 10)
-		},
+		ip: argv.ip,
+		port: parseInt(argv.port, 10),
 		dns: {
 			type: argv.dnsType,
 			server: argv.dnsServer
@@ -115,9 +124,9 @@ async function main() {
 	process.on('unhandledRejection', errorTrap);
 	process.on('uncaughtException', errorTrap);
 
-	await proxy.start({setProxy: true, debugMode: env.DEBUG});
+	await proxy.start({setProxy: true});
 
-	if (!argv.silent && !env.DEBUG) {
+	if (!argv.silent && !argv.verbose) {
 		clear();
 		printBanner();
 		updateNotifier({pkg}).notify();

@@ -1,5 +1,11 @@
-import consola from 'consola';
+import debug from 'debug';
 
 export default function getLogger(name) {
-	return consola.withTag('green-tunnel:' + name);
+	return {
+		debug: debug(`green-tunnel:${name}`),
+		success: debug(`green-tunnel:${name}:success`),
+		error: debug(`green-tunnel:${name}:error`),
+	}
 }
+
+debug.enable('green-tunnel:proxy:error');
