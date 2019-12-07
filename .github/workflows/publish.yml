@@ -2,7 +2,6 @@ name: Publish
 
 on:
   create:
-  push:
     tags:
       - v*
 
