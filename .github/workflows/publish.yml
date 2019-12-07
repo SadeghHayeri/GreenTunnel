@@ -25,12 +25,12 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - name: Publish to Registry
-        uses: elgohr/Publish-Docker-Github-Action@master
+        uses: HurricanKai/Publish-Docker-Github-Action@master
         with:
           name: sadeghhayeri/green-tunnel
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-          tag_names: true
+          tagging: true
 
   build-for-mac:
     runs-on: macOS-latest
