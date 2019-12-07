@@ -13,7 +13,7 @@ GreenTunnel bypasses DPI (Deep Packet Inspection) systems found in many ISPs (In
 </p>
 
 ## How to use
-### Graphical user interface (GUI) - *beta version* -
+### Graphical user interface (GUI)
 You can simply choose the suitable installation for your OS in the [releases](https://github.com/SadeghHayeri/GreenTunnel/releases "releases") section.
 
 ### Command-line interface (CLI)
@@ -29,25 +29,50 @@ Usage: green-tunnel [options]
 Usage: gt [options]
 
 Options:
-  --help       Show help                                                      [boolean]
-  --version    Show version number                                            [boolean]
-  --ip         ip address to bind proxy server                   [default: "127.0.0.1"]
-  --port       port address to bind proxy server                    [default: "random"]
-  --dnsType     [choices: "DNS_OVER_HTTPS", "DNS_OVER_TLS"] [default: "DNS_OVER_HTTPS"]
-  --dnsServer                         [default: "https://cloudflare-dns.com/dns-query"]
+  --help, -h      Show help                                            [boolean]
+  --version, -V   Show version number                                  [boolean]
+  --ip            ip address to bind proxy server[string] [default: "127.0.0.1"]
+  --port          port address to bind proxy server     [number] [default: 8000]
+  --dns-type               [string] [choices: "https", "tls"] [default: "https"]
+  --dns-server        [string] [default: "https://cloudflare-dns.com/dns-query"]
+  --silent, -s    run in silent mode                  [boolean] [default: false]
+  --verbose, -v   debug mode                              [string] [default: ""]
+  --system-proxy  automatic set system-proxy           [boolean] [default: true]
 
 Examples:
-  gt #run with default options
+  gt
   gt --ip 127.0.0.1 --port 8000
-  gt --dnsServer https://doh.securedns.eu/dns-query
+  gt --dns-server https://doh.securedns.eu/dns-query
+  gt --verbose 'green-tunnel:proxy*'
 
 ISSUES:  https://github.com/SadeghHayeri/GreenTunnel/issues
 ```
 
+for debug use verbose option:
+```
+$ green-tunnel --verbose 'green-tunnel:*'
+```
+
+### Docker
+```
+$ docker run -p 8000:8000 sadeghhayeri/green-tunnel
+```
+> **envs**
+* PORT
+* VERBOSE
+* SILENT
+* DNS_TYPE
+* DNS_SERVER
+
+usage:
+```
+$ docker run -e 'PORT=1000' -p 8000:1000 sadeghhayeri/green-tunnel
+```
+
 ### Tested on
-- MacOS Mojave 10.14 with node 8 and npm 6
-- Ubuntu 18.04 with node 8 and npm 6
-- Windows 10 with node 8 and npm 6
+- MacOS Catalina with node 12
+- Ubuntu 18.04 with node 8
+- Windows 10 with node 8
 
 
 ## FAQ
