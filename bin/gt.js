@@ -20,43 +20,49 @@ const {argv} = yargs
 	.option('ip', {
 		type: 'string',
 		describe: 'ip address to bind proxy server',
-		default: '127.0.0.1'
+		default: '127.0.0.1',
 	})
 
 	.option('port', {
 		type: 'number',
 		describe: 'port address to bind proxy server',
-		default: config.port
+		default: config.port,
 	})
 
 	.option('dns-type', {
 		type: 'string',
 		choices: ['https', 'tls'],
-		default: config.dns.type
+		default: config.dns.type,
 	})
 
 	.option('dns-server', {
 		type: 'string',
-		default: config.dns.server
+		default: config.dns.server,
 	})
 
 	.option('silent', {
 		alias: 's',
 		type: 'boolean',
 		describe: 'run in silent mode',
-		default: false
+		default: false,
 	})
 
 	.option('verbose', {
 		alias: 'v',
 		type: 'string',
 		describe: 'debug mode',
-		default: ''
+		default: '',
+	})
+
+	.option('system-proxy', {
+		type: 'boolean',
+		describe: 'automatic set system-proxy',
+		default: true,
 	})
 
 	.example('$0')
 	.example('$0 --ip 127.0.0.1 --port 8000')
-	.example('$0 --dnsServer https://doh.securedns.eu/dns-query')
+	.example('$0 --dns-server https://doh.securedns.eu/dns-query')
 	.epilog('ISSUES:  https://github.com/SadeghHayeri/GreenTunnel/issues\n' +
 		'DONATE:  https://github.com/SadeghHayeri/GreenTunnel#donation');
 
@@ -91,16 +97,16 @@ function showSpinner() {
 }
 
 async function main() {
-	if (argv.verbose) {
-		debug.enable(argv.verbose);
+	if (argv['verbose']) {
+		debug.enable(argv['verbose']);
 	}
 
 	const proxy = new Proxy({
-		ip: argv.ip,
-		port: parseInt(argv.port, 10),
+		ip: argv['ip'],
+		port: parseInt(argv['port'], 10),
 		dns: {
-			type: argv.dnsType,
-			server: argv.dnsServer
+			type: argv['dns-type'],
+			server: argv['dns-server']
 		}
 	});
 
@@ -109,7 +115,7 @@ async function main() {
 		await proxy.stop();
 		logger.debug('Successfully Closed!');
 
-		if (!argv.silent) {
+		if (!argv['silent']) {
 			clear();
 		}
 
@@ -124,9 +130,9 @@ async function main() {
 	process.on('unhandledRejection', errorTrap);
 	process.on('uncaughtException', errorTrap);
 
-	await proxy.start({setProxy: true});
+	await proxy.start({setProxy: argv['system-proxy']});
 
-	if (!argv.silent && !argv.verbose) {
+	if (!argv['silent'] && !argv['verbose']) {
 		clear();
 		printBanner();
 		updateNotifier({pkg}).notify();
