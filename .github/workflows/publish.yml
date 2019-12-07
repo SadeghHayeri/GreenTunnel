@@ -1,27 +1,28 @@
 name: Publish
 
 on:
+  create:
   push:
-    branches:
-    - master
+    tags:
+      - v*
 
 jobs:
-#   publish-npm:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - uses: actions/checkout@v1
-#       - uses: actions/setup-node@v1
-#         with:
-#           node-version: 12
-#           registry-url: https://registry.npmjs.org/
-#       - run: npm ci
-#       - run: npm publish
-#         env:
-#           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+  publish-npm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
+          registry-url: https://registry.npmjs.org/
+      - run: npm ci
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
           
   publish-docker-hub:
-#     needs: [publish-npm]
-    runs-on: [ubuntu-latest]
+    runs-on: ubuntu-latest
+    needs: [publish-npm]
     steps:
       - uses: actions/checkout@master
       - name: Publish to Registry
@@ -32,180 +33,180 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
           tag_names: true
 
-#   build-for-mac:
-#     runs-on: macOS-latest
-#     needs: [publish-npm]
-#     steps:
-#       - uses: actions/checkout@v1
-#       - uses: actions/setup-node@v1
-#         with:
-#           node-version: 12
+  build-for-mac:
+    runs-on: macOS-latest
+    needs: [publish-npm]
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
 
-#       - name: Install Dependencies
-#         working-directory: ./gui
-#         run: npm ci
+      - name: Install Dependencies
+        working-directory: ./gui
+        run: npm ci
 
-#       - name: Update GreenTunnel Core
-#         working-directory: ./gui
-#         run: npm install green-tunnel --save
+      - name: Update GreenTunnel Core
+        working-directory: ./gui
+        run: npm install green-tunnel --save
 
-#       - name: Fix GUI Naming
-#         working-directory: ./gui
-#         run: |
-#           sed -i '' 's/green-tunnel-gui/green-tunnel/g' package.json
-#           sed -i '' 's/green-tunnel-gui/green-tunnel/g' package-lock.json
+      - name: Fix GUI Naming
+        working-directory: ./gui
+        run: |
+          sed -i '' 's/green-tunnel-gui/green-tunnel/g' package.json
+          sed -i '' 's/green-tunnel-gui/green-tunnel/g' package-lock.json
 
-#       - name: Generate new icons files
-#         working-directory: ./gui
-#         run: npm run generate-icons
+      - name: Generate new icons files
+        working-directory: ./gui
+        run: npm run generate-icons
 
-#       - name: Build for MacOS
-#         working-directory: ./gui
-#         run: npm run package-mac
+      - name: Build for MacOS
+        working-directory: ./gui
+        run: npm run package-mac
 
-#       - name: Zip
-#         working-directory: ./gui/release-builds/green-tunnel-darwin-x64
-#         run: zip -r green-tunnel-macos.zip green-tunnel.app
+      - name: Zip
+        working-directory: ./gui/release-builds/green-tunnel-darwin-x64
+        run: zip -r green-tunnel-macos.zip green-tunnel.app
 
-#       - name: Save to Artifact
-#         uses: actions/upload-artifact@v1
-#         with:
-#           name: builds
-#           path: ./gui/release-builds/green-tunnel-darwin-x64/green-tunnel-macos.zip
+      - name: Save to Artifact
+        uses: actions/upload-artifact@v1
+        with:
+          name: builds
+          path: ./gui/release-builds/green-tunnel-darwin-x64/green-tunnel-macos.zip
 
-#   build-for-windows:
-#     runs-on: windows-latest
-#     needs: [publish-npm]
-#     steps:
-#       - uses: actions/checkout@v1
-#       - uses: actions/setup-node@v1
-#         with:
-#           node-version: 12
+  build-for-windows:
+    runs-on: windows-latest
+    needs: [publish-npm]
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
 
-#       - name: Update GreenTunnel Core
-#         working-directory: ./gui
-#         run: npm install green-tunnel --save
+      - name: Update GreenTunnel Core
+        working-directory: ./gui
+        run: npm install green-tunnel --save
 
-#       - name: Fix GUI Naming
-#         working-directory: ./gui
-#         run: |
-#           powershell -Command "(gc package.json) -replace 'green-tunnel-gui', 'green-tunnel' | Out-File -encoding ASCII package.json"
-#           powershell -Command "(gc package-lock.json) -replace 'green-tunnel-gui', 'green-tunnel' | Out-File -encoding ASCII package-lock.json"
+      - name: Fix GUI Naming
+        working-directory: ./gui
+        run: |
+          powershell -Command "(gc package.json) -replace 'green-tunnel-gui', 'green-tunnel' | Out-File -encoding ASCII package.json"
+          powershell -Command "(gc package-lock.json) -replace 'green-tunnel-gui', 'green-tunnel' | Out-File -encoding ASCII package-lock.json"
 
-#       - name: Generate new icons files
-#         working-directory: ./gui
-#         run: npm run generate-icons
+      - name: Generate new icons files
+        working-directory: ./gui
+        run: npm run generate-icons
 
-#       - name: Build for Windows
-#         working-directory: ./gui
-#         run: npm run package-win
+      - name: Build for Windows
+        working-directory: ./gui
+        run: npm run package-win
 
-#       - name: Add Windows Installer
-#         working-directory: ./gui
-#         run: npm run windows-installer
+      - name: Add Windows Installer
+        working-directory: ./gui
+        run: npm run windows-installer
 
-#       - name: Save to Artifact
-#         uses: actions/upload-artifact@v1
-#         with:
-#           name: builds
-#           path: ./gui/release-builds/green-tunnel/windows-installer/green-tunnel-installer.exe
+      - name: Save to Artifact
+        uses: actions/upload-artifact@v1
+        with:
+          name: builds
+          path: ./gui/release-builds/green-tunnel/windows-installer/green-tunnel-installer.exe
 
-#   build-for-linux:
-#     runs-on: ubuntu-latest
-#     needs: [publish-npm]
-#     steps:
-#       - uses: actions/checkout@v1
-#       - uses: actions/setup-node@v1
-#         with:
-#           node-version: 12
+  build-for-linux:
+    runs-on: ubuntu-latest
+    needs: [publish-npm]
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
 
-#       - name: Install Dependencies
-#         working-directory: ./gui
-#         run: |
-#           npm ci
-#           npm install -g electron-installer-debian
+      - name: Install Dependencies
+        working-directory: ./gui
+        run: |
+          npm ci
+          npm install -g electron-installer-debian
 
-#       - name: Update GreenTunnel Core
-#         working-directory: ./gui
-#         run: npm install green-tunnel --save
+      - name: Update GreenTunnel Core
+        working-directory: ./gui
+        run: npm install green-tunnel --save
 
-#       - name: Fix GUI Naming
-#         working-directory: ./gui
-#         run: |
-#           sed -i 's/green-tunnel-gui/green-tunnel/g' package.json
-#           sed -i 's/green-tunnel-gui/green-tunnel/g' package-lock.json
+      - name: Fix GUI Naming
+        working-directory: ./gui
+        run: |
+          sed -i 's/green-tunnel-gui/green-tunnel/g' package.json
+          sed -i 's/green-tunnel-gui/green-tunnel/g' package-lock.json
 
-#       - name: Generate new icons files
-#         working-directory: ./gui
-#         run: npm run generate-icons
+      - name: Generate new icons files
+        working-directory: ./gui
+        run: npm run generate-icons
 
-#       - name: Build for Linux
-#         working-directory: ./gui
-#         run: npm run package-linux
+      - name: Build for Linux
+        working-directory: ./gui
+        run: npm run package-linux
 
-#       - name: Add Linux Installer
-#         working-directory: ./gui
-#         run: npm run linux-installer
+      - name: Add Linux Installer
+        working-directory: ./gui
+        run: npm run linux-installer
 
-#       - name: Zip
-#         working-directory: ./gui/release-builds
-#         run: zip -r green-tunnel-debian.zip *.deb
+      - name: Zip
+        working-directory: ./gui/release-builds
+        run: zip -r green-tunnel-debian.zip *.deb
 
-#       - name: Save to Artifact
-#         uses: actions/upload-artifact@v1
-#         with:
-#           name: builds
-#           path: ./gui/release-builds/green-tunnel-debian.zip
+      - name: Save to Artifact
+        uses: actions/upload-artifact@v1
+        with:
+          name: builds
+          path: ./gui/release-builds/green-tunnel-debian.zip
 
-#   new-release:
-#     runs-on: ubuntu-latest
-#     needs: [build-for-mac, build-for-windows, build-for-linux]
-#     steps:
-#       - name: Download Builds
-#         uses: actions/download-artifact@v1
-#         with:
-#           name: builds
+  new-release:
+    runs-on: ubuntu-latest
+    needs: [build-for-mac, build-for-windows, build-for-linux]
+    steps:
+      - name: Download Builds
+        uses: actions/download-artifact@v1
+        with:
+          name: builds
 
-#       - name: Zip for Windows!
-#         run: zip -r builds/green-tunnel-windows.zip builds/green-tunnel-installer.exe
+      - name: Zip for Windows!
+        run: zip -r builds/green-tunnel-windows.zip builds/green-tunnel-installer.exe
 
-#       - name: Create Release
-#         id: create_release
-#         uses: actions/create-release@v1.0.0
-#         env:
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#         with:
-#           tag_name: ${{ github.ref }}
-#           release_name: Release ${{ github.ref }}
-#           draft: false
-#           prerelease: false
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
 
-#       - name: Upload MacOS Release
-#         uses: actions/upload-release-asset@v1.0.1
-#         env:
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#         with:
-#           upload_url: ${{ steps.create_release.outputs.upload_url }}
-#           asset_path: builds/green-tunnel-macos.zip
-#           asset_name: green-tunnel-macos.zip
-#           asset_content_type: application/app
+      - name: Upload MacOS Release
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: builds/green-tunnel-macos.zip
+          asset_name: green-tunnel-macos.zip
+          asset_content_type: application/app
 
-#       - name: Upload Windows Release
-#         uses: actions/upload-release-asset@v1.0.1
-#         env:
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#         with:
-#           upload_url: ${{ steps.create_release.outputs.upload_url }}
-#           asset_path: builds/green-tunnel-windows.zip
-#           asset_name: green-tunnel-windows.zip
-#           asset_content_type: application/zip
+      - name: Upload Windows Release
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: builds/green-tunnel-windows.zip
+          asset_name: green-tunnel-windows.zip
+          asset_content_type: application/zip
 
-#       - name: Upload Linux Release
-#         uses: actions/upload-release-asset@v1.0.1
-#         env:
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#         with:
-#           upload_url: ${{ steps.create_release.outputs.upload_url }}
-#           asset_path: builds/green-tunnel-debian.zip
-#           asset_name: green-tunnel-debian.zip
-#           asset_content_type: application/zip
+      - name: Upload Linux Release
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: builds/green-tunnel-debian.zip
+          asset_name: green-tunnel-debian.zip
+          asset_content_type: application/zip
