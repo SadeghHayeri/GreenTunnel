@@ -5,6 +5,13 @@ const { Proxy } = require('green-tunnel');
 const path = require('path');
 const os = require('os');
 
+// diable any dialog box!
+const electron = require('electron');
+const dialog = electron.dialog;
+dialog.showErrorBox = function(title, content) {
+    console.log(`${title}\n${content}`);
+};
+
 // if (require('electron-squirrel-startup')) return;
 const setupEvents = require('./installers/windows/setupEvents');
 
