@@ -12,11 +12,7 @@ nodeStorage.setItem('userid', userId);
 var visitor = ua('UA-160385585-1', userId);
 
 function appInit() {
-  visitor.event("gt-cli", "init").send()
+  visitor.event("gt", "init").send()
 }
 
-function appUse() {
-  visitor.event("gt-library", "init").send()
-}
-
-export {appInit, appUse};
+export {appInit};

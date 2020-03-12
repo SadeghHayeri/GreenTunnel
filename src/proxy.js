@@ -5,7 +5,7 @@ import DNSOverTLS from './dns/tls';
 import DNSOverHTTPS from './dns/https';
 import config from './config';
 import getLogger from './logger';
-import {appUse} from './utils/analytics';
+import {appInit} from './utils/analytics';
 
 const logger = getLogger('proxy');
 
@@ -24,7 +24,7 @@ export default class Proxy {
 	}
 
 	async start(options = {}) {
-		appUse();
+		appInit();
 		options.setProxy = options.setProxy === undefined ? false : options.setProxy;
 
 		this.server = net.createServer({pauseOnConnect: true}, clientSocket => {
