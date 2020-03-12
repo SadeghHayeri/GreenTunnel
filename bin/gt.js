@@ -9,6 +9,9 @@ const yargs = require('yargs');
 const pkg = require('../package.json');
 const {Proxy, config, getLogger} = require('../src/index.cjs');
 
+const {appInit} = require('../src/utils/analytics');
+appInit();
+
 const logger = getLogger('cli');
 
 const {argv} = yargs
