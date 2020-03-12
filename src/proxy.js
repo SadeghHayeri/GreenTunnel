@@ -15,6 +15,7 @@ export default class Proxy {
 		this.server = undefined;
 		this.isSystemProxySet = false;
 		this.initDNS();
+		appInit(customConfig.source);
 	}
 
 	initDNS() {
@@ -24,7 +25,6 @@ export default class Proxy {
 	}
 
 	async start(options = {}) {
-		appInit();
 		options.setProxy = options.setProxy === undefined ? false : options.setProxy;
 
 		this.server = net.createServer({pauseOnConnect: true}, clientSocket => {

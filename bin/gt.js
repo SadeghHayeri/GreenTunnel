@@ -107,7 +107,8 @@ async function main() {
 		dns: {
 			type: argv['dns-type'],
 			server: argv['dns-server']
-		}
+		},
+		source: 'CLI',
 	});
 
 	const exitTrap = async () => {
