@@ -1,11 +1,9 @@
 import ua from 'universal-analytics';
 import uuid from 'uuid/v4';
 import { JSONStorage } from 'node-localstorage';
-import path from 'path';
+import appData from 'app-data-folder';
 
-import getPath from 'platform-folders';
-const configFolder = path.join(getPath('appData'), 'greentunnel');
-const nodeStorage = new JSONStorage(configFolder);
+const nodeStorage = new JSONStorage(appData('greentunnel'));
 const userId = nodeStorage.getItem('userid') || uuid();
 nodeStorage.setItem('userid', userId);
 
