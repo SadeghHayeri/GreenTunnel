@@ -107,10 +107,10 @@ However, please make sure you follow a few rules listed below to ensure that you
 - Commits in your fork should be informative, as well. Make sure you don't combine too many changes into a single commit.
 
 ## TODO List
-- [ ] enable/disable proxy on windows
+- [X] enable/disable proxy on windows
 - [ ] HTTPHandler
 - [X] add CLI arguments
-- [ ] catch all exceptions
+- [X] catch all exceptions
 - [ ] add preferences menu
 - [ ] fix close button
 
