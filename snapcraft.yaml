@@ -1,0 +1,18 @@
+name: green-tunnel
+version: 1.7.4
+summary: Anti-Censorship Utility
+description: |
+  GreenTunnel is an anti-censorship utility designed to bypass
+  the DPI system that is put in place by various ISPs to block
+  access to certain websites.
+confinement: devmode
+base: core18
+
+parts:
+  green-tunnel:
+    plugin: nodejs
+    source: .
+
+apps:
+  green-tunnel:
+    command: green-tunnel
