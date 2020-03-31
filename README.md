@@ -21,6 +21,13 @@ You can install GreenTunnel using [npm](https://www.npmjs.org/ "npm"):
 ```
 $ npm i -g green-tunnel
 ```
+
+or using [snap](https://snapcraft.io) (edge version):
+```
+sudo snap install --edge green-tunnel --devmode
+```
+
+
 after installation you can run it using `gt` or `green-tunnel` commands.
 
 ```
