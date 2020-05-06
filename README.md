@@ -3,7 +3,7 @@
     <img src="assets/logo.png" alt="green tunnel logo" width="200">
 </p>
 <p align="center">
-    <img src="https://img.shields.io/github/license/SadeghHayeri/GreenTunnel.svg?color=Green&style=flat-square"> <img src="https://img.shields.io/github/repo-size/SadeghHayeri/GreenTunnel.svg?color=Green&style=flat-square">
+    <img src="https://img.shields.io/github/license/SadeghHayeri/GreenTunnel.svg?color=Green&style=for-the-badge"> <img src="https://img.shields.io/github/repo-size/SadeghHayeri/GreenTunnel.svg?color=Green&style=for-the-badge"> <img src="https://img.shields.io/discord/707464295021019197?color=Green&style=for-the-badge">
 </p>
 
 GreenTunnel bypasses DPI (Deep Packet Inspection) systems found in many ISPs (Internet Service Providers) which block access to certain websites.
@@ -132,4 +132,3 @@ However, please make sure you follow a few rules listed below to ensure that you
 
 ## License
 Licensed under the MIT license. See [LICENSE](https://github.com/SadeghHayeri/GreenTunnel/blob/master/LICENSE "LICENSE").
-
