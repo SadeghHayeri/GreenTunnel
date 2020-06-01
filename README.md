@@ -77,7 +77,7 @@ $ docker run -e 'PORT=1000' -p 8000:1000 sadeghhayeri/green-tunnel
 ```
 
 ### Docker on Raspberry Pi
-Every tag on Docker Hub is specialized to `linux/amd64` arch. For `arm` arch, you need to build the docker image by yourself using `Dockerfile-raspberrypi`. The difference with `Dockerfile` is only on `FROM`.
+The `sadeghhayeri/green-tunnel` image is not for `arm` arch. You need to build the docker image by yourself using `Dockerfile-raspberrypi`. The difference with `Dockerfile` is only on `FROM`.
 
 All commands here is on Raspberry Pi.
 
