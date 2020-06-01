@@ -90,17 +90,17 @@ Pre-required:
 $ git clone https://github.com/SadeghHayeri/GreenTunnel.git
 ```
 
-1. Go to the folder `GreenTunnel`
+2. Go to the folder `GreenTunnel`
 ```
 $ cd GreenTunnel
 ```
 
-1. Build the image:
+3. Build the image:
 ```
 $ docker build -t green-tunnel --file Dockerfile-raspberrypi .
 ```
 
-1. Run container using image we created on step before. We will use port 8000 as default port:
+4. Run container using image we created on step before. We will use port 8000 as default port:
 ```
 $ docker run -p 8000:8000 --name green-tunnel green-tunnel
 ```
@@ -112,7 +112,7 @@ $ docker run -d --restart unless-stopped -p 8000:8000 --name green-tunnel green-
 
 Please make sure port `8000` is not blocked on Raspberry Pi firewall.
 
-1. To use it on your other device, set http proxy to ```<Raspberry Pi IP Address>:<PORT>```. PORT is `8000`
+5. To use it on your other device, set http proxy to ```<Raspberry Pi IP Address>:<PORT>```. PORT is `8000`
 
 Windows: [here](https://www.howtogeek.com/tips/how-to-set-your-proxy-settings-in-windows-8.1/)
 
