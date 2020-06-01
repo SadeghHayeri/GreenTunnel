@@ -76,7 +76,7 @@ usage:
 $ docker run -e 'PORT=1000' -p 8000:1000 sadeghhayeri/green-tunnel
 ```
 
-### Docker on Rasperry Pi
+### Docker on Raspberry Pi
 Every tag on Docker Hub is specialized to `linux/amd64` arch. For `arm` arch, you need to build the docker image by yourself using `Dockerfile-raspberrypi`. The difference with `Dockerfile` is only on `FROM`.
 
 All commands here is on Raspberry Pi.
@@ -90,7 +90,7 @@ Pre-required:
 $ git clone https://github.com/SadeghHayeri/GreenTunnel.git
 ```
 
-2. Go to the folder `GreenTunnel`
+2. Go to the folder `GreenTunnel`:
 ```
 $ cd GreenTunnel
 ```
@@ -112,7 +112,7 @@ $ docker run -d --restart unless-stopped -p 8000:8000 --name green-tunnel green-
 
 Please make sure port `8000` is not blocked on Raspberry Pi firewall.
 
-5. To use it on your other device, set http proxy to ```<Raspberry Pi IP Address>:<PORT>```. PORT is `8000`
+5. To use it on your other device, set http proxy to ```<Raspberry Pi IP Address>:<PORT>```. PORT is `8000`:
 
 Windows: [here](https://www.howtogeek.com/tips/how-to-set-your-proxy-settings-in-windows-8.1/)
 
