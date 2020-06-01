@@ -76,6 +76,51 @@ usage:
 $ docker run -e 'PORT=1000' -p 8000:1000 sadeghhayeri/green-tunnel
 ```
 
+### Docker on Rasperry Pi
+Every tag on Docker Hub is specialized to `linux/amd64` arch. For `arm` arch, you need to build the docker image by yourself using `Dockerfile-raspberrypi`. The difference with `Dockerfile` is only on `FROM`.
+
+All commands here is on Raspberry Pi.
+
+Pre-required:
+  - Docker
+  - Git
+
+1. Clone this repository:
+```
+$ git clone https://github.com/SadeghHayeri/GreenTunnel.git
+```
+
+1. Go to the folder `GreenTunnel`
+```
+$ cd GreenTunnel
+```
+
+1. Build the image:
+```
+$ docker build -t green-tunnel --file Dockerfile-raspberrypi .
+```
+
+1. Run container using image we created on step before. We will use port 8000 as default port:
+```
+$ docker run -p 8000:8000 --name green-tunnel green-tunnel
+```
+
+If you want to make container keep running on reboot:
+```
+$ docker run -d --restart unless-stopped -p 8000:8000 --name green-tunnel green-tunnel
+```
+
+Please make sure port `8000` is not blocked on Raspberry Pi firewall.
+
+1. To use it on your other device, set http proxy to ```<Raspberry Pi IP Address>:<PORT>```. PORT is `8000`
+
+Windows: [here](https://www.howtogeek.com/tips/how-to-set-your-proxy-settings-in-windows-8.1/)
+
+Linux: [here](https://www.cyberciti.biz/faq/linux-unix-set-proxy-environment-variable/)
+
+MacOS: [here](https://www.howtogeek.com/293444/how-to-configure-a-proxy-server-on-a-mac/)
+
+
 ### Tested on
 - MacOS Catalina with node 12
 - Ubuntu 18.04 with node 8
