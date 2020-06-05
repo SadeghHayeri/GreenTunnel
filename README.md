@@ -86,16 +86,9 @@ If you want to make container keep running when reboot:
 $ docker run -d --restart unless-stopped -p 8000:8000 sadeghhayeri/green-tunnel:arm
 ```
 
-Please make sure port `8000` is not blocked on Raspberry Pi firewall.
+Please make sure port `8000` is not blocked on Raspberry Pi firewall. (`sudo ufw allow 8000 comment Green-Tunnel`)
 
-To use it on your other device, set http proxy to ```<Raspberry Pi IP Address>:<PORT>```. PORT is `8000`:
-
-Windows: [here](https://www.howtogeek.com/tips/how-to-set-your-proxy-settings-in-windows-8.1/)
-
-Linux: [here](https://www.cyberciti.biz/faq/linux-unix-set-proxy-environment-variable/)
-
-MacOS: [here](https://www.howtogeek.com/293444/how-to-configure-a-proxy-server-on-a-mac/)
-
+To use it on your other device, set http proxy to ```<Raspberry Pi IP Address>:<PORT>```. (PORT = `8000`)
 
 ### Tested on
 - MacOS Catalina with node 12
