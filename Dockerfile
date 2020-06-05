@@ -1,4 +1,6 @@
 FROM mhart/alpine-node:12
+# Use this instead to build image for Raspberry Pi
+# FROM balenalib/raspberry-pi-alpine-node
 
 ENV PORT 8000
 ENV VERBOSE 'green-tunnel:*'
