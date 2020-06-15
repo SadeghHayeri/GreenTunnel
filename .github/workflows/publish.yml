@@ -29,21 +29,18 @@ jobs:
           tag_with_ref: true
 
   publish-docker-hub-arm:
-    runs-on: ubuntu-latest
+    runs-on: ARM32
     steps:
-      - uses: actions/checkout@v1
-
-      - name: Change Docker Base
-        run: sed -i 's/mhart\/alpine-node:12/balenalib\/raspberry-pi-alpine-node/g' Dockerfile
-
-      - uses: actions/checkout@master
-      - name: Build and push Docker images
-        uses: docker/build-push-action@v1.1.0
+      - name: Customizable Docker Buildx Build
+        uses: zmingxie/docker_buildx@v1.1
         with:
-          repository: sadeghhayeri/green-tunnel
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-          tags: arm, arm-latest
+          tag: arm, arm-latest
+          imageName: sadeghhayeri/green-tunnel
+          dockerFile: Dockerfile
+          publish: true
+          platform: linux/arm64,linux/arm/v7
+          dockerHubUser: ${{ secrets.DOCKER_USERNAME }}
+          dockerHubPassword: ${{ secrets.DOCKER_PASSWORD }}
 
 #   build-for-mac:
 #     runs-on: macOS-latest
