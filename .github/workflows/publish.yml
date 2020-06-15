@@ -16,20 +16,20 @@ jobs:
 #         env:
 #           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
           
-  publish-docker-hub:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@master
-      - name: Build and push Docker images
-        uses: docker/build-push-action@v1.1.0
-        with:
-          repository: sadeghhayeri/green-tunnel
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-          tag_with_ref: true
+#   publish-docker-hub:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@master
+#       - name: Build and push Docker images
+#         uses: docker/build-push-action@v1.1.0
+#         with:
+#           repository: sadeghhayeri/green-tunnel
+#           username: ${{ secrets.DOCKER_USERNAME }}
+#           password: ${{ secrets.DOCKER_PASSWORD }}
+#           tag_with_ref: true
 
   publish-docker-hub-arm:
-    runs-on: ARM32
+    runs-on: ubuntu-latest
     steps:
       - name: Customizable Docker Buildx Build
         uses: zmingxie/docker_buildx@v1.1
