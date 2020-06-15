@@ -16,29 +16,41 @@ jobs:
 #         env:
 #           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
           
+#   publish-docker-hub:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@master
+#       - name: Publish to Registry
+#         uses: HurricanKai/Publish-Docker-Github-Action@master
+#         with:
+#           name: sadeghhayeri/green-tunnel
+#           username: ${{ secrets.DOCKER_USERNAME }}
+#           password: ${{ secrets.DOCKER_PASSWORD }}
+#           tagging: true
+          
   publish-docker-hub:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
-      - name: Publish to Registry
-        uses: HurricanKai/Publish-Docker-Github-Action@master
+      - name: Build and push Docker images
+        uses: docker/build-push-action@v1.1.0
         with:
-          name: sadeghhayeri/green-tunnel
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-          tagging: true
+          tags: latest
+          repository: sadeghhayeri/green-tunnel
 
   publish-docker-hub-arm:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
-      - name: Publish to Registry
-        uses: HurricanKai/Publish-Docker-Github-Action@master
+      - name: Build and push Docker images
+        uses: docker/build-push-action@v1.1.0
         with:
-          name: sadeghhayeri/green-tunnel:arm
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-          tagging: false
+          tags: arm, arm-latest
+          repository: sadeghhayeri/green-tunnel
 
 #   build-for-mac:
 #     runs-on: macOS-latest
