@@ -34,7 +34,7 @@ jobs:
       - name: Customizable Docker Buildx Build
         uses: zmingxie/docker_buildx@v1.1
         with:
-          tag: arm, arm-latest
+          tag: arm,arm-latest
           imageName: sadeghhayeri/green-tunnel
           dockerFile: Dockerfile
           publish: true
