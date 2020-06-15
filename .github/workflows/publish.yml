@@ -18,7 +18,7 @@ jobs:
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
-          
+
   publish-docker-hub:
     runs-on: ubuntu-latest
     steps:
@@ -35,14 +35,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
-      
+
       - name: Change Base Image
         run: sed -i 's/mhart\/alpine-node:12/balenalib\/raspberry-pi-alpine-node/g' Dockerfile
 
       - name: Customizable Docker Buildx Build
         uses: zmingxie/docker_buildx@v1.1
         with:
-          tag: arm,arm-latest
+          tag: arm,arm-latest,arm-1.7.5
           imageName: sadeghhayeri/green-tunnel
           dockerFile: Dockerfile
           publish: true
