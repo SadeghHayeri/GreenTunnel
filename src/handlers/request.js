@@ -14,7 +14,7 @@ export default async function handleRequest(clientSocket, proxy) {
 				if (isStartOfHTTPRequest(strData)) {
 					if (isConnectMethod(strData)) {
 						await handleHTTPS(clientSocket, data, proxy);
-					} else if (proxy.config.secure) {
+					} else if (proxy.config.httpsOnly) {
 						throw new Error('Insecure request blocked: ', strData);
 					} else {
 						await handleHTTP(clientSocket, data, proxy);

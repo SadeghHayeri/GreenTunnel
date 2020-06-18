@@ -3,7 +3,7 @@ FROM mhart/alpine-node:12
 # FROM balenalib/raspberry-pi-alpine-node
 
 ENV PORT 8000
-ENV SECURE false
+ENV HTTPS-ONLY false
 ENV VERBOSE 'green-tunnel:*'
 ENV SILENT false
 ENV DNS_TYPE 'https'
