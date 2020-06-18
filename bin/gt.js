@@ -29,6 +29,12 @@ const {argv} = yargs
 		default: config.port,
 	})
 
+	.option('secure', {
+		type: 'boolean',
+		describe: 'Block insecure requests',
+		default: config.secure,
+	})
+
 	.option('dns-type', {
 		type: 'string',
 		choices: ['https', 'tls'],
@@ -104,6 +110,7 @@ async function main() {
 	const proxy = new Proxy({
 		ip: argv['ip'],
 		port: parseInt(argv['port'], 10),
+		secure: argv['secure'],
 		dns: {
 			type: argv['dns-type'],
 			server: argv['dns-server']
