@@ -110,7 +110,7 @@ async function main() {
 	const proxy = new Proxy({
 		ip: argv['ip'],
 		port: parseInt(argv['port'], 10),
-		httpsOnly: argv['httpsOnly'],
+		httpsOnly: argv['https-only'],
 		dns: {
 			type: argv['dns-type'],
 			server: argv['dns-server']
