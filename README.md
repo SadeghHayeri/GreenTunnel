@@ -39,6 +39,7 @@ Options:
   --help, -h      Show help                                            [boolean]
   --version, -V   Show version number                                  [boolean]
   --ip            ip address to bind proxy server[string] [default: "127.0.0.1"]
+  --https-only    Block insecure HTTP requests        [boolean] [default: false]
   --port          port address to bind proxy server     [number] [default: 8000]
   --dns-type               [string] [choices: "https", "tls"] [default: "https"]
   --dns-server        [string] [default: "https://cloudflare-dns.com/dns-query"]
@@ -48,7 +49,7 @@ Options:
 
 Examples:
   gt
-  gt --ip 127.0.0.1 --port 8000
+  gt --ip 127.0.0.1 --port 8000 --https-only
   gt --dns-server https://doh.securedns.eu/dns-query
   gt --verbose 'green-tunnel:proxy*'
 
@@ -66,6 +67,7 @@ $ docker run -p 8000:8000 sadeghhayeri/green-tunnel
 ```
 > **envs**
 * PORT
+* HTTPS-ONLY
 * VERBOSE
 * SILENT
 * DNS_TYPE

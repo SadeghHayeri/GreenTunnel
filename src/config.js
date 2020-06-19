@@ -1,6 +1,7 @@
 const config = {
 	ip: '127.0.0.1',
 	port: 8000,
+	httpsOnly: false,
 	clientHelloMTU: 100,
 	dns: {
 		type: 'https', // 'tls' or 'https'
