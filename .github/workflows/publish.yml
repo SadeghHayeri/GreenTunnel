@@ -22,6 +22,13 @@ jobs:
   publish-docker-hub:
     runs-on: ubuntu-latest
     steps:
+      - name: Retrieve tag
+        run: |
+          DOCKER_IMAGE=sadeghhayeri/green-tunnel
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/}
+          TAGS="${DOCKER_IMAGE}:${VERSION}"
+          echo "TAGS=$TAGS" >> $GITHUB_ENV
       - uses: actions/checkout@master
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
@@ -35,7 +42,7 @@ jobs:
         with:
           file: Dockerfile
           push: true
-          tags: sadeghhayeri/green-tunnel
+          tags: ${TAGS}
 
   publish-docker-hub-for-arm:
     runs-on: ubuntu-latest
