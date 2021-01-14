@@ -44,7 +44,7 @@ jobs:
         with:
           file: Dockerfile
           push: true
-          tags: ${{ steps.retrieve.outputs.tags }}
+          tags: ${{ steps.retrieve.outputs.tags }},sadeghhayeri/green-tunnel:latest
 
   publish-docker-hub-for-arm:
     runs-on: ubuntu-latest
