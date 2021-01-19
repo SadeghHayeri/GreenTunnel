@@ -38,11 +38,11 @@ jobs:
           echo "CLIENT_PORT=$CLIENT_PORT" >> $GITHUB_ENV
 
       - name: Build docker image.
-        run: docker build --no-cache --tag ${GITHUB_REPOSITORY}:${GITHUB_RUN_ID} .
+        run: docker build --no-cache --tag sadeghhayeri/greentunnel:${GITHUB_RUN_ID} .
 
       - name: Run a container of created image.
         run: |
-          DOCKERCONTAINER=$(docker run -p 127.0.0.1:${CLIENT_PORT}:8000 -d ${GITHUB_REPOSITORY}:${GITHUB_RUN_ID})
+          DOCKERCONTAINER=$(docker run -p 127.0.0.1:${CLIENT_PORT}:8000 -d sadeghhayeri/greentunnel:${GITHUB_RUN_ID})
           sleep 5
           echo "DOCKERCONTAINER=$DOCKERCONTAINER" >> $GITHUB_ENV
 
