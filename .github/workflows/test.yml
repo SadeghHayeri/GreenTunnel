@@ -1,0 +1,26 @@
+---
+name: Test
+'on':
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+
+  hadolint:
+    name: Test dockerfile syntax
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the codebase.
+        uses: actions/checkout@v2
+
+      - name: Install hadolint.
+        run: |
+          sudo curl -L https://github.com/hadolint/hadolint/releases/download/v$HADOLINT_VERSION/hadolint-$(uname -s)-$(uname -m) -o /usr/local/bin/hadolint
+          sudo chmod 755 /usr/local/bin/hadolint
+        env:
+          HADOLINT_VERSION: 1.19.0
+
+      - name: Run hadolint.
+        run: hadolint --ignore DL3025 Dockerfile
