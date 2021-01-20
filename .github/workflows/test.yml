@@ -1,0 +1,56 @@
+---
+name: Test
+'on':
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+
+  hadolint:
+    name: Test dockerfile syntax
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the codebase.
+        uses: actions/checkout@v2
+
+      - name: Install hadolint.
+        run: |
+          sudo curl -L https://github.com/hadolint/hadolint/releases/download/v$HADOLINT_VERSION/hadolint-$(uname -s)-$(uname -m) -o /usr/local/bin/hadolint
+          sudo chmod 755 /usr/local/bin/hadolint
+        env:
+          HADOLINT_VERSION: 1.19.0
+
+      - name: Run hadolint.
+        run: hadolint --ignore DL3025 Dockerfile
+  build:
+    name: Build and test docker
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the codebase.
+        uses: actions/checkout@v2
+
+      - name: Find an open port.
+        run: |
+          CLIENT_PORT=$(cat /dev/urandom | od -N2 -An -i | awk -v f=10000 -v r=19999 '{printf "%i\n", f + r * $1 / 65536}')
+          [ $(netstat -an | grep LISTEN | grep :$CLIENT_PORT | wc -l) -eq 0 ] || { ./$0 && exit 0 || exit 1; }
+          echo "CLIENT_PORT=$CLIENT_PORT" >> $GITHUB_ENV
+
+      - name: Build docker image.
+        run: docker build --no-cache --tag sadeghhayeri/greentunnel:${GITHUB_RUN_ID} .
+
+      - name: Run a container of created image.
+        run: |
+          DOCKERCONTAINER=$(docker run -p 127.0.0.1:${CLIENT_PORT}:8000 -d sadeghhayeri/greentunnel:${GITHUB_RUN_ID})
+          sleep 5
+          echo "DOCKERCONTAINER=$DOCKERCONTAINER" >> $GITHUB_ENV
+
+      - name: Check if container is still running.
+        run: docker ps -f id=${DOCKERCONTAINER}
+
+      - name: Check if the port is responding.
+        run: curl -Is --proxy http://127.0.0.1:${CLIENT_PORT} https://google.com | grep 200
+
+      - name: Check if the container is correctly stopped and removed.
+        run: docker stop ${DOCKERCONTAINER} && docker rm -fv ${DOCKERCONTAINER}
