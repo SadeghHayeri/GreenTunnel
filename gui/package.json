@@ -16,7 +16,7 @@
   "author": "Sadegh Hayeri <hayerisadegh@gmail.com> (https://github.com/SadeghHayeri/)",
   "license": "ISC",
   "devDependencies": {
-    "electron": "^4.1.5",
+    "electron": "^9.4.0",
     "electron-icon-maker": "0.0.4",
     "electron-packager": "^13.1.1",
     "electron-winstaller": "^3.0.4"
