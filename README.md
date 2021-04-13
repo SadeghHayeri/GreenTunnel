@@ -140,11 +140,18 @@ However, please make sure you follow a few rules listed below to ensure that you
 ## Donation
 > Love GreenTunnel? Please consider donating to sustain our activities.
 
-**Bitcoin:** 3C5sj5BJ3n5gYJR27uxowdsgGCq2vjdhn5
+**DOGECOIN!:** DTGjx8KKDCUkSEbtVHgQx1GYEnNaVVuXLa
+**BITCOIN:** bc1qknjsmsa98lljwxjwl4pmjh48s8su8r8ajkqd8w
+**ETHEREUM:** 0x018fbf3fAC7165b2c85f856cC90E2d9410415150
+**LITECOIN:** ltc1q5tfprazpkzjvzf5shgprkpkhnnku3p72feutxt
+**RIPPLE/XRP:** rt6ZTkKdBVYzBee9CpQsDTsewnTbAoV13
 
 [![](https://img.shields.io/badge/Buy%20me%20a%20coffee-IRR%20|%20PayPing-Red.svg?style=for-the-badge&logo=ko-fi)](https://payping.ir/d/TXTS)
 <br />
 [![](https://img.shields.io/badge/Buy%20me%20a%20coffee-USD%20|%20PayPal-Red.svg?style=for-the-badge&logo=ko-fi)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=HJ5TBXVYTHS7N&currency_code=USD&source=url)
+[![Donate with Bitcoin](https://en.cryptobadges.io/badge/big/3C5sj5BJ3n5gYJR27uxowdsgGCq2vjdhn5?showBalance=true)](https://en.cryptobadges.io/donate/bc1qknjsmsa98lljwxjwl4pmjh48s8su8r8ajkqd8w)
+[![Donate with Ethereum](https://en.cryptobadges.io/badge/big/0x018fbf3fAC7165b2c85f856cC90E2d9410415150?showBalance=true)](https://en.cryptobadges.io/donate/0x018fbf3fAC7165b2c85f856cC90E2d9410415150)
+[![Donate with Ripple](https://en.cryptobadges.io/badge/big/rt6ZTkKdBVYzBee9CpQsDTsewnTbAoV13?showBalance=true)](https://en.cryptobadges.io/donate/rt6ZTkKdBVYzBee9CpQsDTsewnTbAoV13)
 
 ## License
 Licensed under the MIT license. See [LICENSE](https://github.com/SadeghHayeri/GreenTunnel/blob/master/LICENSE "LICENSE").
