@@ -38,6 +38,7 @@
     "debug": "^4.1.1",
     "dns-over-http": "^0.1.2",
     "dns-over-tls": "0.0.6",
+    "dns-socket": "^4.2.2",
     "esm": "^3.2.22",
     "is-docker": "^2.0.0",
     "lru-cache": "^5.1.1",

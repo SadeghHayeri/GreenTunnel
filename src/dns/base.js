@@ -1,5 +1,5 @@
 import LRU from 'lru-cache';
-import {isIP} from 'validator';
+import { isIP } from 'validator';
 import getLogger from '../logger';
 import config from '../config';
 
