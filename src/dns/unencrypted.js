@@ -3,7 +3,7 @@ import BaseDNS from './base';
 
 const socket = dnsSocket()
 
-export default class DNSOverHTTPS extends BaseDNS {
+export default class DNSUnencrypted extends BaseDNS {
   constructor(dnsIp, dnsPort) {
     super();
     this.dnsIp = dnsIp;
