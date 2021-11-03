@@ -46,7 +46,7 @@
     "std-env": "^2.2.1",
     "universal-analytics": "^0.4.20",
     "update-notifier": "^2.5.0",
-    "validator": "^10.11.0",
+    "validator": "^13.7.0",
     "winreg": "^1.2.4",
     "yargs": "^13.2.2"
   },
