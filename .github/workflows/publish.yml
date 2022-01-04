@@ -76,7 +76,7 @@ jobs:
           file: Dockerfile
           push: true
           tags: ${{ steps.retrieve.outputs.tags }},sadeghhayeri/green-tunnel:arm-latest
-          platforms: linux/arm64,linux/arm/v7
+          platforms: linux/amd64,linux/armhf,linux/arm64
 
   build-for-mac:
     runs-on: macOS-latest
