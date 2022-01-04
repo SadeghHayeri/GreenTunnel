@@ -24,6 +24,8 @@ class LinuxSystemProxy extends SystemProxy {
 		await exec('gsettings set org.gnome.system.proxy mode manual');
 		await exec(`gsettings set org.gnome.system.proxy.http host ${ip}`);
 		await exec(`gsettings set org.gnome.system.proxy.http port ${port}`);
+		await exec(`gsettings set org.gnome.system.proxy.https host ${ip}`);
+		await exec(`gsettings set org.gnome.system.proxy.https port ${port}`);
 	}
 
 	static async unsetProxy() {
