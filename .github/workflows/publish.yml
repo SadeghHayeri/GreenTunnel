@@ -49,21 +49,34 @@ jobs:
   publish-docker-hub-for-arm:
     runs-on: ubuntu-latest
     steps:
+      - name: Retrieve tag
+        id: retrieve
+        run: |
+          DOCKER_IMAGE=sadeghhayeri/green-tunnel
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/}
+          fi
+          TAGS="${DOCKER_IMAGE}:${VERSION}"
+          echo ::set-output name=tags::${TAGS}
       - uses: actions/checkout@master
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Change Base Image
         run: sed -i 's/mhart\/alpine-node:12/balenalib\/raspberry-pi-alpine-node/g' Dockerfile
 
-      - name: Customizable Docker Buildx Build
-        uses: zmingxie/docker_buildx@v1.1
+      - name: Build and push Docker images
+        uses: docker/build-push-action@v2
         with:
-          tag: arm,arm-latest,arm-1.7.5
-          imageName: sadeghhayeri/green-tunnel
-          dockerFile: Dockerfile
-          publish: true
+          file: Dockerfile
+          push: true
+          tags: arm-${{ steps.retrieve.outputs.tags }},sadeghhayeri/green-tunnel:arm-latest
           platform: linux/arm64,linux/arm/v7
-          dockerHubUser: ${{ secrets.DOCKER_USERNAME }}
-          dockerHubPassword: ${{ secrets.DOCKER_PASSWORD }}
 
   build-for-mac:
     runs-on: macOS-latest
