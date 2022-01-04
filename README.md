@@ -43,6 +43,8 @@ Options:
   --port          port address to bind proxy server     [number] [default: 8000]
   --dns-type               [string] [choices: "https", "tls"] [default: "https"]
   --dns-server        [string] [default: "https://cloudflare-dns.com/dns-query"]
+  --dns-ip        IP address for unencrypted DNS  [string][default: "127.0.0.1"]
+  --dns-port      Port for unencrypted DNS                [number] [default: 53]
   --silent, -s    run in silent mode                  [boolean] [default: false]
   --verbose, -v   debug mode                              [string] [default: ""]
   --system-proxy  automatic set system-proxy           [boolean] [default: true]

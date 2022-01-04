@@ -7,11 +7,11 @@ const ora = require('ora');
 const debug = require('debug');
 const yargs = require('yargs');
 const pkg = require('../package.json');
-const {Proxy, config, getLogger} = require('../src/index.cjs');
+const { Proxy, config, getLogger } = require('../src/index.cjs');
 
 const logger = getLogger('cli');
 
-const {argv} = yargs
+const { argv } = yargs
 	.usage('Usage: green-tunnel [options]')
 	.usage('Usage: gt [options]')
 	.alias('help', 'h')
@@ -37,13 +37,23 @@ const {argv} = yargs
 
 	.option('dns-type', {
 		type: 'string',
-		choices: ['https', 'tls'],
+		choices: ['https', 'tls', 'unencrypted'],
 		default: config.dns.type,
 	})
 
 	.option('dns-server', {
 		type: 'string',
 		default: config.dns.server,
+	})
+
+	.option('dns-ip', {
+		type: 'string',
+		default: config.dns.ip,
+	})
+
+	.option('dns-port', {
+		type: 'number',
+		default: config.dns.port,
 	})
 
 	.option('silent', {
@@ -113,7 +123,9 @@ async function main() {
 		httpsOnly: argv['https-only'],
 		dns: {
 			type: argv['dns-type'],
-			server: argv['dns-server']
+			server: argv['dns-server'],
+			ip: argv['dns-ip'],
+			port: argv['dns-port']
 		},
 		source: 'CLI',
 	});
@@ -138,12 +150,12 @@ async function main() {
 	process.on('unhandledRejection', errorTrap);
 	process.on('uncaughtException', errorTrap);
 
-	await proxy.start({setProxy: argv['system-proxy']});
+	await proxy.start({ setProxy: argv['system-proxy'] });
 
 	if (!argv['silent'] && !argv['verbose']) {
 		clear();
 		printBanner();
-		updateNotifier({pkg}).notify();
+		updateNotifier({ pkg }).notify();
 		printAlert(proxy);
 		showSpinner();
 	}
