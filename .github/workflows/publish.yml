@@ -56,7 +56,7 @@ jobs:
           if [[ $GITHUB_REF == refs/tags/* ]]; then
             VERSION=${GITHUB_REF#refs/tags/}
           fi
-          TAGS="${DOCKER_IMAGE}:${VERSION}"
+          TAGS="${DOCKER_IMAGE}:arm-${VERSION}"
           echo ::set-output name=tags::${TAGS}
       - uses: actions/checkout@master
       - name: Set up Docker Buildx
@@ -75,8 +75,8 @@ jobs:
         with:
           file: Dockerfile
           push: true
-          tags: arm-${{ steps.retrieve.outputs.tags }},sadeghhayeri/green-tunnel:arm-latest
-          platform: linux/arm64,linux/arm/v7
+          tags: ${{ steps.retrieve.outputs.tags }},sadeghhayeri/green-tunnel:arm-latest
+          platforms: linux/arm64,linux/arm/v7
 
   build-for-mac:
     runs-on: macOS-latest
