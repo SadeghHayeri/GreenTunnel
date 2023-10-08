@@ -76,6 +76,12 @@ const { argv } = yargs
 		default: true,
 	})
 
+	.option('tls-record-fragmentation', {
+		type: 'boolean',
+		describe: 'enable TLS record fragmentation',
+		default: false
+	})
+
 	.example('$0')
 	.example('$0 --ip 127.0.0.1 --port 8000')
 	.example('$0 --dns-server https://doh.securedns.eu/dns-query')
@@ -128,6 +134,7 @@ async function main() {
 			port: argv['dns-port']
 		},
 		source: 'CLI',
+		'tlsRecordFragmentation': argv['tls-record-fragmentation']
 	});
 
 	const exitTrap = async () => {
