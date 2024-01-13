@@ -1,0 +1,20 @@
+{
+  "name": "groon-tunnel",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "tauri": "tauri"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^1.5.2"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^1.5.8",
+    "vite": "^5.0.0",
+    "typescript": "^5.0.2"
+  }
+}
