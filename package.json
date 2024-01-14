@@ -7,31 +7,32 @@
     "SNI",
     "VPN"
   ],
-  "homepage": "https://github.com/SadeghHayeri/GreenTunnel#readme",
+  "homepage": "https://github.com/andraantariksa/GreenTunnel#readme",
   "bugs": {
-    "url": "https://github.com/SadeghHayeri/GreenTunnel/issues"
+    "url": "https://github.com/andraantariksa/GreenTunnel/issues"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/SadeghHayeri/GreenTunnel.git"
   },
   "license": "MIT",
-  "author": "Sadegh Hayeri",
+  "authors": [
+    "Sadegh Hayeri",
+    "Andra Antariksa"
+  ],
   "files": [
     "bin",
     "src"
   ],
-  "main": "src/index.cjs.js",
-  "module": "src/index.js",
   "bin": {
     "green-tunnel": "bin/gt.js",
     "gt": "bin/gt.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "tsc && cp package.json build/package.json && node build/bin/gt.js"
   },
   "dependencies": {
-    "app-data-folder": "^1.0.0",
     "chalk": "^2.4.2",
     "clear": "^0.1.0",
     "consola": "^2.11.0",
@@ -39,20 +40,19 @@
     "dns-over-http": "^0.1.2",
     "dns-over-tls": "0.0.6",
     "dns-socket": "^4.2.2",
-    "esm": "^3.2.22",
-    "is-docker": "^2.0.0",
+    "esm": "^3.2.25",
     "lru-cache": "^5.1.1",
-    "node-localstorage": "^2.1.5",
     "ora": "^3.2.0",
     "std-env": "^2.2.1",
-    "universal-analytics": "^0.4.20",
     "update-notifier": "^2.5.0",
     "validator": "^10.11.0",
     "winreg": "^1.2.4",
     "yargs": "^13.2.2"
   },
   "devDependencies": {
+    "@types/node": "^20.11.0",
     "eslint": "^5.16.0",
-    "eslint-config-xo": "^0.26.0"
+    "eslint-config-xo": "^0.26.0",
+    "typescript": "^5.3.3"
   }
 }
