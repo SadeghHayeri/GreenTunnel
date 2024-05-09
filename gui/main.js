@@ -103,10 +103,10 @@ function createWindow() {
         height: 300,
         x: stateManager.x,
         y: stateManager.y,
-        maximizable: debug,
-        minimizable: debug,
-        fullscreenable: debug,
-        resizable: debug,
+        maximizable: false,
+        minimizable: true,
+        fullscreenable: false,
+        resizable: false,
         icon: appIcon,
         show: false,
 
@@ -154,9 +154,16 @@ app.on('ready', () => {
     const iconPath = path.join(__dirname, 'images/iconTemplate.png');
     const trayIcon = nativeImage.createFromPath(iconPath);
     tray = new Tray(trayIcon);
-    tray.setIgnoreDoubleClickEvents(true);
     tray.setToolTip('Green Tunnel');
     tray.setContextMenu(Menu.buildFromTemplate(menuItems));
+
+    // Restore the window on a double click
+    tray.on('double-click', () => {
+        if(win.isVisible())
+            win.hide();
+        else
+            win.show();
+    });
 });
 
 app.on('before-quit', async (e) => {
@@ -171,7 +178,7 @@ ipcMain.on('close-button', (event, arg) => {
     if(os.platform() === 'darwin')
         app.hide();
     else
-        app.quit();
+        win.hide();
 });
 
 ipcMain.on('on-off-button', (event, arg) => {
