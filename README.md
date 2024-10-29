@@ -35,20 +35,6 @@ $ gt --help
 Usage: green-tunnel [options]
 Usage: gt [options]
 
-Options:
-  --help, -h      Show help                                            [boolean]
-  --version, -V   Show version number                                  [boolean]
-  --ip            ip address to bind proxy server[string] [default: "127.0.0.1"]
-  --https-only    Block insecure HTTP requests        [boolean] [default: false]
-  --port          port address to bind proxy server     [number] [default: 8000]
-  --dns-type               [string] [choices: "https", "tls"] [default: "https"]
-  --dns-server        [string] [default: "https://cloudflare-dns.com/dns-query"]
-  --dns-ip        IP address for unencrypted DNS  [string][default: "127.0.0.1"]
-  --dns-port      Port for unencrypted DNS                [number] [default: 53]
-  --silent, -s    run in silent mode                  [boolean] [default: false]
-  --verbose, -v   debug mode                              [string] [default: ""]
-  --system-proxy  automatic set system-proxy           [boolean] [default: true]
-
 Examples:
   gt
   gt --ip 127.0.0.1 --port 8000 --https-only
@@ -57,6 +43,21 @@ Examples:
 
 ISSUES:  https://github.com/SadeghHayeri/GreenTunnel/issues
 ```
+
+|Options|foo|Type|
+|---|---|---|
+|--help, -h      |Show help|[boolean]|
+|--version, -V   |Show version number|[boolean]|
+|--ip            |ip address to bind proxy server [default: "127.0.0.1"]|[string]|
+|--https-only    |Block insecure HTTP requests [default: false]|[boolean]|
+|--port          |port address to bind proxy server [default: 8000]|[number]|
+|--dns-type      |[choices: "https", "tls", "unencrypted"] [default: "https"]|[string]|
+|--dns-server    |[default: "https://cloudflare-dns.com/dns-query"]|[string]|
+|--dns-ip        |IP address for unencrypted DNS [default: "127.0.0.1"]|[string]|
+|--dns-port      |Port for unencrypted DNS [default: 53]|[number]|
+|--silent, -s    |run in silent mode [default: false]|[boolean]|
+|--verbose, -v   |debug mode [default: ""]|[string]|
+|--system-proxy  |automatic set system-proxy [default: true]|[boolean]|
 
 for debug use verbose option:
 ```
