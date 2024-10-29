@@ -43,7 +43,7 @@ export default async function handleHTTPS(clientSocket, firstChunk, proxy) {
 	// -- clientSocket --
 
 	clientSocket.once('data', clientHello => {
-		const chunks = bufferToChunks(clientHello, proxy.config.clientHelloMTU);
+		const chunks = bufferToChunks(clientHello, proxy.config.clientHelloMTU, proxy.config.tlsRecordFragmentation);
 		for (const chunk of chunks) {
 			logger.debug(`[HTTPS HELLO] ${url.host} (length: ${chunk.length})`);
 			tryWrite(serverSocket, chunk, close);
