@@ -26,7 +26,7 @@ GreenTunnel bypasses DPI (Deep Packet Inspection) systems found in many ISPs (In
 
 After years of silence, this project is alive again. The entire codebase has been rebuilt from the ground up: native ESM, Node.js 20+, a brand new dark UI, and a clean dependency tree with zero known vulnerabilities.
 
-Open-source tools that help people reach the free internet shouldn't die — and with AI-assisted development, they don't have to. We're back, and we're here to stay.
+Open-source tools that help people reach the free internet shouldn't die — and with AI-assisted development, they don't have to. We'll keep doing our best to help people access the open internet, one packet at a time.
 
 </td>
 </tr>
