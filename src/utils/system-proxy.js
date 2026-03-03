@@ -1,9 +1,12 @@
 import util from 'util';
 import os from 'os';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import {exec as _exec, spawn} from 'child_process';
 import Registry from 'winreg';
-import getLogger from '../logger';
+import getLogger from '../logger.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const logger = getLogger('system-proxy');
 const exec = util.promisify(_exec);

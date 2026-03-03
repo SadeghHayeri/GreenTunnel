@@ -1,5 +1,5 @@
 import dnsSocket from 'dns-socket';
-import BaseDNS from './base';
+import BaseDNS from './base.js';
 
 const socket = dnsSocket()
 

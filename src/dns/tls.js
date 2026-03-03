@@ -1,5 +1,5 @@
 import dnstls from 'dns-over-tls';
-import BaseDNS from './base';
+import BaseDNS from './base.js';
 
 export default class DNSOverTLS extends BaseDNS {
 	async _lookup(hostname) {

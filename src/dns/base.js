@@ -1,7 +1,8 @@
 import LRU from 'lru-cache';
-import { isIP } from 'validator';
-import getLogger from '../logger';
-import config from '../config';
+import validator from 'validator';
+const { isIP } = validator;
+import getLogger from '../logger.js';
+import config from '../config.js';
 
 const logger = getLogger('dns');
 
@@ -11,7 +12,7 @@ function _isIP(v) {
 
 export default class BaseDNS {
 	constructor() {
-		this.cache = new LRU(config.dns.cacheSize);
+		this.cache = new LRU({max: config.dns.cacheSize});
 	}
 
 	async lookup(hostname) {

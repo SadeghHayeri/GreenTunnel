@@ -1,12 +1,12 @@
 import net from 'net';
-import { setProxy, unsetProxy } from './utils/system-proxy';
-import handleRequest from './handlers/request';
-import DNSOverTLS from './dns/tls';
-import DNSOverHTTPS from './dns/https';
-import DNSUnencrypted from './dns/unencrypted';
-import config from './config';
-import getLogger from './logger';
-import { appInit } from './utils/analytics';
+import { setProxy, unsetProxy } from './utils/system-proxy.js';
+import handleRequest from './handlers/request.js';
+import DNSOverTLS from './dns/tls.js';
+import DNSOverHTTPS from './dns/https.js';
+import DNSUnencrypted from './dns/unencrypted.js';
+import config from './config.js';
+import getLogger from './logger.js';
+import { appInit } from './utils/analytics.js';
 
 const logger = getLogger('proxy');
 

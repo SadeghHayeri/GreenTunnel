@@ -1,5 +1,5 @@
 import net from 'net';
-import getLogger from '../logger';
+import getLogger from '../logger.js';
 
 const logger = getLogger('socket');
 

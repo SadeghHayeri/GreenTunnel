@@ -1,5 +1,9 @@
 {
-  "extends": "xo/esnext",
+  "extends": "xo",
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "sourceType": "module"
+  },
   "rules": {
     "no-await-in-loop": 0,
     "guard-for-in": 0,

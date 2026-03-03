@@ -1,4 +1,4 @@
-import {parseRequest} from './utils';
+import {parseRequest} from './utils.js';
 
 export default class HTTPRequest {
 	constructor(rawReq) {

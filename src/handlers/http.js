@@ -1,8 +1,8 @@
 import {URL} from 'url';
-import {isStartOfHTTPRequest} from '../http/utils';
-import {createConnection, closeSocket, tryWrite} from '../utils/socket';
-import HTTPRequest from '../http/request';
-import getLogger from '../logger';
+import {isStartOfHTTPRequest} from '../http/utils.js';
+import {createConnection, closeSocket, tryWrite} from '../utils/socket.js';
+import HTTPRequest from '../http/request.js';
+import getLogger from '../logger.js';
 
 const logger = getLogger('https-handler');
 

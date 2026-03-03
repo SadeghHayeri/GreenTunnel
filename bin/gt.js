@@ -1,17 +1,16 @@
 #!/usr/bin/env node
 
-const updateNotifier = require('update-notifier');
-const chalk = require('chalk');
-const clear = require('clear');
-const ora = require('ora');
-const debug = require('debug');
-const yargs = require('yargs');
-const pkg = require('../package.json');
-const { Proxy, config, getLogger } = require('../src/index.cjs');
+import chalk from 'chalk';
+import clear from 'clear';
+import ora from 'ora';
+import debug from 'debug';
+import yargs from 'yargs';
+import { hideBin } from 'yargs/helpers';
+import { Proxy, config, getLogger } from '../src/index.js';
 
 const logger = getLogger('cli');
 
-const { argv } = yargs
+const argv = yargs(hideBin(process.argv))
 	.usage('Usage: green-tunnel [options]')
 	.usage('Usage: gt [options]')
 	.alias('help', 'h')
@@ -86,7 +85,8 @@ const { argv } = yargs
 	.example('$0 --ip 127.0.0.1 --port 8000')
 	.example('$0 --dns-server https://doh.securedns.eu/dns-query')
 	.epilog('ISSUES:  https://github.com/SadeghHayeri/GreenTunnel/issues\n' +
-		'DONATE:  https://github.com/SadeghHayeri/GreenTunnel#donation');
+		'DONATE:  https://github.com/SadeghHayeri/GreenTunnel#donation')
+	.parseSync();
 
 const MAIN_COLOR = '84C66F';
 
@@ -162,7 +162,6 @@ async function main() {
 	if (!argv['silent'] && !argv['verbose']) {
 		clear();
 		printBanner();
-		updateNotifier({ pkg }).notify();
 		printAlert(proxy);
 		showSpinner();
 	}

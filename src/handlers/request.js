@@ -1,6 +1,6 @@
-import {isStartOfHTTPRequest, isConnectMethod} from '../http/utils';
-import handleHTTP from './http';
-import handleHTTPS from './https';
+import {isStartOfHTTPRequest, isConnectMethod} from '../http/utils.js';
+import handleHTTP from './http.js';
+import handleHTTPS from './https.js';
 
 export default async function handleRequest(clientSocket, proxy) {
 	clientSocket.resume();

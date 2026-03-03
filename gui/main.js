@@ -1,18 +1,16 @@
 const { app, BrowserWindow, Menu, Tray, shell, ipcMain, nativeImage } = require('electron');
 const windowStateKeeper = require('electron-window-state');
 const debug = /--debug/.test(process.argv[2]);
-const { Proxy } = require('green-tunnel');
 const path = require('path');
 const os = require('os');
 
-// diable any dialog box!
+// disable any dialog box!
 const electron = require('electron');
 const dialog = electron.dialog;
 dialog.showErrorBox = function(title, content) {
     console.log(`${title}\n${content}`);
 };
 
-// if (require('electron-squirrel-startup')) return;
 const setupEvents = require('./installers/windows/setupEvents');
 
 if (setupEvents.handleSquirrelEvent()) {
@@ -20,6 +18,7 @@ if (setupEvents.handleSquirrelEvent()) {
 }
 
 let win, tray, proxy;
+let Proxy;
 let isOn = false;
 
 const menuItems = [
@@ -57,7 +56,7 @@ async function turnOff() {
 
     if (proxy) {
         await proxy.stop();
-        proxy = null
+        proxy = null;
     }
 
     win.webContents.send('changeStatus', isOn);
@@ -75,7 +74,7 @@ async function turnOn() {
     isOn = true;
 
     if (proxy) {
-        await turnOff()
+        await turnOff();
     }
 
     proxy = new Proxy({source: 'GUI'});
@@ -87,15 +86,12 @@ async function turnOn() {
     menuItems[0].click = () => turnOff();
     tray.setContextMenu(Menu.buildFromTemplate(menuItems));
 
-    const iconPath = path.join(__dirname, 'images/iconTemplate.png');
+    const iconPath = path.join(__dirname, 'images/IconTemplate.png');
     const trayIcon = nativeImage.createFromPath(iconPath);
     tray.setImage(trayIcon);
 }
 
 function createWindow() {
-    const iconPath = path.join(__dirname, 'icons/icon.icns');
-    const appIcon = nativeImage.createFromPath(iconPath);
-
     const stateManager = windowStateKeeper();
 
     win = new BrowserWindow({
@@ -107,7 +103,6 @@ function createWindow() {
         minimizable: true,
         fullscreenable: false,
         resizable: false,
-        icon: appIcon,
         show: false,
 
         title: 'Green Tunnel',
@@ -115,6 +110,7 @@ function createWindow() {
         transparent: true,
         webPreferences: {
             nodeIntegration: true,
+            contextIsolation: false,
         }
     });
 
@@ -130,36 +126,40 @@ function createWindow() {
     });
 
     win.on('closed', () => {
-        win = null
+        win = null;
     });
 
-    if(debug)
-        win.webContents.openDevTools()
+    if (debug)
+        win.webContents.openDevTools();
 }
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
-        app.quit()
+        app.quit();
     }
 });
 
 app.on('activate', () => {
     if (win === null) {
-        createWindow()
+        createWindow();
     }
 });
 
-app.on('ready', () => {
+app.whenReady().then(async () => {
+    // green-tunnel is an ES module — must use dynamic import
+    const gt = await import('green-tunnel');
+    Proxy = gt.Proxy;
+
     createWindow();
-    const iconPath = path.join(__dirname, 'images/iconTemplate.png');
+
+    const iconPath = path.join(__dirname, 'images/IconTemplate.png');
     const trayIcon = nativeImage.createFromPath(iconPath);
     tray = new Tray(trayIcon);
     tray.setToolTip('Green Tunnel');
     tray.setContextMenu(Menu.buildFromTemplate(menuItems));
 
-    // Restore the window on a double click
     tray.on('double-click', () => {
-        if(win.isVisible())
+        if (win.isVisible())
             win.hide();
         else
             win.show();
@@ -167,7 +167,7 @@ app.on('ready', () => {
 });
 
 app.on('before-quit', async (e) => {
-    if(isOn) {
+    if (isOn) {
         e.preventDefault();
         await turnOff();
         app.quit();
@@ -175,14 +175,14 @@ app.on('before-quit', async (e) => {
 });
 
 ipcMain.on('close-button', (event, arg) => {
-    if(os.platform() === 'darwin')
+    if (os.platform() === 'darwin')
         app.hide();
     else
         win.hide();
 });
 
 ipcMain.on('on-off-button', (event, arg) => {
-    if(isOn)
+    if (isOn)
         turnOff();
     else
         turnOn();

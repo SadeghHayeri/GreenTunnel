@@ -1,8 +1,8 @@
 import {URL} from 'url';
-import {bufferToChunks} from '../utils/buffer';
-import {createConnection, closeSocket, tryWrite} from '../utils/socket';
-import HTTPResponse from '../http/response';
-import getLogger from '../logger';
+import {bufferToChunks} from '../utils/buffer.js';
+import {createConnection, closeSocket, tryWrite} from '../utils/socket.js';
+import HTTPResponse from '../http/response.js';
+import getLogger from '../logger.js';
 
 const logger = getLogger('https-handler');
 

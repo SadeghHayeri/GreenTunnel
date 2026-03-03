@@ -1,8 +1,4 @@
-import {promisify} from 'util';
-import doh from 'dns-over-http';
-import BaseDNS from './base';
-
-const dohQueryAsync = promisify(doh.query);
+import BaseDNS from './base.js';
 
 export default class DNSOverHTTPS extends BaseDNS {
 	constructor(dnsServer) {
@@ -11,7 +7,24 @@ export default class DNSOverHTTPS extends BaseDNS {
 	}
 
 	async _lookup(hostname) {
-		const result = await dohQueryAsync({url: this.dnsServer}, [{type: 'A', name: hostname}]);
-		return result.answers[0].data;
+		const url = new URL(this.dnsServer);
+		url.searchParams.set('name', hostname);
+		url.searchParams.set('type', 'A');
+
+		const response = await fetch(url.toString(), {
+			headers: {Accept: 'application/dns-json'},
+		});
+
+		if (!response.ok) {
+			throw new Error(`DoH request failed: ${response.status}`);
+		}
+
+		const result = await response.json();
+
+		if (!result.Answer || result.Answer.length === 0) {
+			throw new Error(`No DNS answers for ${hostname}`);
+		}
+
+		return result.Answer[0].data;
 	}
 }
