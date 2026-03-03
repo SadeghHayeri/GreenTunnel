@@ -16,6 +16,6 @@
   "dependencies": {
     "electron-window-state": "^5.0.3",
     "green-tunnel": "file:../",
-    "jquery": "^3.7.1"
+    "jquery": "^4.0.0"
   }
 }

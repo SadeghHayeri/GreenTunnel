@@ -31,26 +31,25 @@
     "gt": "bin/gt.js"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "chalk": "^4.1.2",
+    "chalk": "^5.6.2",
     "clear": "^0.1.0",
-    "consola": "^2.15.3",
     "debug": "^4.4.0",
     "dns-over-tls": "^0.0.9",
     "dns-socket": "^4.2.2",
-    "lru-cache": "^7.18.3",
-    "ora": "^5.4.1",
+    "lru-cache": "^11.2.6",
+    "ora": "^9.3.0",
     "validator": "^13.15.26",
-    "winreg": "^1.2.4",
-    "yargs": "^17.7.2"
+    "winreg": "^1.2.5",
+    "yargs": "^18.0.0"
   },
   "devDependencies": {
-    "eslint": "^8.57.1",
-    "eslint-config-xo": "^0.43.1"
+    "eslint": "^9.39.3",
+    "eslint-config-xo": "^0.49.0"
   }
 }
