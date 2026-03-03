@@ -13,9 +13,17 @@ GreenTunnel bypasses DPI (Deep Packet Inspection) systems found in many ISPs (In
 
 > **Note:** GreenTunnel does not hide your IP address. It only bypasses DPI-based censorship.
 
+---
+
+## v2.0.0 is here
+
 <p align="center">
-    <img src="assets/demo.gif" alt="green tunnel demo" style="margin-top: 20px;">
+    <img src="assets/new-version.jpg" alt="GreenTunnel v2.0.0 new UI" width="400">
 </p>
+
+After a long time, **GreenTunnel v2.0.0** is out with a fully modernized codebase — updated to native ESM, Node.js 20+, a redesigned dark UI, and zero legacy vulnerabilities.
+
+Thanks to **[Claude Code](https://claude.ai/claude-code)** for helping revive and maintain this project. Because of tools like this, open-source projects like GreenTunnel can keep going — and keep helping people connect to the free internet.
 
 ---
 
