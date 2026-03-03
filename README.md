@@ -20,9 +20,9 @@ GreenTunnel bypasses DPI (Deep Packet Inspection) systems found in many ISPs (In
 <td width="340"><img src="assets/new-version.png" alt="GreenTunnel v2.0.0 new UI" width="320"></td>
 <td valign="top" style="padding-left: 24px;">
 
-**GreenTunnel v2 — with the help of [Claude Code](https://code.claude.com/docs/en/overview) — is out now.**
+**GreenTunnel v2 is out now.**
 
-After years of silence, this project is alive again. The entire codebase has been rebuilt from the ground up: native ESM, Node.js 20+, a brand new dark UI, and a clean dependency tree with zero known vulnerabilities.
+The entire codebase has been rebuilt from the ground up: native ESM, Node.js 20+, a brand new dark UI, and a clean dependency tree with zero known vulnerabilities.
 
 Open-source tools that help people reach the free internet shouldn't die — and with AI-assisted development, they don't have to. We'll keep doing our best to help people access the open internet, one packet at a time.
 
