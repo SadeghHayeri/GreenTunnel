@@ -12,37 +12,27 @@
             gtag('js', new Date());
             gtag('config', 'G-D1R7M2YZ8Q');
         </script>
+
         <link rel="stylesheet" href="styles/css-reset.css">
-        <link rel="stylesheet" href="styles/fonts.css">
         <link rel="stylesheet" href="styles/main.css">
 
         <script>window.$ = window.jQuery = require('jquery');</script>
-        <script type ="text/javascript" src="./scripts/main.js"></script>
+        <script type="text/javascript" src="./scripts/main.js"></script>
     </head>
 
     <body>
+        <button id="close-button">&#x2715;</button>
 
-        <div class="center">
-            <div class="title toggle red">
-                <h1>Green Tunnel</h1>
-                <h2 id="status-off-on">is off</h2>
+        <div class="app">
+            <p class="app-title">Green Tunnel</p>
+
+            <div id="on-off-button" class="power-btn toggle off">
+                <img class="logo" src="./images/logo.png" alt="Toggle">
             </div>
 
-            <div id="on-off-button" class="status-container toggle red">
-                <img class="logo" src="./images/logo.png" alt="">
-            </div>
+            <p id="status-off-on" class="status-text toggle off">is off</p>
         </div>
 
-        <div id="left-border" class="border toggle red"></div>
-        <div id="right-border" class="border toggle red"></div>
-        <div id="top-border" class="border toggle red"></div>
-        <div id="bottom-border" class="border toggle red"></div>
-
-        <div class="bottom-banner toggle red">
-            <p>Note: GreenTunnel does not hide your IP address</p>
-        </div>
-
-        <img id="close-button" src="./images/cancel.png" class="close-button" alt="">
-
+        <p class="note">Does not hide your IP address</p>
     </body>
 </html>
