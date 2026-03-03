@@ -7,7 +7,7 @@ import packageJson from '../../package.json' with { type: 'json' };
 const MEASUREMENT_ID = 'G-D1R7M2YZ8Q';
 
 // Get this from: GA4 Admin → Data Streams → select stream → Measurement Protocol API secrets → Create
-const API_SECRET = '';
+const API_SECRET = 'Y_lvWjBxSG2-k5UYBJQQ7Q';
 
 const CONFIG_DIR = join(homedir(), '.config', 'greentunnel');
 const CONFIG_FILE = join(CONFIG_DIR, 'config.json');
