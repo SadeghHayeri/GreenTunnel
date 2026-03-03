@@ -15,8 +15,6 @@ GreenTunnel bypasses DPI (Deep Packet Inspection) systems found in many ISPs (In
 
 ---
 
-## v2.0.0 is here
-
 <table>
 <tr>
 <td width="340"><img src="assets/new-version.png" alt="GreenTunnel v2.0.0 new UI" width="320"></td>
