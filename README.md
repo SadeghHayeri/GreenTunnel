@@ -30,6 +30,10 @@ Open-source tools that help people reach the free internet shouldn't die — and
 </tr>
 </table>
 
+<p align="center">
+    <img src="assets/demo.gif" alt="green tunnel demo">
+</p>
+
 ---
 
 ## Installation
