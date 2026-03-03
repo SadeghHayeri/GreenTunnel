@@ -146,12 +146,7 @@ Pull requests and issues are always welcome.
 
 > Love GreenTunnel? Please consider donating to sustain development.
 
-**Bitcoin:** `bc1qknjsmsa98lljwxjwl4pmjh48s8su8r8ajkqd8w`
-**Ethereum:** `0x018fbf3fAC7165b2c85f856cC90E2d9410415150`
-**Dogecoin:** `DTGjx8KKDCUkSEbtVHgQx1GYEnNaVVuXLa`
-**Litecoin:** `ltc1q5tfprazpkzjvzf5shgprkpkhnnku3p72feutxt`
-
-[![Buy me a coffee (PayPal)](https://img.shields.io/badge/Buy%20me%20a%20coffee-USD%20|%20PayPal-Red.svg?style=for-the-badge&logo=ko-fi)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=HJ5TBXVYTHS7N&currency_code=USD&source=url)
+**Ethereum / USDT (ERC-20):** `0xB116a6AE50c38a455944A65f9cEE4D54CEceF080`
 
 ---
 
