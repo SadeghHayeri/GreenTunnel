@@ -19,7 +19,7 @@
   "devDependencies": {
     "@electron/packager": "^19.0.5",
     "electron-winstaller": "^5.4.0",
-    "electron": "^40.0.0",
+    "electron": "^40.8.4",
     "electron-icon-maker": "0.0.4"
   },
   "dependencies": {
