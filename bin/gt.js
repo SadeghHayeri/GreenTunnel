@@ -133,7 +133,6 @@ async function main() {
 			ip: argv['dns-ip'],
 			port: argv['dns-port']
 		},
-		source: 'CLI',
 		'tlsRecordFragmentation': argv['tls-record-fragmentation']
 	});
 

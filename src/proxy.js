@@ -6,7 +6,6 @@ import DNSOverHTTPS from './dns/https.js';
 import DNSUnencrypted from './dns/unencrypted.js';
 import config from './config.js';
 import getLogger from './logger.js';
-import { appInit } from './utils/analytics.js';
 
 const logger = getLogger('proxy');
 
@@ -16,7 +15,6 @@ export default class Proxy {
 		this.server = undefined;
 		this.isSystemProxySet = false;
 		this.initDNS();
-		appInit(customConfig.source);
 	}
 
 	initDNS() {

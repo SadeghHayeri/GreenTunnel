@@ -77,7 +77,7 @@ async function turnOn() {
         await turnOff();
     }
 
-    proxy = new Proxy({source: 'GUI'});
+    proxy = new Proxy();
     await proxy.start({setProxy: true});
 
     win.webContents.send('changeStatus', isOn);
