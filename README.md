@@ -53,7 +53,7 @@ After installation, run with `gt` or `green-tunnel`.
 ### Docker
 
 ```bash
-docker run -p 8000:8000 sadeghhayeri/greentunnel
+docker run -p 8000:8000 sadeghhayeri/green-tunnel
 ```
 
 ---
@@ -105,13 +105,13 @@ gt --verbose 'green-tunnel:*'
 
 ```bash
 # Basic
-docker run -p 8000:8000 sadeghhayeri/greentunnel
+docker run -p 8000:8000 sadeghhayeri/green-tunnel
 
 # Custom port
-docker run -e PORT=9000 -p 9000:9000 sadeghhayeri/greentunnel
+docker run -e PORT=9000 -p 9000:9000 sadeghhayeri/green-tunnel
 
 # Run in background, restart on reboot
-docker run -d --restart unless-stopped -p 8000:8000 sadeghhayeri/greentunnel
+docker run -d --restart unless-stopped -p 8000:8000 sadeghhayeri/green-tunnel
 ```
 
 **Environment variables:**
