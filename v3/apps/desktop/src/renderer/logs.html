@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' ws:"
+    />
+    <title>Green Tunnel — Logs</title>
+    <link rel="stylesheet" href="./src/logs.css" />
+  </head>
+
+  <body>
+    <header id="toolbar" class="toolbar">
+      <label class="field">
+        <span class="field__label">Level</span>
+        <select id="level" class="input input--select" title="How much the engine records">
+          <option value="error">Errors</option>
+          <option value="warn">Warnings</option>
+          <option value="info">Info</option>
+          <option value="debug">Debug</option>
+          <option value="trace">Trace</option>
+          <option value="silent">Off</option>
+        </select>
+      </label>
+
+      <input
+        id="filter"
+        class="input input--filter"
+        type="search"
+        placeholder="Filter…"
+        spellcheck="false"
+        autocomplete="off"
+      />
+
+      <span class="toolbar__spacer"></span>
+
+      <button id="copy" class="tool" type="button" title="Copy what is shown">Copy</button>
+      <button id="save" class="tool" type="button" title="Save what is shown to a file">
+        Save
+      </button>
+      <button id="clear" class="tool" type="button" title="Discard everything captured">
+        Clear
+      </button>
+    </header>
+
+    <!-- Only the rows in view exist in the DOM; see `paint()` in logs.ts. -->
+    <main id="viewport" class="viewport" tabindex="0">
+      <div id="canvas" class="canvas">
+        <div id="rows" class="rows"></div>
+      </div>
+
+      <div id="empty" class="empty" hidden>
+        <span id="empty-title"></span>
+        <span id="empty-hint" class="empty__hint"></span>
+      </div>
+    </main>
+
+    <button id="tail" class="tail" type="button" hidden>Jump to latest ↓</button>
+
+    <footer class="statusbar">
+      <span id="count" class="statusbar__count">0 lines</span>
+      <span id="dropped" class="statusbar__note" hidden></span>
+    </footer>
+
+    <script type="module" src="./src/logs.ts"></script>
+  </body>
+</html>

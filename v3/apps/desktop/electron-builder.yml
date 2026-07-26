@@ -1,0 +1,50 @@
+appId: com.greentunnel.desktop
+productName: GreenTunnel
+copyright: Copyright © Sadegh Hayeri
+
+directories:
+  buildResources: build
+  output: release
+
+files:
+  - out/**
+  - package.json
+
+# Tray icons are loaded by path at runtime (so macOS can pick up the @2x
+# variants), which means they must stay real files outside the asar.
+extraResources:
+  - from: resources
+    to: resources
+
+asar: true
+
+mac:
+  category: public.app-category.utilities
+  icon: build/icon.icns
+  target:
+    - target: dmg
+      arch: [arm64, x64]
+    - target: zip
+      arch: [arm64, x64]
+  # The app only sets the user's own proxy settings; no entitlements needed.
+  hardenedRuntime: true
+  gatekeeperAssess: false
+
+win:
+  icon: build/icon.ico
+  target:
+    - target: nsis
+      arch: [x64, arm64]
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+
+linux:
+  icon: build/icon.png
+  category: Network
+  maintainer: Sadegh Hayeri
+  target:
+    - AppImage
+    - deb

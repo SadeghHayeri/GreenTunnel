@@ -1,0 +1,788 @@
+/* Green Tunnel — the v2 window, rebuilt. Palette and reset live in tokens.css. */
+
+@import './tokens.css';
+
+.app {
+  display: flex;
+  flex-direction: column;
+  /* Frameless: the window has no edge to grab, so the surface is the handle. */
+  -webkit-app-region: drag;
+}
+
+button,
+input,
+select,
+.advanced,
+.endpoint {
+  -webkit-app-region: no-drag;
+}
+
+/* ── Title bar ─────────────────────────────────────────────────────────── */
+
+.titlebar {
+  display: flex;
+  flex-shrink: 0;
+  justify-content: flex-end;
+  height: 34px;
+  padding: 6px 8px 0;
+}
+
+.titlebar__close {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition:
+    background 0.16s var(--ease),
+    color 0.16s var(--ease);
+}
+
+.titlebar__close:hover {
+  background: rgb(255 255 255 / 8%);
+  color: var(--text);
+}
+
+.titlebar__close:active {
+  background: rgb(255 255 255 / 14%);
+}
+
+.titlebar__close svg {
+  width: 11px;
+  height: 11px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+/* ── Stage ─────────────────────────────────────────────────────────────── */
+
+.stage {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  align-items: center;
+  padding: 0 18px 16px;
+}
+
+.wordmark {
+  margin-bottom: 18px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+}
+
+/* ── Power ─────────────────────────────────────────────────────────────── */
+
+.power {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 112px;
+  height: 112px;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface);
+  /* `currentcolor` drives the mark, so one property lights the whole button. */
+  color: var(--dim);
+  cursor: pointer;
+  transition:
+    color 0.45s var(--ease),
+    border-color 0.45s var(--ease),
+    transform 0.18s var(--ease);
+}
+
+.power:hover:not(:disabled) {
+  border-color: #3d454f;
+  transform: scale(1.04);
+}
+
+.power:active:not(:disabled) {
+  transform: scale(0.96);
+  transition-duration: 0.08s;
+}
+
+.power:disabled {
+  cursor: progress;
+}
+
+.power:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 5px;
+}
+
+.power__mark {
+  width: 54px;
+  height: 54px;
+  fill: currentcolor;
+  transition: filter 0.45s var(--ease);
+}
+
+/* Soft bloom behind the button, cross-faded with the on state. */
+.power__glow {
+  position: absolute;
+  inset: -14px;
+  border-radius: 50%;
+  opacity: 0;
+  background: radial-gradient(circle, var(--green-glow) 35%, transparent 64%);
+  transition: opacity 0.5s var(--ease);
+  pointer-events: none;
+}
+
+/* One-shot ring pushed outwards the moment the tunnel comes up. */
+.power__halo {
+  position: absolute;
+  inset: -2px;
+  border: 2px solid var(--green);
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.power[aria-pressed='true'] {
+  border-color: var(--green);
+  color: var(--green);
+  animation: glow-pulse 2.8s var(--ease-soft) infinite;
+}
+
+.power[aria-pressed='true'] .power__glow {
+  opacity: 1;
+}
+
+.power[aria-pressed='true'] .power__mark {
+  filter: drop-shadow(0 0 9px rgb(74 222 128 / 45%));
+}
+
+.power[data-error] {
+  border-color: color-mix(in srgb, var(--danger) 60%, transparent);
+  color: color-mix(in srgb, var(--danger) 70%, var(--dim));
+}
+
+/* A slow breath while connected — present, but never the thing you look at. */
+@keyframes glow-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 5px var(--green-faint),
+      0 0 22px var(--green-glow);
+  }
+
+  50% {
+    box-shadow:
+      0 0 0 9px rgb(74 222 128 / 8%),
+      0 0 34px rgb(74 222 128 / 44%);
+  }
+}
+
+/* Indeterminate ring shown while starting or stopping. */
+.power__spinner {
+  position: absolute;
+  inset: -8px;
+  opacity: 0;
+  transition: opacity 0.25s var(--ease);
+  pointer-events: none;
+}
+
+.power__spinner circle {
+  fill: none;
+  stroke: var(--green);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  /* r=48 → circumference ≈ 302; a 62-unit dash is a ~20% arc. */
+  stroke-dasharray: 62 240;
+}
+
+.power[data-busy] .power__spinner {
+  opacity: 1;
+  animation: spin 1.15s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    rotate: 360deg;
+  }
+}
+
+/* ── Status ────────────────────────────────────────────────────────────── */
+
+.status {
+  margin-top: 16px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 2.2px;
+  color: var(--muted);
+  text-transform: uppercase;
+  transition: color 0.45s var(--ease);
+}
+
+.status[data-status='on'] {
+  color: var(--green);
+}
+
+.status[data-status='error'] {
+  color: var(--danger);
+}
+
+/*
+ * Both readings live in the same grid cell at a fixed height, so switching
+ * between them is a crossfade and turning the tunnel on never nudges the
+ * layout above it.
+ */
+.readout {
+  display: grid;
+  place-items: center;
+  height: 34px;
+  margin-top: 9px;
+}
+
+.readout > * {
+  grid-area: 1 / 1;
+  opacity: 0;
+  transition: opacity 0.4s var(--ease);
+}
+
+.readout__idle {
+  font-size: 11px;
+  letter-spacing: 0.3px;
+  color: var(--dim);
+}
+
+.readout__live {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-items: center;
+}
+
+.readout[data-view='idle'] .readout__idle,
+.readout[data-view='live'] .readout__live {
+  opacity: 1;
+}
+
+/*
+ * `busy` keeps the empty slot, so a start that succeeds never shifts the text
+ * under it. A start that fails has a message to show instead, and leaving a
+ * 34px hole above it would strand the message next to the note.
+ */
+.readout[data-view='error'] {
+  display: none;
+}
+
+.endpoint {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 11.5px;
+  color: var(--muted);
+  user-select: text;
+}
+
+.stats {
+  display: flex;
+  gap: 12px;
+  font-size: 10.5px;
+  color: var(--dim);
+}
+
+.stats b {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.error {
+  margin-top: 10px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--danger);
+  text-align: center;
+}
+
+.note {
+  flex-shrink: 0;
+  padding: 0 18px 13px;
+  font-size: 10.5px;
+  color: var(--dim);
+  text-align: center;
+}
+
+/* ── Advanced disclosure ───────────────────────────────────────────────── */
+
+.disclosure {
+  display: flex;
+  flex-shrink: 0;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  height: 40px;
+  padding: 0 16px;
+  border: 0;
+  border-top: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  transition:
+    background 0.16s var(--ease),
+    color 0.16s var(--ease);
+}
+
+.disclosure:hover,
+.disclosure[aria-expanded='true'] {
+  color: var(--text);
+}
+
+.disclosure:hover {
+  background: rgb(255 255 255 / 3.5%);
+}
+
+.disclosure:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: -2px;
+}
+
+.disclosure__chevron {
+  width: 12px;
+  height: 12px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: rotate 0.34s var(--ease);
+}
+
+.disclosure[aria-expanded='true'] .disclosure__chevron {
+  rotate: 180deg;
+}
+
+/* ── Advanced panel ────────────────────────────────────────────────────── */
+
+/*
+ * No rules anywhere inside: the group headings and the panel's own surface
+ * carry the structure, and a hairline per row turned a settings list into a
+ * ledger. The change of background against the column above it is the only
+ * edge the panel needs.
+ */
+.advanced {
+  flex-shrink: 0;
+  padding: 4px 16px 14px;
+  background: var(--surface);
+  /* Only bites on a display too short to show the panel whole. */
+  overflow-y: auto;
+}
+
+/*
+ * The window uncovering the panel is the entrance; this is the follow-through.
+ * Rows arrive in sequence rather than all at once, which reads as one motion
+ * instead of a block of text appearing.
+ */
+.advanced > * {
+  animation: row-in 380ms var(--ease) backwards;
+  animation-delay: calc(var(--i, 0) * 26ms);
+}
+
+@keyframes row-in {
+  from {
+    opacity: 0;
+    translate: 0 9px;
+  }
+}
+
+.group {
+  margin: 11px 0 1px;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 1.1px;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.group:first-child {
+  margin-top: 5px;
+}
+
+.row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 32px;
+  padding: 4px 0;
+}
+
+.row__label {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  font-size: 12px;
+}
+
+.row__hint {
+  font-size: 10px;
+  line-height: 1.3;
+  color: var(--muted);
+}
+
+.input {
+  flex-shrink: 0;
+  width: 82px;
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  transition:
+    border-color 0.16s var(--ease),
+    box-shadow 0.16s var(--ease);
+}
+
+.input:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px var(--green-faint);
+  outline: none;
+}
+
+.input:disabled {
+  opacity: 0.45;
+}
+
+.input[type='number']::-webkit-inner-spin-button {
+  margin: 0;
+  appearance: none;
+}
+
+.input--select {
+  width: 124px;
+  padding-right: 24px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%236e7681' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3.5 6.25 8 10.75l4.5-4.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 7px center;
+  background-size: 11px;
+  cursor: pointer;
+  appearance: none;
+}
+
+/* Checkbox styled as a switch. */
+.switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 34px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--border);
+  cursor: pointer;
+  transition: background 0.22s var(--ease);
+  appearance: none;
+}
+
+.switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #8b949e;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 35%);
+  transition:
+    translate 0.22s var(--ease),
+    background 0.22s var(--ease);
+}
+
+.switch:checked {
+  background: color-mix(in srgb, var(--green) 80%, black);
+}
+
+.switch:checked::after {
+  translate: 14px 0;
+  background: #fff;
+}
+
+.switch:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.switch:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}
+
+/* The panel's closing line: two quiet links sharing one row. */
+.links {
+  display: flex;
+  margin-top: 12px;
+}
+
+.link {
+  flex: 1;
+  padding: 5px 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  transition: color 0.16s var(--ease);
+}
+
+.link:hover {
+  color: var(--green);
+}
+
+.link:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: -2px;
+}
+
+/* ── Rows that are buttons ─────────────────────────────────────────────── */
+
+/*
+ * "Logs" is a row like any other, but it opens a window instead of holding a
+ * control — so it is a real `<button>` wearing the row's clothes.
+ */
+.row--button {
+  /* Bleed the hover slightly past the labels, which stay aligned with the
+     rows above it. */
+  width: calc(100% + 16px);
+  margin: 0 -8px;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.16s var(--ease);
+}
+
+.row--button:hover {
+  background: rgb(255 255 255 / 4%);
+}
+
+.row--button:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: -2px;
+}
+
+.row__action {
+  flex-shrink: 0;
+  padding: 3px 9px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 11px;
+  transition:
+    border-color 0.16s var(--ease),
+    color 0.16s var(--ease);
+}
+
+.row--button:hover .row__action {
+  border-color: color-mix(in srgb, var(--green) 55%, var(--border));
+  color: var(--green);
+}
+
+/* ── Sheets ────────────────────────────────────────────────────────────── */
+
+/*
+ * The share sheet and the "star or share" prompt. Both are `<dialog>`s opened
+ * with `showModal()`, so they render in the top layer and never enter the
+ * height the renderer measures — see the note in index.html.
+ *
+ * `margin: auto` is not redundant: the reset zeroes the margin on everything,
+ * which also takes away the centring a modal dialog gets by default.
+ */
+.sheet {
+  width: calc(100vw - 36px);
+  max-height: calc(100vh - 36px);
+  margin: auto;
+  padding: 17px 16px 13px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: 0 18px 44px rgb(0 0 0 / 55%);
+  color: var(--text);
+}
+
+.sheet::backdrop {
+  background: rgb(3 6 10 / 62%);
+}
+
+.sheet[open] {
+  animation: sheet-in 240ms var(--ease);
+}
+
+.sheet[open]::backdrop {
+  animation: backdrop-in 240ms var(--ease);
+}
+
+@keyframes sheet-in {
+  from {
+    opacity: 0;
+    scale: 0.94;
+    translate: 0 10px;
+  }
+}
+
+@keyframes backdrop-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.sheet__title {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+.sheet__body {
+  margin-top: 7px;
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+/* ── Share targets ─────────────────────────────────────────────────────── */
+
+.share {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 15px;
+}
+
+.share__target {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  align-items: center;
+  padding: 12px 4px 9px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--muted);
+  font: inherit;
+  font-size: 10.5px;
+  cursor: pointer;
+  transition:
+    border-color 0.16s var(--ease),
+    color 0.16s var(--ease),
+    translate 0.16s var(--ease);
+}
+
+.share__target svg {
+  width: 19px;
+  height: 19px;
+  fill: currentcolor;
+}
+
+.share__target:hover {
+  border-color: color-mix(in srgb, var(--green) 55%, var(--border));
+  color: var(--text);
+  translate: 0 -1px;
+}
+
+.share__target:active {
+  translate: 0;
+}
+
+.share__target:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}
+
+/* ── Sheet actions ─────────────────────────────────────────────────────── */
+
+.sheet__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.sheet__action {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    border-color 0.16s var(--ease),
+    background 0.16s var(--ease);
+}
+
+.sheet__action:hover {
+  border-color: color-mix(in srgb, var(--green) 45%, var(--border));
+  background: rgb(255 255 255 / 4%);
+}
+
+.sheet__action--primary {
+  border-color: color-mix(in srgb, var(--green) 55%, transparent);
+  background: var(--green-faint);
+  color: var(--green);
+}
+
+.sheet__action--primary:hover {
+  border-color: var(--green);
+  background: rgb(74 222 128 / 18%);
+}
+
+.sheet__action:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}
+
+/* The two ways of saying no, kept quiet and level with each other. */
+.sheet__minor {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 11px;
+}
+
+.sheet__ghost {
+  padding: 4px 6px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  transition: color 0.16s var(--ease);
+}
+
+.sheet__ghost:hover {
+  color: var(--text);
+}
+
+.sheet__ghost:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 1px;
+}
+
+.sheet__ghost--wide {
+  display: block;
+  width: 100%;
+  margin-top: 13px;
+}

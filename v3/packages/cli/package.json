@@ -1,0 +1,50 @@
+{
+  "name": "green-tunnel",
+  "version": "3.0.0",
+  "description": "Bypass DPI censorship from the command line",
+  "keywords": [
+    "dpi",
+    "censorship",
+    "sni",
+    "tls",
+    "proxy",
+    "doh"
+  ],
+  "homepage": "https://github.com/SadeghHayeri/GreenTunnel#readme",
+  "bugs": {
+    "url": "https://github.com/SadeghHayeri/GreenTunnel/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SadeghHayeri/GreenTunnel.git"
+  },
+  "license": "MIT",
+  "author": "Sadegh Hayeri",
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "bin": {
+    "gt": "./dist/main.js",
+    "green-tunnel": "./dist/main.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc --build",
+    "dev": "tsc --build && node dist/main.js",
+    "typecheck": "tsc --build"
+  },
+  "dependencies": {
+    "@green-tunnel/core": "3.0.0"
+  }
+}

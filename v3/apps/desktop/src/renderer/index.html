@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' ws:"
+    />
+    <title>Green Tunnel</title>
+    <link rel="stylesheet" href="./src/styles.css" />
+  </head>
+
+  <body>
+    <!-- One column, measured as a whole: the window is sized to fit `#app`. -->
+    <div id="app" class="app">
+      <header class="titlebar">
+        <button id="hide" class="titlebar__close" type="button" title="Hide window (Esc)">
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M4.6 4.6l6.8 6.8M11.4 4.6l-6.8 6.8" />
+          </svg>
+          <span class="sr-only">Hide window</span>
+        </button>
+      </header>
+
+      <main class="stage">
+        <p class="wordmark">Green Tunnel</p>
+
+        <button id="power" class="power" type="button" aria-pressed="false">
+          <span class="power__glow" aria-hidden="true"></span>
+          <span id="halo" class="power__halo" aria-hidden="true"></span>
+          <svg class="power__spinner" viewBox="0 0 100 100" aria-hidden="true">
+            <circle cx="50" cy="50" r="48" />
+          </svg>
+          <!-- The v2 tunnel mark, redrawn as a path so it can take `currentColor`. -->
+          <svg class="power__mark" viewBox="0 0 32 32" aria-hidden="true">
+            <path d="M3 29V16a13 13 0 0 1 26 0v13l-9.5-10.4V16a3.5 3.5 0 0 0-7 0v2.6L3 29Z" />
+          </svg>
+          <span class="sr-only">Toggle Green Tunnel</span>
+        </button>
+
+        <p id="status" class="status" data-status="off" role="status">is off</p>
+
+        <!-- One slot, two readings: the hint crossfades into the live figures. -->
+        <div id="readout" class="readout" data-view="idle">
+          <p class="readout__idle">click to connect</p>
+          <div class="readout__live">
+            <p id="endpoint" class="endpoint"></p>
+            <div class="stats">
+              <span title="Sent">↑ <b id="sent">0 B</b></span>
+              <span title="Received">↓ <b id="received">0 B</b></span>
+              <span title="Active tunnels">⇅ <b id="tunnels">0</b></span>
+            </div>
+          </div>
+        </div>
+
+        <p id="error" class="error" hidden></p>
+      </main>
+
+      <p class="note">Does not hide your IP address</p>
+
+      <button
+        id="advanced-toggle"
+        class="disclosure"
+        type="button"
+        aria-expanded="false"
+        aria-controls="advanced"
+      >
+        <span>Advanced</span>
+        <svg class="disclosure__chevron" viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M3.5 6.25 8 10.75l4.5-4.5" />
+        </svg>
+      </button>
+
+      <!-- Last in the document on purpose — see `setContentHeight` in main. -->
+      <section id="advanced" class="advanced" aria-label="Advanced settings" hidden>
+        <p class="group" style="--i: 0">Network</p>
+
+        <label class="row" style="--i: 1">
+          <span class="row__label">Port</span>
+          <input
+            id="port"
+            class="input"
+            type="number"
+            min="1"
+            max="65535"
+            step="1"
+            inputmode="numeric"
+          />
+        </label>
+
+        <label class="row" style="--i: 2">
+          <span class="row__label">DNS</span>
+          <select id="dns-mode" class="input input--select">
+            <option value="doh">Over HTTPS</option>
+            <option value="dot">Over TLS</option>
+            <option value="plain">Unencrypted</option>
+          </select>
+        </label>
+
+        <label class="row" style="--i: 3">
+          <span class="row__label">
+            System proxy
+            <small class="row__hint">Point the whole OS at the tunnel</small>
+          </span>
+          <input id="system-proxy" class="switch" type="checkbox" role="switch" />
+        </label>
+
+        <p class="group" style="--i: 4">Fragmentation</p>
+
+        <label class="row" style="--i: 5">
+          <span class="row__label">
+            Fragment size
+            <small class="row__hint">Bytes per piece of the ClientHello</small>
+          </span>
+          <input id="fragment-size" class="input" type="number" min="1" max="1400" step="1" />
+        </label>
+
+        <label class="row" style="--i: 6">
+          <span class="row__label">
+            TLS records
+            <small class="row__hint">Re-frame each piece as its own record</small>
+          </span>
+          <input id="tls-records" class="switch" type="checkbox" role="switch" />
+        </label>
+
+        <p class="group" style="--i: 7">Startup</p>
+
+        <label class="row" style="--i: 8">
+          <span class="row__label">Turn on at launch</span>
+          <input id="start-on-launch" class="switch" type="checkbox" role="switch" />
+        </label>
+
+        <label class="row" style="--i: 9">
+          <span class="row__label">Launch at login</span>
+          <input id="launch-at-login" class="switch" type="checkbox" role="switch" />
+        </label>
+
+        <p class="group" style="--i: 10">Diagnostics</p>
+
+        <!-- Opens its own window: a log is a table, and this column is 340px. -->
+        <button id="open-logs" class="row row--button" type="button" style="--i: 11">
+          <span class="row__label">
+            Logs
+            <small class="row__hint">Live engine log, with the level to record at</small>
+          </span>
+          <span class="row__action">Open</span>
+        </button>
+
+        <div class="links" style="--i: 12">
+          <button id="share" class="link" type="button">Share ↗</button>
+          <button id="source" class="link" type="button">Source code ↗</button>
+        </div>
+      </section>
+    </div>
+
+    <!--
+      Both sheets sit outside `#app` on purpose. A `<dialog>` opened with
+      `showModal()` renders in the top layer, so it is out of flow entirely and
+      never enters the height the renderer measures — which is what keeps the
+      advanced panel's load-bearing "last element" rule intact.
+    -->
+    <dialog id="share-sheet" class="sheet" aria-labelledby="share-title">
+      <h2 id="share-title" class="sheet__title">Share Green Tunnel</h2>
+      <p class="sheet__body">
+        Censorship works best on people who don't know there is a way around it. Pass it on.
+      </p>
+
+      <div class="share">
+        <button class="share__target" type="button" data-share="x" autofocus>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+            />
+          </svg>
+          <span>X</span>
+        </button>
+
+        <button class="share__target" type="button" data-share="telegram">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.161c-.18 1.897-.962 6.502-1.359 8.627-.168.9-.5 1.201-.82 1.23-.697.064-1.226-.461-1.9-.903-1.056-.692-1.653-1.123-2.678-1.799-1.185-.781-.417-1.21.258-1.911.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.139-5.061 3.345-.479.329-.913.489-1.302.481-.428-.009-1.252-.242-1.865-.442-.751-.244-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635.099-.002.321.023.465.14.119.098.152.228.166.331.016.122.033.245.026.315z"
+            />
+          </svg>
+          <span>Telegram</span>
+        </button>
+
+        <button class="share__target" type="button" data-share="whatsapp">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"
+            />
+          </svg>
+          <span>WhatsApp</span>
+        </button>
+      </div>
+
+      <button id="share-close" class="sheet__ghost sheet__ghost--wide" type="button">Close</button>
+    </dialog>
+
+    <!-- Shown at most three times, weeks apart. The schedule lives in main. -->
+    <dialog id="advocacy" class="sheet" aria-labelledby="advocacy-title">
+      <h2 id="advocacy-title" class="sheet__title">Enjoying Green Tunnel?</h2>
+      <p class="sheet__body">
+        It's free and open source. If it helped you today, a star on GitHub — or a word to someone
+        behind the same filter — is how other people find it.
+      </p>
+
+      <div class="sheet__actions">
+        <button
+          id="advocacy-star"
+          class="sheet__action sheet__action--primary"
+          type="button"
+          autofocus
+        >
+          Star on GitHub
+        </button>
+        <button id="advocacy-share" class="sheet__action" type="button">Share</button>
+      </div>
+
+      <div class="sheet__minor">
+        <button id="advocacy-later" class="sheet__ghost" type="button">Later</button>
+        <button id="advocacy-never" class="sheet__ghost" type="button">Don't show again</button>
+      </div>
+    </dialog>
+
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

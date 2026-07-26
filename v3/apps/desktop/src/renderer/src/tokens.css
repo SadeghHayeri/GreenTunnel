@@ -1,0 +1,79 @@
+/*
+ * Palette and reset shared by both pages — the main column and the log window.
+ *
+ * Dark by construction: the whole composition is one green glow on a near-black
+ * field, and a light variant would have nothing to glow against. `window.ts`
+ * hard-codes the same background so there is no flash before first paint.
+ */
+
+:root {
+  --green: #4ade80;
+  --green-glow: rgb(74 222 128 / 34%);
+  --green-faint: rgb(74 222 128 / 12%);
+
+  --bg: #0d1117;
+  --surface: #161b22;
+  --border: #30363d;
+  --text: #e6edf3;
+  --muted: #6e7681;
+  --dim: #39424b;
+  --danger: #f85149;
+
+  /* Ease-out everywhere: every motion here is a response to the user. */
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
+
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-user-drag: none;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html,
+body {
+  overflow: hidden;
+  background: var(--bg);
+}
+
+body {
+  color: var(--text);
+  font:
+    13px/1.45 -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    system-ui,
+    sans-serif;
+  cursor: default;
+  user-select: none;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ── Reduced motion ────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

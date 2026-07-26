@@ -1,0 +1,313 @@
+/*
+ * The log window. Same palette as the main column, but this one is a table:
+ * ordinary, resizable, and dense.
+ *
+ * Every row is exactly `--row` tall — that constant is repeated in logs.ts and
+ * the two must agree, because the virtual list multiplies by it to know where
+ * the scroll position lands. Nothing here may wrap or grow a row.
+ */
+
+@import './tokens.css';
+
+:root {
+  --row: 18px;
+  --toolbar-h: 44px;
+  --status-h: 24px;
+
+  --level-error: #f85149;
+  --level-warn: #d29922;
+  --level-info: #58a6ff;
+  --level-debug: #6e7681;
+  --level-trace: #4a5058;
+}
+
+body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* ── Toolbar ───────────────────────────────────────────────────────────── */
+
+.toolbar {
+  display: flex;
+  flex-shrink: 0;
+  gap: 8px;
+  align-items: center;
+  height: var(--toolbar-h);
+  padding: 0 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  /* Frameless on macOS: the toolbar is the window's handle. */
+  -webkit-app-region: drag;
+}
+
+/* Room for the traffic lights, which `hiddenInset` leaves floating here. */
+:root[data-platform='darwin'] .toolbar {
+  padding-left: 84px;
+}
+
+.toolbar button,
+.toolbar input,
+.toolbar select {
+  -webkit-app-region: no-drag;
+}
+
+.toolbar__spacer {
+  flex: 1;
+}
+
+.field {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.field__label {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.input {
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  transition:
+    border-color 0.16s var(--ease),
+    box-shadow 0.16s var(--ease);
+}
+
+.input:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px var(--green-faint);
+  outline: none;
+}
+
+.input--select {
+  width: 104px;
+  padding-right: 24px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%236e7681' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3.5 6.25 8 10.75l4.5-4.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 7px center;
+  background-size: 11px;
+  cursor: pointer;
+  appearance: none;
+}
+
+.input--filter {
+  width: 180px;
+  user-select: text;
+}
+
+.input--filter::-webkit-search-cancel-button {
+  appearance: none;
+}
+
+.tool {
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 11.5px;
+  cursor: pointer;
+  transition:
+    background 0.16s var(--ease),
+    border-color 0.16s var(--ease),
+    color 0.16s var(--ease);
+}
+
+.tool:hover {
+  border-color: color-mix(in srgb, var(--green) 55%, var(--border));
+  color: var(--text);
+}
+
+.tool:active {
+  background: rgb(255 255 255 / 6%);
+}
+
+.tool:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 1px;
+}
+
+/* ── The list ──────────────────────────────────────────────────────────── */
+
+.viewport {
+  flex: 1;
+  overflow: auto;
+  overscroll-behavior: contain;
+  /* Reading a log means selecting bits of it. */
+  user-select: text;
+  cursor: text;
+}
+
+.viewport:focus-visible {
+  outline: none;
+}
+
+/*
+ * Sized from JS: height is `rows × --row`, width is the widest line. Both are
+ * explicit so the scrollbars stay still while the visible slice changes.
+ */
+.canvas {
+  position: relative;
+}
+
+.rows {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  will-change: transform;
+}
+
+.line {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  height: var(--row);
+  padding: 0 12px;
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 11.5px;
+  line-height: var(--row);
+  white-space: pre;
+}
+
+.line:hover {
+  background: rgb(255 255 255 / 3.5%);
+}
+
+.line__time {
+  flex-shrink: 0;
+  color: var(--dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.line__level {
+  flex-shrink: 0;
+  width: 40px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.line__scope {
+  flex-shrink: 0;
+  width: 68px;
+  overflow: hidden;
+  color: var(--muted);
+  text-overflow: ellipsis;
+}
+
+.line__text {
+  color: var(--text);
+}
+
+.line[data-level='error'] .line__level,
+.line[data-level='error'] .line__text {
+  color: var(--level-error);
+}
+
+.line[data-level='warn'] .line__level,
+.line[data-level='warn'] .line__text {
+  color: var(--level-warn);
+}
+
+.line[data-level='info'] .line__level {
+  color: var(--level-info);
+}
+
+.line[data-level='debug'] .line__level {
+  color: var(--level-debug);
+}
+
+.line[data-level='debug'] .line__text {
+  color: #b6bfc9;
+}
+
+.line[data-level='trace'] .line__level,
+.line[data-level='trace'] .line__text {
+  color: var(--level-trace);
+}
+
+/* Stack frames: continuation of the line above, so they recede. */
+.line[data-kind='stack'] .line__text {
+  color: var(--muted);
+  opacity: 0.85;
+}
+
+.empty {
+  position: absolute;
+  inset: var(--toolbar-h) 0 var(--status-h);
+  display: grid;
+  place-content: center;
+  gap: 6px;
+  padding: 0 32px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--dim);
+  text-align: center;
+  pointer-events: none;
+}
+
+.empty__hint {
+  font-size: 11px;
+  color: color-mix(in srgb, var(--dim) 80%, transparent);
+}
+
+/* ── Jump to latest ────────────────────────────────────────────────────── */
+
+.tail {
+  position: absolute;
+  right: 16px;
+  bottom: calc(var(--status-h) + 14px);
+  padding: 6px 12px;
+  border: 1px solid color-mix(in srgb, var(--green) 45%, var(--border));
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: 0 4px 14px rgb(0 0 0 / 45%);
+  color: var(--green);
+  font: inherit;
+  font-size: 11.5px;
+  cursor: pointer;
+  animation: pill-in 220ms var(--ease);
+}
+
+.tail:hover {
+  background: color-mix(in srgb, var(--green) 12%, var(--surface));
+}
+
+@keyframes pill-in {
+  from {
+    opacity: 0;
+    translate: 0 6px;
+  }
+}
+
+/* ── Status bar ────────────────────────────────────────────────────────── */
+
+.statusbar {
+  display: flex;
+  flex-shrink: 0;
+  gap: 10px;
+  align-items: center;
+  height: var(--status-h);
+  padding: 0 12px;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 10.5px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.statusbar__note {
+  color: var(--dim);
+}

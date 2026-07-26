@@ -1,0 +1,13 @@
+{
+  // Editor + ESLint view of the package: everything, including tests, but no
+  // emit. `tsconfig.build.json` is what actually produces `dist/`.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": false,
+    "declaration": false,
+    "declarationMap": false,
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "include": ["src/**/*.ts"]
+}

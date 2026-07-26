@@ -1,0 +1,27 @@
+{
+  "name": "green-tunnel-desktop",
+  "version": "3.0.0",
+  "private": true,
+  "description": "GreenTunnel desktop app",
+  "license": "MIT",
+  "author": "Sadegh Hayeri",
+  "type": "module",
+  "main": "./out/main/index.js",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
+    "package": "electron-vite build && electron-builder",
+    "package:mac": "electron-vite build && electron-builder --mac",
+    "package:win": "electron-vite build && electron-builder --win",
+    "package:linux": "electron-vite build && electron-builder --linux"
+  },
+  "devDependencies": {
+    "@green-tunnel/core": "3.0.0",
+    "electron": "^43.2.0",
+    "electron-builder": "^26.15.3",
+    "electron-vite": "^5.0.0",
+    "vite": "^7.3.6"
+  }
+}

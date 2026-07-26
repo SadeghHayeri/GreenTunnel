@@ -1,0 +1,46 @@
+{
+  "name": "green-tunnel-workspace",
+  "version": "3.0.0",
+  "private": true,
+  "description": "GreenTunnel v3 — bypass DPI censorship via TLS fragmentation and encrypted DNS",
+  "license": "MIT",
+  "author": "Sadegh Hayeri",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SadeghHayeri/GreenTunnel.git"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "tsc --build && npm run build --workspace apps/desktop",
+    "dev": "npm run dev --workspace apps/desktop",
+    "dev:cli": "npm run dev --workspace packages/cli",
+    "typecheck": "tsc --build && npm run typecheck --workspaces --if-present",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check": "npm run typecheck && npm run lint && npm run test",
+    "install:cli": "tsc --build && npm link --workspace packages/cli",
+    "uninstall:cli": "npm unlink --global green-tunnel",
+    "clean": "tsc --build --clean && node -e \"for (const p of ['packages/core/dist','packages/cli/dist','apps/desktop/out','apps/desktop/release']) require('node:fs').rmSync(p, { recursive: true, force: true })\""
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.13.3",
+    "eslint": "^10.8.0",
+    "globals": "^17.7.0",
+    "prettier": "^3.9.6",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.65.0",
+    "vitest": "^4.1.10"
+  }
+}
