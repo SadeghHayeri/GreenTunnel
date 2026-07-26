@@ -22,6 +22,12 @@ RUN npx tsc --build packages/cli/tsconfig.build.json
 FROM node:24-alpine AS runtime
 WORKDIR /green-tunnel
 
+# Supplied by the publish workflow from the git tag. Nothing in the repository
+# records a release number, so without this `gt --version` would report 0.0.0
+# inside the image. Left at 0.0.0 for a plain local `docker build`, which is
+# honest: that image is not a release.
+ARG VERSION=0.0.0
+
 ENV NODE_ENV=production \
 	HOST=0.0.0.0 \
 	PORT=8000 \
@@ -36,6 +42,10 @@ RUN npm ci --omit=dev --include-workspace-root \
 	&& npm cache clean --force
 
 COPY --from=build /green-tunnel/packages/cli/dist packages/cli/dist
+
+# After `npm ci`, deliberately: the committed lockfile records each workspace's
+# version, and stamping before the install would make the two disagree.
+RUN npm pkg set version="$VERSION" --workspace packages/cli
 
 USER node
 EXPOSE 8000/tcp

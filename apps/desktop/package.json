@@ -1,6 +1,6 @@
 {
   "name": "green-tunnel-desktop",
-  "version": "3.0.0",
+  "version": "0.0.0",
   "private": true,
   "description": "GreenTunnel desktop app",
   "license": "MIT",
@@ -18,10 +18,10 @@
     "package:linux": "electron-vite build && electron-builder --linux"
   },
   "devDependencies": {
-    "green-tunnel": "3.0.0",
     "electron": "43.2.0",
     "electron-builder": "^26.15.3",
     "electron-vite": "^5.0.0",
+    "green-tunnel": "*",
     "vite": "^7.3.6"
   }
 }

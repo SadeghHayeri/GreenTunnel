@@ -9,6 +9,27 @@
     <img src="https://img.shields.io/github/repo-size/SadeghHayeri/GreenTunnel.svg?color=Green&style=for-the-badge">
 </p>
 
+> ### A note from the maintainer
+>
+> **Contribute prompts, not pull requests.**
+>
+> I don't take large diffs anymore. If you want to change something in
+> GreenTunnel, send the **prompt** instead — the final one, the one you'd hand to
+> your own agent. Open an issue, label it **`PROMPT REQUEST`**, and paste it in.
+>
+> I'll run it against the codebase, review what comes out, and open the PR for
+> you — **committed with your email**, so it lands in the history as your
+> contribution, because it is one.
+>
+> Write it like you'd run it yourself: name the files, say what _done_ looks
+> like, say how to verify it. Several prompts in sequence are welcome — that's
+> usually how real work goes. A sharp prompt is worth more to this project than a
+> big patch: it's the part I can't write for you, and it's the part that decides
+> what the code becomes.
+>
+> Small, focused PRs — a bug fix, a typo, a dead link — are as welcome as they
+> ever were. The world is changing. Let's build with it.
+
 GreenTunnel bypasses DPI (Deep Packet Inspection) systems found in many ISPs (Internet Service Providers) which block access to certain websites.
 
 It runs a local proxy that splits the TLS ClientHello so the hostname you are visiting never appears whole in a single packet, and resolves DNS over an encrypted channel so your resolver cannot be used to block or observe you either.
@@ -57,6 +78,9 @@ After installation, run with `gt` or `green-tunnel`.
 ### Desktop app
 
 Download the installer for your OS from the [releases](https://github.com/SadeghHayeri/GreenTunnel/releases) page — `.dmg` for macOS, `.exe` for Windows, `.AppImage` or `.deb` for Linux.
+
+Builds are currently **unsigned**, so macOS Gatekeeper and Windows SmartScreen will
+warn on first launch. On macOS, right-click the app and choose _Open_.
 
 ### Docker
 
@@ -122,7 +146,7 @@ gt --no-system-proxy
 gt --log-level debug
 ```
 
-**If a site is still blocked**, try in this order: a smaller `--fragment-size`, then `--tls-records`, then `--fragment-delay 10`.
+**If a site is still blocked**, see [Good to know](#good-to-know).
 
 ### Docker
 
@@ -210,6 +234,22 @@ Standard DNS lookups can be intercepted or spoofed by ISPs to block domains at t
 
 ---
 
+## Good to know
+
+- **A site is still blocked.** Try, in order: a smaller `--fragment-size`, then
+  `--tls-records`, then `--fragment-delay 10`. Different DPI boxes reassemble
+  differently, and one of the three usually gets through.
+- **Quad9 over DoH doesn't work.** Their endpoint refuses HTTP/1.1, which is all
+  Node's `fetch` speaks. Use `--dns dot --dot-host 9.9.9.9` instead.
+- **Linux system proxy is GSettings**, so it covers GNOME and its relatives. On
+  other desktops, run with `--no-system-proxy` and point your browser at the
+  proxy yourself.
+- **Terminal tools ignore the system proxy.** No process can set another's
+  environment, so `curl`, `git` and friends need `http_proxy` / `https_proxy`
+  exported — the CLI prints the exact line for you.
+
+---
+
 ## Repository layout
 
 ```
@@ -237,11 +277,40 @@ notes, conventions, and what is and is not verified.
 
 ## Contributing
 
-Pull requests and issues are always welcome.
+The main way to contribute code here is to send the prompt you'd run, and let me
+run it for you.
 
-- Use `FIX:`, `ADD:`, `UPDATE:` prefixes in PR titles.
+### Prompt requests
+
+[Open an issue](https://github.com/SadeghHayeri/GreenTunnel/issues/new), label it
+**`PROMPT REQUEST`**, and paste in the finished prompt — or the sequence of them —
+that you want run against the repository. I'll run it, review the result, iterate
+if it needs it, and open the PR **authored with your email**. Tell me which
+address to use; otherwise I'll take the one on your GitHub account.
+
+A prompt worth running usually has:
+
+- **Scope** — the files or areas it should touch, and the ones it must not.
+- **Intent** — what the change is for, so a judgement call goes the right way.
+- **Done** — the observable result. "`gt --port 0` prints the chosen port" beats
+  "improve port handling".
+- **Verification** — the command that proves it. `npm run check` is the floor;
+  name the test you'd add.
+
+Read [CLAUDE.md](./CLAUDE.md) before you write one. It's the same context I'd be
+handing the model, and it names the conventions, the constraints, and the mistakes
+this codebase has already made once.
+
+### Pull requests
+
+Still open for the small stuff: a bug fix, a typo, a dead link, a doc correction.
+
+- Use `FIX:`, `ADD:`, `UPDATE:` prefixes in the title.
 - Keep commits focused and descriptive.
 - Make sure `npm run check` passes.
+
+Large rewrites and sweeping refactors won't be merged. Send them as a prompt
+request instead — same work, and you still get the commit.
 
 ---
 

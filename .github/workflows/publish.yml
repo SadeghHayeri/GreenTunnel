@@ -9,27 +9,31 @@ on:
       - v*
 
 jobs:
-  verify:
-    name: Verify tag matches package version
+  # The tag is the only source of truth for the version. Nothing in the repository
+  # records a release number — every manifest sits at 0.0.0 on `main` and each job
+  # below stamps the tag in before it builds. So cutting a release is `git tag vX`
+  # and `git push`, with no version commit to forget and nothing to keep in step.
+  version:
+    name: Resolve version from tag
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.version.outputs.version }}
     steps:
-      - uses: actions/checkout@v4
       - id: version
         run: |
           TAG="${GITHUB_REF#refs/tags/v}"
-          PKG=$(node -p "require('./packages/cli/package.json').version")
-          echo "tag=$TAG green-tunnel=$PKG"
-          if [ "$TAG" != "$PKG" ]; then
-            echo "::error::Tag v$TAG does not match packages/cli ($PKG)"
+          # Reject anything npm would not accept *before* any job spends time on
+          # it — a typo like `v3.0` would otherwise fail late, inside `npm publish`.
+          if ! printf '%s' "$TAG" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$'; then
+            echo "::error::Tag v$TAG is not a semver version — expected vMAJOR.MINOR.PATCH"
             exit 1
           fi
-          echo "version=$TAG" >> $GITHUB_OUTPUT
+          echo "Releasing $TAG"
+          echo "version=$TAG" >> "$GITHUB_OUTPUT"
 
   publish-npm:
     name: Publish to npm
-    needs: [verify]
+    needs: [version]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -39,6 +43,7 @@ jobs:
       id-token: write
     env:
       ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+      VERSION: ${{ needs.version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -48,16 +53,32 @@ jobs:
           registry-url: https://registry.npmjs.org/
 
       - run: npm ci
+
+      # `npm pkg set`, not `npm version`: it edits the manifests and stops there.
+      # `npm version` also reconciles the lockfile, which reaches for the registry
+      # and fails on a version that is not published yet. Stamped after `npm ci`
+      # so the install still matches the committed lockfile.
+      - name: Stamp the version from the tag
+        run: npm pkg set version="$VERSION" --workspaces --include-workspace-root
+
+      # Belt and braces: if stamping ever silently no-ops, this stops `0.0.0` from
+      # reaching the registry, where the mistake could not be taken back.
+      - name: Refuse to publish an unstamped version
+        run: |
+          HAVE=$(node -p "require('./packages/cli/package.json').version")
+          [ "$HAVE" = "$VERSION" ] || { echo "::error::manifest is $HAVE, tag is $VERSION"; exit 1; }
+
       - run: npx tsc --build packages/cli/tsconfig.build.json
 
       # One package. The engine is bundled in as `dist/core`, so there is no
-      # second publish to order this one against.
+      # second publish to order this one against. `gt --version` reads the manifest
+      # at runtime, so the stamp above is what it will report.
       - name: Publish green-tunnel
         run: npm publish --workspace packages/cli
 
   publish-docker-hub:
     name: Publish to Docker Hub
-    needs: [verify]
+    needs: [version]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -84,16 +105,23 @@ jobs:
           file: Dockerfile
           push: true
           platforms: linux/amd64,linux/arm64
+          # VERSION is what `gt --version` reports inside the container: the
+          # Dockerfile stamps it into the manifest, since nothing in the repo
+          # carries a release number.
+          build-args: |
+            VERSION=${{ needs.version.outputs.version }}
           tags: |
-            sadeghhayeri/green-tunnel:${{ needs.verify.outputs.version }}
+            sadeghhayeri/green-tunnel:${{ needs.version.outputs.version }}
             sadeghhayeri/green-tunnel:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
   build-desktop:
     name: Build desktop (${{ matrix.os }})
-    needs: [verify]
+    needs: [version]
     runs-on: ${{ matrix.os }}
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
     strategy:
       fail-fast: false
       matrix:
@@ -122,6 +150,18 @@ jobs:
           cache: npm
 
       - run: npm ci
+
+      # electron-builder names every installer from apps/desktop's version, so
+      # without this the artifacts would all be called GreenTunnel-0.0.0. Same
+      # `npm pkg set` as the npm job, and it must run before packaging.
+      #
+      # `shell: bash` is required, not cosmetic: this job also runs on Windows,
+      # where the default shell is PowerShell and `$VERSION` is a PowerShell
+      # variable rather than the environment — it would expand to nothing and
+      # stamp an empty version, with no error.
+      - name: Stamp the version from the tag
+        shell: bash
+        run: npm pkg set version="$VERSION" --workspaces --include-workspace-root
 
       # electron-vite bundles the engine into out/main, resolving `green-tunnel`
       # through the workspace symlink and its `main` field — so dist/ has to

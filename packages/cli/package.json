@@ -1,6 +1,6 @@
 {
   "name": "green-tunnel",
-  "version": "3.0.0",
+  "version": "0.0.0",
   "description": "Bypass DPI censorship — the engine and the command line tool",
   "keywords": [
     "dpi",

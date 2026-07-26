@@ -333,7 +333,7 @@ was nothing but `export * from '@green-tunnel/core'`, so library users already g
 the whole engine from `green-tunnel`, the name v2 published under for ten years.
 Publishing core separately was a second distribution channel for identical code,
 pinned to the same version, gated on owning an npm **organisation** that did not
-exist — which is exactly what broke the v3.0.0 release (see
+exist — which is exactly what broke the first v3 release attempt (see
 [Release and distribution](#release-and-distribution)).
 
 What the merge deleted: an npm org to create and hold, an exact-version dependency
@@ -394,7 +394,7 @@ Worth knowing about, because most are easy to reintroduce:
 14. The CLI logged `uncaughtException` and carried on with a half-dead proxy
     while the OS still pointed at it.
 
-## v3.0 bugs fixed in v3.0.1 — the "stranded proxy" class
+## The "stranded proxy" class — v3's own bugs, found after the first pass
 
 These are the ones that actually bricked a real machine's networking, and every
 one is easy to reintroduce. The failure mode is nasty because it is _invisible_:
@@ -487,20 +487,20 @@ Actually run, not assumed:
   - Escape closes the window, and its bounds come back exactly on reopen.
 
 - **`electron-builder` on macOS**, run locally with
-  `CSC_IDENTITY_AUTO_DISCOVERY=false`: `GreenTunnel-3.0.0{,-arm64}.dmg` and the
-  two matching `-mac.zip`s all build, and the asar carries `out/main/index.js`,
+  `CSC_IDENTITY_AUTO_DISCOVERY=false`: both `.dmg`s (arm64 and x64) and the two
+  matching `-mac.zip`s all build, and the asar carries `out/main/index.js`,
   `out/preload/index.cjs` and the renderer, with `resources/` correctly left
   outside it. Unsigned — that is what CI produces too.
-- **Both workflows**, on the `v3.0.0` tag push. `hadolint`, the real Docker build
+- **Both workflows**, on the first v3 tag push. `hadolint`, the real Docker build
   and `curl` through the container all passed, as did the multi-arch Docker Hub
-  push and the tag/version `verify` job. The `npm ci --workspace …` filtering in
-  the image was fine. What failed is
-  [recorded in full](#what-the-v300-tag-taught-us-in-one-place).
+  push. The `npm ci --workspace …` filtering in the image was fine. What failed is
+  [recorded in full](#what-the-first-v3-tag-taught-us-in-one-place).
 - **The published package, from its own tarball.** `npm pack` → install into an
   empty directory → run the installed binary. 133 files, 64.5 kB, and the only
   things npm pulled were `dns-packet`, `lru-cache` and one transitive: no
   `@green-tunnel/core` to resolve, and no `.tsbuildinfo` shipped. `gt --version`
-  printed `3.0.0`, and `gt --port 18777 --no-system-proxy` proxied both
+  reported the stamped version, and `gt --port 18777 --no-system-proxy` proxied
+  both
   `HTTP/1.1 200 Connection Established` (HTTPS CONNECT) and `HTTP/1.1 200 OK`
   (plain HTTP) via DoH. That is the whole publish path short of the registry.
 
@@ -566,6 +566,48 @@ Inherited from v2 during the promotion, and rewritten rather than copied — v2'
 versions assumed `src/` + `bin/` at the root and a `gui/` that installed
 `green-tunnel` from npm.
 
+### Cutting a release: push a tag, nothing else
+
+```bash
+git tag v3.1.0 && git push origin v3.1.0
+```
+
+That is the whole procedure. **The tag is the only place a release number is
+written.** Every manifest in the repository sits permanently at `0.0.0`, and each
+publish job stamps the tag in before it builds — `npm pkg set version=…
+--workspaces --include-workspace-root`, plus an `ARG VERSION` for the Docker
+image. There is no version commit to make, nothing to keep in step across three
+manifests and a lockfile, and no way to tag a release whose files disagree with
+it, because the files never claim a version at all.
+
+`0.0.0` everywhere is therefore correct, not a placeholder someone forgot: a
+locally built app or `docker build` reports `0.0.0` because it **is not a
+release**. `gt --version` reads the manifest at runtime rather than baking a
+constant in at compile time, which is what makes stamping enough.
+
+Three things this deliberately trades away:
+
+- `npm pkg set`, not `npm version` — the latter also reconciles the lockfile,
+  which reaches for the registry and fails on a version that is not published
+  yet. Stamping runs **after** `npm ci`, so the install still matches the
+  committed lockfile.
+- The desktop app depends on the engine as `"green-tunnel": "*"`, not a pinned
+  version. An exact pin has to be rewritten on every bump, and npm resolves it
+  against the **registry** rather than the workspace the moment it stops matching
+  — `npm version` fails with `No matching version found for green-tunnel@…` and
+  leaves the lockfile half-written. `*` always matches, so the workspace link
+  always wins.
+- The `version` job rejects a tag that is not `vMAJOR.MINOR.PATCH` before any
+  other job starts, so `v3.1` fails in seconds rather than deep inside
+  `npm publish`.
+
+A tag that failed _before_ publishing anything can be moved rather than burned:
+`git tag -f vX.Y.Z && git push -f origin vX.Y.Z`. Once npm has accepted a version
+that is over — npm forbids republishing the same one, so from then on the only way
+forward is a new number. Prerelease tags are allowed by the regex but get no
+special handling: they would still move Docker's `latest` and npm's `latest`
+dist-tag, so treat them as unsupported for now.
+
 **`Dockerfile`** is two-stage and covers `packages/cli` only; `apps/desktop` would
 drag ~200 MB of Electron build tooling into a CLI image. Two things about it are
 load bearing:
@@ -590,9 +632,10 @@ packaging jobs must **not** set it.
 `on: create` with a `tags:` filter, which that event does not support, so it also
 fired for branches. Then:
 
-1. `verify` fails the run unless the tag matches `packages/cli`'s version. Bump
-   `packages/cli` and the workspace root together. (`apps/desktop` is private, but
-   electron-builder names the artifacts from its version — keep it in step.)
+1. `version` extracts the number from the tag, rejects anything that is not
+   `vMAJOR.MINOR.PATCH`, and hands it to the other three jobs. Every one of them
+   stamps it into the manifests before building — see
+   [Cutting a release](#cutting-a-release-push-a-tag-nothing-else).
 2. npm: one `npm publish`, no ordering to get wrong. No `--provenance` flag and no
    `NODE_AUTH_TOKEN`: see [Trusted publishing](#trusted-publishing-oidc) below.
 3. Docker Hub: one multi-arch manifest (amd64 + arm64). v2's separate `arm-*`
@@ -614,10 +657,10 @@ the missing build: `[commonjs--resolver] Failed to resolve entry for package`.
 `test.yml` never hit this because its `npm run build` is the root script, which
 already runs `tsc --build` first.
 
-### What the v3.0.0 tag taught us, in one place
+### What the first v3 tag taught us, in one place
 
-The first tag push failed four ways at once, which is worth remembering as a set
-because only one of them was visible in the error the release actually stopped on:
+The first tag push failed five ways, which is worth remembering as a set because
+only one of them was visible in the error the release actually stopped on:
 
 1. `format:check` — seven files. It is the **first** step in `test.yml`, so it
    masked everything after it.
@@ -631,6 +674,11 @@ because only one of them was visible in the error the release actually stopped o
    have had to be an npm **organisation**, created by hand. That is what prompted
    [folding core back in](#one-package-not-two-and-why) instead, and the whole
    failure mode no longer exists.
+5. Then, on the **second** tag: `Tag v… does not match packages/cli` — the tag was
+   pushed without bumping any manifest. That check has since been deleted along
+   with the problem: the manifests no longer carry a version for a tag to
+   disagree with. See
+   [Cutting a release](#cutting-a-release-push-a-tag-nothing-else).
 
 That 404 is also silent about ordering: the tarball is packed and the provenance
 statement is signed and **published to the sigstore transparency log** before the
@@ -674,12 +722,12 @@ Roughly in order:
    in `electron-builder.yml`. Regenerate all four together if it ever changes:
    `build/icon.{icns,ico,png}` for the installer and `resources/icon.png` for
    the windows Linux and Windows draw themselves, plus the dev dock.
-3. CI: both workflows have run once, on `v3.0.0`, and failed
-   [four ways](#what-the-v300-tag-taught-us-in-one-place). All four are fixed. The
-   release still needs a **trusted publisher configured for `green-tunnel`** on
+3. CI: both workflows have run, and the first two tag pushes failed
+   [five ways](#what-the-first-v3-tag-taught-us-in-one-place). All five are fixed.
+   The release still needs a **trusted publisher configured for `green-tunnel`** on
    npmjs.com (`SadeghHayeri/GreenTunnel`, workflow `publish.yml`) — the workflow
-   carries no token, so without it `npm publish` cannot authenticate. Then re-push
-   the tag.
+   carries no token, so without it `npm publish` cannot authenticate. Then push a
+   tag.
 4. More tests: `http/head.ts`, the DNS resolvers against a stub server, an
    integration test that drives `Proxy` over a loopback TLS server.
 5. Features worth considering — per-site rules, a bypass list in the UI,
