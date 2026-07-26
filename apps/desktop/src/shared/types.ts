@@ -1,4 +1,4 @@
-import type { DnsMode, LogLevel, ProxyStats } from '@green-tunnel/core';
+import type { DnsMode, LogLevel, ProxyStats } from 'green-tunnel';
 
 export type { DnsMode, LogLevel, ProxyStats };
 

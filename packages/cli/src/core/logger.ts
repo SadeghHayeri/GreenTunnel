@@ -28,7 +28,14 @@ const RANK: Record<LogLevel, number> = {
 };
 
 /** Every level, quietest first — for `--log-level` help and level pickers. */
-export const LOG_LEVELS: readonly LogLevel[] = ['silent', 'error', 'warn', 'info', 'debug', 'trace'];
+export const LOG_LEVELS: readonly LogLevel[] = [
+  'silent',
+  'error',
+  'warn',
+  'info',
+  'debug',
+  'trace',
+];
 
 const COLOR: Record<Exclude<LogLevel, 'silent'>, Parameters<typeof styleText>[0]> = {
   error: 'red',

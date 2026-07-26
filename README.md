@@ -141,20 +141,20 @@ The container never touches a system proxy — point your client at it.
 
 **Environment variables:**
 
-| Variable         | Description                                | Default    |
-| ---------------- | ------------------------------------------ | ---------- |
-| `HOST`           | Address to bind inside the container       | `0.0.0.0`  |
-| `PORT`           | Proxy port                                 | `8000`     |
-| `DNS_MODE`       | `doh`, `dot` or `plain`                    | `doh`      |
-| `DOH_URL`        | DoH endpoint                               | Cloudflare |
-| `DOT_HOST`       | DoT server, when `DNS_MODE=dot`            | `1.1.1.1`  |
-| `DNS_SERVER`     | Plain resolver, when `DNS_MODE=plain`      | system     |
-| `FRAGMENT_SIZE`  | Bytes per ClientHello piece                | `40`       |
-| `FRAGMENT_DELAY` | Milliseconds between pieces                | `0`        |
+| Variable         | Description                                 | Default    |
+| ---------------- | ------------------------------------------- | ---------- |
+| `HOST`           | Address to bind inside the container        | `0.0.0.0`  |
+| `PORT`           | Proxy port                                  | `8000`     |
+| `DNS_MODE`       | `doh`, `dot` or `plain`                     | `doh`      |
+| `DOH_URL`        | DoH endpoint                                | Cloudflare |
+| `DOT_HOST`       | DoT server, when `DNS_MODE=dot`             | `1.1.1.1`  |
+| `DNS_SERVER`     | Plain resolver, when `DNS_MODE=plain`       | system     |
+| `FRAGMENT_SIZE`  | Bytes per ClientHello piece                 | `40`       |
+| `FRAGMENT_DELAY` | Milliseconds between pieces                 | `0`        |
 | `TLS_RECORDS`    | Set to any value to re-frame as TLS records | off        |
-| `NO_FRAGMENT`    | Set to any value to disable fragmentation  | off        |
-| `HTTPS_ONLY`     | Set to any value to block plain HTTP       | off        |
-| `LOG_LEVEL`      | `silent`…`trace`                           | `info`     |
+| `NO_FRAGMENT`    | Set to any value to disable fragmentation   | off        |
+| `HTTPS_ONLY`     | Set to any value to block plain HTTP        | off        |
+| `LOG_LEVEL`      | `silent`…`trace`                            | `info`     |
 
 Boolean variables are on when set to _anything_ and off when unset — `HTTPS_ONLY=false` still turns it on.
 
@@ -165,7 +165,7 @@ A 340 px window with an on/off switch, a tray icon, and an Advanced panel for DN
 ### Library
 
 ```ts
-import { Proxy, SystemProxy, DEFAULT_BYPASS } from '@green-tunnel/core';
+import { Proxy, SystemProxy, DEFAULT_BYPASS } from 'green-tunnel';
 
 const proxy = new Proxy({
   port: 8000,
@@ -187,7 +187,7 @@ await system.disable();
 await proxy.stop();
 ```
 
-`green-tunnel` re-exports `@green-tunnel/core`, so v2's `import { Proxy } from 'green-tunnel'` still works.
+The engine and the `gt` command ship as one package, so v2's `import { Proxy } from 'green-tunnel'` still works unchanged. Runtime dependencies are just `dns-packet` and `lru-cache`.
 
 ---
 
@@ -213,9 +213,9 @@ Standard DNS lookups can be intercepted or spoofed by ISPs to block domains at t
 ## Repository layout
 
 ```
-packages/core/   @green-tunnel/core — the engine: proxy, TLS fragmentation, DNS, system proxy
-packages/cli/    green-tunnel — the `gt` command
-apps/desktop/    the Electron app
+packages/cli/        green-tunnel — the only published package
+packages/cli/src/core/   the engine: proxy, TLS fragmentation, DNS, system proxy
+apps/desktop/        the Electron app
 ```
 
 ## Development

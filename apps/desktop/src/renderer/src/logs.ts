@@ -210,7 +210,10 @@ function layout(): void {
 function paint(): void {
   const { scrollTop, clientHeight } = ui.viewport;
   const first = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - OVERSCAN);
-  const last = Math.min(lines.length, Math.ceil((scrollTop + clientHeight) / ROW_HEIGHT) + OVERSCAN);
+  const last = Math.min(
+    lines.length,
+    Math.ceil((scrollTop + clientHeight) / ROW_HEIGHT) + OVERSCAN,
+  );
   const needed = Math.max(0, last - first);
 
   while (pool.length < needed) pool.push(createRow());

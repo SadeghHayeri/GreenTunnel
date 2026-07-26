@@ -1,11 +1,17 @@
 {
+  // Editor + ESLint view of the package: everything, including the engine's
+  // tests, but no emit. `tsconfig.build.json` is what actually produces `dist/`.
+  // The split has to exist somewhere: the build must not emit `*.test.ts` into
+  // `dist/`, but excluding them outright would leave them in no project at all,
+  // and ESLint's type-aware rules would fail with "not found by the project
+  // service". It used to live in `packages/core`, which is now `src/core`.
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "rootDir": "./src",
-    "outDir": "./dist",
-    "tsBuildInfoFile": "./dist/.tsbuildinfo",
+    "composite": false,
+    "declaration": false,
+    "declarationMap": false,
+    "noEmit": true,
     "types": ["node"]
   },
-  "include": ["src/**/*.ts"],
-  "references": [{ "path": "../core/tsconfig.build.json" }]
+  "include": ["src/**/*.ts"]
 }

@@ -8,7 +8,7 @@ import {
   isSystemProxySupported,
   recoverSystemProxy,
   toError,
-} from '@green-tunnel/core';
+} from './core/index.js';
 import { HELP_TEXT, UsageError, parseCliArgs, type RunOptions } from './options.js';
 import {
   printBanner,

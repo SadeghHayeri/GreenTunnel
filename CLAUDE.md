@@ -21,8 +21,8 @@ Run everything from the repository root.
 ```bash
 npm install            # workspaces: packages/*, apps/*
 
-npm run build          # tsc --build (core, cli) + electron-vite build (desktop)
-npm run typecheck      # all four TS projects
+npm run build          # tsc --build (cli) + electron-vite build (desktop)
+npm run typecheck      # all three TS projects
 npm run lint           # eslint, type-aware
 npm test               # vitest
 npm run check          # typecheck + lint + test
@@ -36,7 +36,7 @@ npm run clean          # drop dist/, out/, release/, build info
 Per package:
 
 ```bash
-npm run build --workspace packages/core
+npm run build --workspace packages/cli           # the engine and the CLI
 npm run package --workspace apps/desktop         # electron-builder, current OS
 npm run package:mac --workspace apps/desktop     # or :win / :linux
 ```
@@ -70,18 +70,24 @@ confirm the renderer loaded without needing to look at the screen.
 ## Layout
 
 ```
-├── packages/core/     @green-tunnel/core — the engine, no Electron, no CLI
-├── packages/cli/      green-tunnel — the `gt` binary (re-exports core)
-├── apps/desktop/      green-tunnel-desktop — Electron 43
+├── packages/cli/      green-tunnel — the **only** published package: the engine
+│                      (src/core) plus the `gt` binary
+├── apps/desktop/      green-tunnel-desktop — Electron 43, private, never published
 ├── assets/            README artwork (logo, demo gif, screenshot)
-├── Dockerfile         two-stage; core + cli only, never apps/desktop
+├── Dockerfile         two-stage; packages/cli only, never apps/desktop
 └── .github/workflows/ test.yml (every push) · publish.yml (v* tags)
 ```
 
-### `packages/core`
+### `packages/cli/src/core` — the engine
+
+Its own package (`@green-tunnel/core`) for exactly one release cycle, and never
+published under that name. See
+[One package, not two](#one-package-not-two-and-why) for why it was folded back
+in. Nothing in here may import from outside it — ESLint enforces that, since a
+directory cannot.
 
 ```
-src/
+src/core/
 ├── index.ts             public API surface
 ├── types.ts             every settings/event/stat type
 ├── config.ts            defaults + resolveSettings + assertValidSettings
@@ -105,6 +111,18 @@ src/
 └── system-proxy/        darwin.ts linux.ts windows.ts + snapshot/restore
                         recovery.ts — snapshot persisted to disk so a killed
                         process's proxy can still be undone next launch
+```
+
+The four files beside it are the CLI proper, and are the only things in the
+package the engine may **not** reach:
+
+```
+src/
+├── index.ts    library surface — re-exports src/core wholesale, plus VERSION
+├── main.ts     the `gt` binary: parse, run, handle signals
+├── options.ts  parseArgs → ProxyOptions, HELP_TEXT, UsageError
+├── ui.ts       the banner and status output
+└── version.ts  read once, at build time
 ```
 
 ### `apps/desktop`
@@ -157,13 +175,23 @@ Two deliberate separations, both different from v2:
 
 | What       | Version          | Why not newer                                                                                                                          |
 | ---------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| Electron   | 43.2.0           | Latest stable. Electron has **no LTS channel** — it supports the newest 3 majors. Bundles Node 24.                                     |
+| Electron   | 43.2.0 (exact)   | Latest stable. Electron has **no LTS channel** — it supports the newest 3 majors. Bundles Node 24. **No caret**, see below.            |
 | Node       | 24 LTS (Krypton) | `engines: >=24`. Node 26 is Current, not LTS until Oct 2026.                                                                           |
 | TypeScript | 6.0.3            | 7.0.2 is out (native port) but `typescript-eslint@8.65` peers `>=4.8.4 <6.1.0`. **Revisit when typescript-eslint ships TS 7 support.** |
 | Vite       | 7.3.6            | Vite 8 is out but `electron-vite@5` peers `^5 \|\| ^6 \|\| ^7`.                                                                        |
 
-Runtime dependencies are deliberately tiny: core needs only `dns-packet` and
-`lru-cache`; the CLI and the desktop app have **zero**. `parseArgs`,
+Electron's version is written **`"43.2.0"`, not `"^43.2.0"`**, and that is not a
+style preference. electron-builder downloads a platform-specific binary for one
+exact release, so it refuses a range outright — `Electron version "^43.2.0" is a
+range, not a fixed version`. It can fall back to reading the installed version
+out of `node_modules`, but not here: npm hoists `electron` to the **workspace
+root**, and electron-builder only looks under `apps/desktop`. So the range never
+resolved and packaging failed before it started. Keep the caret off.
+
+Runtime dependencies are deliberately tiny: `green-tunnel` needs only
+`dns-packet` and `lru-cache` (both for the engine), and the desktop app has
+**zero** — it bundles. A clean `npm i green-tunnel` installs four packages
+including transitives. `parseArgs`,
 `styleText`, `dns.Resolver` and `fetch` come from Node itself, replacing v2's
 `yargs`, `chalk`, `clear`, `ora`, `debug`, `dns-socket`, `dns-over-tls`,
 `validator` and `winreg`.
@@ -176,9 +204,12 @@ Runtime dependencies are deliberately tiny: core needs only `dns-packet` and
 - The renderer is fully locked down: `sandbox`, `contextIsolation`,
   `nodeIntegration: false`, a CSP meta tag, navigation blocked, and
   `shell.openExternal` restricted to an origin allowlist.
-- `apps/desktop` declares **no runtime `dependencies`** — `@green-tunnel/core`
-  and its deps are bundled into `out/main/index.js` (149 kB). That keeps
-  electron-builder away from workspace symlinks entirely.
+- `apps/desktop` declares **no runtime `dependencies`** — the engine and its deps
+  are bundled into `out/main/index.js` (172 kB). That keeps electron-builder away
+  from workspace symlinks entirely, and it is why the packaged `.app` contains no
+  `node_modules` at all. The import is `from 'green-tunnel'`, the workspace
+  package: only its `src/index.ts` is reachable that way and that file does not
+  import `main.ts`, so none of the terminal code comes along.
 - `resources/` ships outside the asar (`extraResources`) so
   `nativeImage.createFromPath` finds the `@2x` tray variants.
 - Tray menu items use `click`, never `role` — a `role` makes Electron ignore
@@ -235,7 +266,7 @@ panel, an error message appearing, and anything else that reflows.
 
 The advanced panel is **the last element in the document**, and that is load
 bearing. Nothing in the page animates a height — the window's bottom edge is the
-only clip, so growing the window *is* the reveal, and shrinking it is the
+only clip, so growing the window _is_ the reveal, and shrinking it is the
 reverse. Animate the panel's height as well and the two curves disagree for a
 few frames, which tears the bottom row. Opening therefore un-hides the panel and
 lets the observer do the rest; closing asks for the collapsed height **first**
@@ -261,12 +292,12 @@ Two popups, both `<dialog>` + `showModal()`: **Share Green Tunnel** (X, Telegram
 WhatsApp), reachable any time from the `Share ↗` link at the foot of the advanced
 panel, and the **"Enjoying Green Tunnel?"** prompt that appears on its own.
 
-They are dialogs and not cards in the column *because* of the rule above. A
+They are dialogs and not cards in the column _because_ of the rule above. A
 modal renders in the top layer, so it is out of flow and never enters the height
 `#app` is measured at — a sheet laid out in the column would move the window's
 bottom edge, which is the one thing that must only ever mean "the panel is
 opening". The Escape handler in `renderer/src/main.ts` stands down while a sheet
-is open, or one key press would close the sheet *and* hide the window behind it.
+is open, or one key press would close the sheet _and_ hide the window behind it.
 
 The schedule lives in `main/advocacy.ts` and is stored in `advocacy.json` beside
 the settings:
@@ -278,10 +309,10 @@ the settings:
   come due at once and get every prompt inside a single week.
 - **Star or Share retires it permanently** (`helped`), as does "Don't show
   again" (`dismissed`). "Later" only spends the current slot.
-- The slot is spent when the prompt is *shown*, not when it is scheduled, so a
+- The slot is spent when the prompt is _shown_, not when it is scheduled, so a
   window hidden inside the 2.5 s settle keeps its chance.
 - `createAdvocacyStore` writes the file on first launch. It has to:
-  `firstRunAt` defaults to *now*, so without that write it would be "now" again
+  `firstRunAt` defaults to _now_, so without that write it would be "now" again
   on every launch and the first prompt would never come due.
 
 Share copy and the three target URLs are in `shared/share.ts`, and
@@ -289,12 +320,45 @@ Share copy and the three target URLs are in `shared/share.ts`, and
 silently fail to open, which is what `openExternal` would otherwise do. Keep the
 message under ~250 characters: X counts the link as 23 whatever its length.
 
-## Two tsconfigs in core
+## One package, not two — and why
 
-`packages/core/tsconfig.json` is the editor/ESLint view (includes `*.test.ts`,
-`noEmit`). `tsconfig.build.json` is what emits `dist/` and excludes tests.
-Project references point at **`tsconfig.build.json`**. If ESLint starts saying
-"not found by the project service", that split is why.
+v3 was built as `@green-tunnel/core` + `green-tunnel`, and that split was undone
+before either shipped. The engine now lives at `packages/cli/src/core` and
+`green-tunnel` is the only published package.
+
+The reason is that the split was never load bearing. `apps/desktop` already
+treated the engine as an internal module — it depended on it as a **devDependency**
+and bundled it, so it never needed a registry package. And `packages/cli/src/index.ts`
+was nothing but `export * from '@green-tunnel/core'`, so library users already got
+the whole engine from `green-tunnel`, the name v2 published under for ten years.
+Publishing core separately was a second distribution channel for identical code,
+pinned to the same version, gated on owning an npm **organisation** that did not
+exist — which is exactly what broke the v3.0.0 release (see
+[Release and distribution](#release-and-distribution)).
+
+What the merge deleted: an npm org to create and hold, an exact-version dependency
+edge between two packages, a publish-ordering constraint, a two-version tag check,
+one of three tsconfigs, and six of the Dockerfile's thirteen workspace lines.
+
+What it cost: the engine/CLI boundary was structural — a separate package simply
+_could not_ import the CLI — and a directory guarantees nothing. So it is enforced
+by ESLint instead, a `no-restricted-imports` block over `packages/cli/src/core/**`
+that forbids the four CLI files by name. If you add a fifth file beside `main.ts`,
+add it to that list. `npm run lint` is in `npm run check`, so it is not optional.
+
+### Two tsconfigs in `packages/cli`
+
+This split moved with the engine rather than disappearing, because the problem it
+solves did: the build must not emit `*.test.ts` into `dist/`, but excluding tests
+outright leaves them in no project at all and ESLint's type-aware rules fail with
+"not found by the project service". So `packages/cli/tsconfig.json` is the
+editor/ESLint view (includes tests, `noEmit`) and `tsconfig.build.json` is what
+emits `dist/`. The root project reference points at **`tsconfig.build.json`**, and
+so must `tsc --build` anywhere it is spelled out — the workflows and the Dockerfile
+all say `packages/cli/tsconfig.build.json`.
+
+`tsBuildInfoFile` sits **outside** `dist/`, because `files: ["dist"]` would
+otherwise publish 42 kB of incremental-build metadata to npm.
 
 ## v2 bugs fixed here
 
@@ -422,16 +486,32 @@ Actually run, not assumed:
     `settings changed; restarting the tunnel` / `stopped` / `listening on …`;
   - Escape closes the window, and its bounds come back exactly on reopen.
 
+- **`electron-builder` on macOS**, run locally with
+  `CSC_IDENTITY_AUTO_DISCOVERY=false`: `GreenTunnel-3.0.0{,-arm64}.dmg` and the
+  two matching `-mac.zip`s all build, and the asar carries `out/main/index.js`,
+  `out/preload/index.cjs` and the renderer, with `resources/` correctly left
+  outside it. Unsigned — that is what CI produces too.
+- **Both workflows**, on the `v3.0.0` tag push. `hadolint`, the real Docker build
+  and `curl` through the container all passed, as did the multi-arch Docker Hub
+  push and the tag/version `verify` job. The `npm ci --workspace …` filtering in
+  the image was fine. What failed is
+  [recorded in full](#what-the-v300-tag-taught-us-in-one-place).
+- **The published package, from its own tarball.** `npm pack` → install into an
+  empty directory → run the installed binary. 133 files, 64.5 kB, and the only
+  things npm pulled were `dns-packet`, `lru-cache` and one transitive: no
+  `@green-tunnel/core` to resolve, and no `.tsbuildinfo` shipped. `gt --version`
+  printed `3.0.0`, and `gt --port 18777 --no-system-proxy` proxied both
+  `HTTP/1.1 200 Connection Established` (HTTPS CONNECT) and `HTTP/1.1 200 OK`
+  (plain HTTP) via DoH. That is the whole publish path short of the registry.
+
 **Not yet verified — do not assume these work:**
 
 - `SystemProxy` on **Linux and Windows**. Those drivers were updated alongside
   the macOS one but have still never been executed. Test deliberately.
-- `electron-builder` packaging, signing, notarization.
+- `electron-builder` **signing and notarization**, and packaging on **Windows and
+  Linux** — the `--win` / `--linux` targets have still only ever been configured,
+  not run.
 - Windows and Linux at all.
-- **The `Dockerfile` and both workflows.** Written during the v2 → v3 promotion
-  and never executed — the local Docker daemon was down. First push will tell.
-  The likeliest failure is the `npm ci --workspace …` filtering in the image (see
-  [Release and distribution](#release-and-distribution)).
 - The log panel's **Save** button (it opens a native dialog, so it needs a human)
   and the tray's **Show Logs** item — the same `showLogs()` the row calls, but
   never clicked.
@@ -486,14 +566,14 @@ Inherited from v2 during the promotion, and rewritten rather than copied — v2'
 versions assumed `src/` + `bin/` at the root and a `gui/` that installed
 `green-tunnel` from npm.
 
-**`Dockerfile`** is two-stage and covers `packages/core` + `packages/cli` only;
-`apps/desktop` would drag ~200 MB of Electron build tooling into a CLI image.
-Two things about it are load bearing:
+**`Dockerfile`** is two-stage and covers `packages/cli` only; `apps/desktop` would
+drag ~200 MB of Electron build tooling into a CLI image. Two things about it are
+load bearing:
 
-- `npm ci --workspace packages/core --workspace packages/cli` still validates the
-  _whole_ workspace tree against the lockfile, so `apps/desktop/package.json` has
-  to be copied in even though it is never installed. Delete that `COPY` and the
-  install fails on a lockfile mismatch, not on a missing directory.
+- `npm ci --workspace packages/cli` still validates the _whole_ workspace tree
+  against the lockfile, so `apps/desktop/package.json` has to be copied in even
+  though it is never installed. Delete that `COPY` and the install fails on a
+  lockfile mismatch, not on a missing directory.
 - The `CMD` is **shell form on purpose** and uses `${VAR:+--flag}`. v3 parses
   arguments with `node:util.parseArgs`, where a boolean flag takes no value:
   v2's `--silent "$SILENT"` spelling would make `HTTPS_ONLY=false` a usage
@@ -510,11 +590,11 @@ packaging jobs must **not** set it.
 `on: create` with a `tags:` filter, which that event does not support, so it also
 fired for branches. Then:
 
-1. `verify` fails the run unless the tag matches both package versions. Bump
-   `packages/core`, `packages/cli` and the workspace root together.
-2. npm: **core before cli**, since `green-tunnel` depends on the exact
-   `@green-tunnel/core` version. Both publish with `--provenance`, which is why
-   core needed a `repository` field added.
+1. `verify` fails the run unless the tag matches `packages/cli`'s version. Bump
+   `packages/cli` and the workspace root together. (`apps/desktop` is private, but
+   electron-builder names the artifacts from its version — keep it in step.)
+2. npm: one `npm publish`, no ordering to get wrong. No `--provenance` flag and no
+   `NODE_AUTH_TOKEN`: see [Trusted publishing](#trusted-publishing-oidc) below.
 3. Docker Hub: one multi-arch manifest (amd64 + arm64). v2's separate `arm-*`
    tag built from a sed-patched Dockerfile is gone, and so is 32-bit ARM —
    `node:24-alpine` has no armv7 variant.
@@ -523,6 +603,58 @@ fired for branches. Then:
    than announced. macOS sets `CSC_IDENTITY_AUTO_DISCOVERY: false` — there is no
    Developer ID in CI, and without it electron-builder finds a half-usable
    identity and fails instead of shipping unsigned.
+
+The desktop job builds the engine (`npm run build --workspace packages/cli`)
+**before** packaging, and that step is not redundant. `electron-vite` bundles
+`green-tunnel` by resolving the workspace symlink to its `main`, i.e.
+`dist/index.js` — a path that does not exist in a fresh `npm ci` checkout. On a
+dev machine `dist/` is left over from an earlier build, so the whole job passes
+locally and fails only in CI, with a message that names neither the workspace nor
+the missing build: `[commonjs--resolver] Failed to resolve entry for package`.
+`test.yml` never hit this because its `npm run build` is the root script, which
+already runs `tsc --build` first.
+
+### What the v3.0.0 tag taught us, in one place
+
+The first tag push failed four ways at once, which is worth remembering as a set
+because only one of them was visible in the error the release actually stopped on:
+
+1. `format:check` — seven files. It is the **first** step in `test.yml`, so it
+   masked everything after it.
+2. The missing engine build before packaging, above.
+3. Electron's caret range, see [Pinned versions](#pinned-versions-and-why).
+4. `404 Not Found - PUT …/@green-tunnel%2fcore` — the npm **scope did not exist**.
+   That 404 reads like a missing package and really means "this scope is not
+   yours"; `npm org ls green-tunnel` says `Scope not found` outright. Owning the
+   unscoped `green-tunnel` package grants no `@green-tunnel` scope, and it could
+   not be a personal scope either, since the account is `hayerisadegh` — it would
+   have had to be an npm **organisation**, created by hand. That is what prompted
+   [folding core back in](#one-package-not-two-and-why) instead, and the whole
+   failure mode no longer exists.
+
+That 404 is also silent about ordering: the tarball is packed and the provenance
+statement is signed and **published to the sigstore transparency log** before the
+registry is ever contacted. A log full of successful-looking provenance output can
+still end in `E404`.
+
+### Trusted publishing (OIDC)
+
+There is no `NPM_TOKEN`. npm is
+[restricting tokens that bypass 2FA](https://gh.io/npm-gat-bypass2fa-deprecation),
+so `publish-npm` authenticates with GitHub's OIDC identity instead: `id-token:
+write` is the only credential, and provenance is signed automatically — which is
+why `--provenance` is **absent** and adding it back is not a no-op. Requirements
+are met: npm ≥ 11.5.1 and Node ≥ 22.14 (`node-version: 24` resolves to 24.18,
+which bundles npm 11.16).
+
+This works only because `green-tunnel` **already exists on npm**. A trusted
+publisher is configured **per package** in the npmjs.com UI, which needs the
+package to be there first ([npm/cli#8544](https://github.com/npm/cli/issues/8544)) —
+OIDC cannot perform a package's first publish. Publishing a brand-new package
+would have meant a token publish to bootstrap it, and avoiding that is one more
+reason the single-package layout is the right one. A configuration created after
+**20 May 2026** must also explicitly select at least one allowed action; older
+ones defaulted to `npm publish`.
 
 `snapcraft.yaml` was **not** carried over: it was pinned to v1.7.4 on `core18`
 (EOL) and built the old CLI. electron-builder can emit a snap if the Linux
@@ -535,15 +667,19 @@ Roughly in order:
 1. Exercise and fix the `SystemProxy` drivers on **Linux and Windows** — macOS is
    now done (see [Verified](#verified)). Re-read the stranded-proxy section above
    first; those bugs live in the Linux/Windows drivers' shape too.
-2. Packaging: an actual electron-builder run, signing, notarization,
-   auto-update. Icons and the builder config exist; nothing has been built.
+2. Packaging: signing, notarization, auto-update, and a Windows/Linux run.
+   macOS now builds (see [Verified](#verified)) but ships unsigned.
    The icons are all generated from `assets/logo.png` — the same 2000×2000
    artwork v2 shipped as `gui/icon.png`, byte for byte — by the recipe recorded
    in `electron-builder.yml`. Regenerate all four together if it ever changes:
    `build/icon.{icns,ico,png}` for the installer and `resources/icon.png` for
    the windows Linux and Windows draw themselves, plus the dev dock.
-3. CI: both workflows exist but have never run — watch the first push, and the
-   first tag separately.
+3. CI: both workflows have run once, on `v3.0.0`, and failed
+   [four ways](#what-the-v300-tag-taught-us-in-one-place). All four are fixed. The
+   release still needs a **trusted publisher configured for `green-tunnel`** on
+   npmjs.com (`SadeghHayeri/GreenTunnel`, workflow `publish.yml`) — the workflow
+   carries no token, so without it `npm publish` cannot authenticate. Then re-push
+   the tag.
 4. More tests: `http/head.ts`, the DNS resolvers against a stub server, an
    integration test that drives `Proxy` over a loopback TLS server.
 5. Features worth considering — per-site rules, a bypass list in the UI,

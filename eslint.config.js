@@ -49,8 +49,31 @@ export default tseslint.config(
 
   // CLI and logger write to stdout/stderr by design.
   {
-    files: ['packages/cli/src/**/*.ts', 'packages/core/src/logger.ts'],
+    files: ['packages/cli/src/**/*.ts'],
     rules: { 'no-console': 'off' },
+  },
+
+  // The engine lives in `packages/cli/src/core` and used to be its own package,
+  // which made this structural: it simply could not reach the CLI. A directory
+  // guarantees nothing, so the boundary is enforced here instead. The engine is
+  // also consumed by `apps/desktop`, where `parseArgs`, `styleText` and
+  // `process.exit` have no business being.
+  {
+    files: ['packages/cli/src/core/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['**/main.js', '**/options.js', '**/ui.js', '**/version.js'],
+              message:
+                'The engine must not import the CLI. Everything under src/core has to stand alone — apps/desktop bundles it without any of the terminal code.',
+            },
+          ],
+        },
+      ],
+    },
   },
 
   // Renderer runs in the browser, not Node.

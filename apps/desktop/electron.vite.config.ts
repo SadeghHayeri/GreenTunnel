@@ -4,10 +4,14 @@ import { defineConfig } from 'electron-vite';
 const root = import.meta.dirname;
 
 /**
- * The app declares no runtime `dependencies` on purpose: `@green-tunnel/core`
- * and everything it uses are bundled straight into `out/main/index.js`. That
- * keeps electron-builder from having to reason about workspace symlinks, and
- * the shipped app has nothing to resolve at startup beyond Node built-ins.
+ * The app declares no runtime `dependencies` on purpose: the engine — imported
+ * as `green-tunnel`, the workspace package that also ships the CLI — and
+ * everything it uses are bundled straight into `out/main/index.js`. That keeps
+ * electron-builder from having to reason about workspace symlinks, and the
+ * shipped app has nothing to resolve at startup beyond Node built-ins.
+ *
+ * Only `src/index.ts` of that package is reachable from here, and it does not
+ * import `main.ts`, so none of the CLI's terminal code is pulled in.
  */
 export default defineConfig({
   main: {

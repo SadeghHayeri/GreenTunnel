@@ -1,5 +1,5 @@
 import { parseArgs } from 'node:util';
-import { DEFAULT_SETTINGS, isLogLevel, type LogLevel, type ProxyOptions } from '@green-tunnel/core';
+import { DEFAULT_SETTINGS, isLogLevel, type LogLevel, type ProxyOptions } from './core/index.js';
 
 export interface RunOptions {
   readonly proxy: ProxyOptions;

@@ -1,8 +1,12 @@
 /**
- * `@green-tunnel/core` — the engine.
+ * The engine. No Electron, no CLI — nothing under this directory may import
+ * from outside it, which ESLint enforces (see `eslint.config.js`).
+ *
+ * Re-exported wholesale by `../index.js`, so consumers reach all of this as
+ * `green-tunnel`:
  *
  * ```ts
- * import { Proxy, SystemProxy, DEFAULT_BYPASS } from '@green-tunnel/core';
+ * import { Proxy, SystemProxy, DEFAULT_BYPASS } from 'green-tunnel';
  *
  * const proxy = new Proxy({ port: 8000, dns: { mode: 'doh' } });
  * const { host, port } = await proxy.start();

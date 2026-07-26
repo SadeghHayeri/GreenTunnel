@@ -8,7 +8,7 @@ import {
   type Logger,
   type ProxyOptions,
   type ProxyStats,
-} from '@green-tunnel/core';
+} from 'green-tunnel';
 import type { AppSettings, AppState, TunnelStatus } from '../shared/types.js';
 
 const IDLE_STATS: ProxyStats = {

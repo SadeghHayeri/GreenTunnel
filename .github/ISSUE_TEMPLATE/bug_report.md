@@ -24,7 +24,7 @@ A clear and concise description of what you expected to happen.
 - [ ] CLI (`gt`, installed from npm)
 - [ ] Desktop app
 - [ ] Docker
-- [ ] As a library (`@green-tunnel/core`)
+- [ ] As a library (`import … from 'green-tunnel'`)
 
 **Environment**
 

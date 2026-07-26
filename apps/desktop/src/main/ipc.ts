@@ -1,5 +1,5 @@
 import { writeFile } from 'node:fs/promises';
-import { isLogLevel } from '@green-tunnel/core';
+import { isLogLevel } from 'green-tunnel';
 import { type BrowserWindow, clipboard, dialog, ipcMain, shell } from 'electron';
 import { IPC } from '../shared/ipc.js';
 import type {
@@ -102,17 +102,14 @@ export function registerIpcHandlers(deps: IpcDependencies): void {
     deps.showLogs();
   });
 
-  ipcMain.handle(
-    IPC.logsSnapshot,
-    (): LogSnapshot => ({
-      entries: logs.entries,
-      // Read the level off the published state rather than the store, so the
-      // panel and the rest of the UI can never disagree about it.
-      level: service.state.settings.logLevel,
-      capacity: logs.capacity,
-      dropped: logs.dropped,
-    }),
-  );
+  ipcMain.handle(IPC.logsSnapshot, (): LogSnapshot => ({
+    entries: logs.entries,
+    // Read the level off the published state rather than the store, so the
+    // panel and the rest of the UI can never disagree about it.
+    level: service.state.settings.logLevel,
+    capacity: logs.capacity,
+    dropped: logs.dropped,
+  }));
 
   ipcMain.on(IPC.logsSetLevel, (_event, level: unknown) => {
     // Same path as every other setting: persisted, then applied live. It is not

@@ -1,14 +1,15 @@
 {
   "name": "green-tunnel",
   "version": "3.0.0",
-  "description": "Bypass DPI censorship from the command line",
+  "description": "Bypass DPI censorship — the engine and the command line tool",
   "keywords": [
     "dpi",
     "censorship",
     "sni",
     "tls",
     "proxy",
-    "doh"
+    "doh",
+    "dot"
   ],
   "homepage": "https://github.com/SadeghHayeri/GreenTunnel#readme",
   "bugs": {
@@ -41,11 +42,15 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc --build",
-    "dev": "tsc --build && node dist/main.js",
-    "typecheck": "tsc --build"
+    "build": "tsc --build tsconfig.build.json",
+    "dev": "tsc --build tsconfig.build.json && node dist/main.js",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
-    "@green-tunnel/core": "3.0.0"
+    "dns-packet": "^5.6.1",
+    "lru-cache": "^11.5.2"
+  },
+  "devDependencies": {
+    "@types/dns-packet": "^5.6.5"
   }
 }

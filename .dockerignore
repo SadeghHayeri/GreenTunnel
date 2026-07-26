@@ -4,7 +4,7 @@ node_modules
 **/out
 **/release
 coverage
-*.tsbuildinfo
+**/*.tsbuildinfo
 .git
 .github
 .idea

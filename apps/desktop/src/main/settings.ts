@@ -1,4 +1,4 @@
-import { LOG_LEVELS, isLogLevel } from '@green-tunnel/core';
+import { LOG_LEVELS, isLogLevel } from 'green-tunnel';
 import { DEFAULT_UI_STATE, type AppSettings, type DnsMode } from '../shared/types.js';
 import { JsonStore, asBoolean, asInteger, asOneOf } from './json-store.js';
 

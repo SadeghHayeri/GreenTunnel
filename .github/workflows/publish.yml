@@ -20,10 +20,9 @@ jobs:
         run: |
           TAG="${GITHUB_REF#refs/tags/v}"
           PKG=$(node -p "require('./packages/cli/package.json').version")
-          CORE=$(node -p "require('./packages/core/package.json').version")
-          echo "tag=$TAG cli=$PKG core=$CORE"
-          if [ "$TAG" != "$PKG" ] || [ "$TAG" != "$CORE" ]; then
-            echo "::error::Tag v$TAG does not match packages/cli ($PKG) / packages/core ($CORE)"
+          echo "tag=$TAG green-tunnel=$PKG"
+          if [ "$TAG" != "$PKG" ]; then
+            echo "::error::Tag v$TAG does not match packages/cli ($PKG)"
             exit 1
           fi
           echo "version=$TAG" >> $GITHUB_OUTPUT
@@ -34,7 +33,10 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write # npm provenance
+      # The only credential. Trusted publishing exchanges this OIDC token with
+      # npm, so there is no NPM_TOKEN to leak or rotate, and provenance is signed
+      # automatically — `--provenance` is not needed and neither is a secret.
+      id-token: write
     env:
       ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
     steps:
@@ -46,18 +48,12 @@ jobs:
           registry-url: https://registry.npmjs.org/
 
       - run: npm ci
-      - run: npx tsc --build packages/cli
+      - run: npx tsc --build packages/cli/tsconfig.build.json
 
-      # Order matters: `green-tunnel` depends on this exact version of the core.
-      - name: Publish @green-tunnel/core
-        run: npm publish --workspace packages/core --access public --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
+      # One package. The engine is bundled in as `dist/core`, so there is no
+      # second publish to order this one against.
       - name: Publish green-tunnel
-        run: npm publish --workspace packages/cli --access public --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --workspace packages/cli
 
   publish-docker-hub:
     name: Publish to Docker Hub
@@ -126,6 +122,14 @@ jobs:
           cache: npm
 
       - run: npm ci
+
+      # electron-vite bundles the engine into out/main, resolving `green-tunnel`
+      # through the workspace symlink and its `main` field — so dist/ has to
+      # exist *before* packaging. A fresh checkout has none, which is why this job
+      # works on a dev machine (where dist/ is left over from an earlier build)
+      # and failed in CI with "Failed to resolve entry for package".
+      - name: Build the engine
+        run: npm run build --workspace packages/cli
 
       - name: Package
         run: npm run ${{ matrix.script }} --workspace apps/desktop -- --publish never

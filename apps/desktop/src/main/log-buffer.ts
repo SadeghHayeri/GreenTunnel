@@ -1,5 +1,5 @@
 import { EventEmitter } from 'node:events';
-import type { LogRecord, LogSink } from '@green-tunnel/core';
+import type { LogRecord, LogSink } from 'green-tunnel';
 import type { LogEntry } from '../shared/types.js';
 
 /**

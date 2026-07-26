@@ -31,7 +31,7 @@
     "check": "npm run typecheck && npm run lint && npm run test",
     "install:cli": "tsc --build && npm link --workspace packages/cli",
     "uninstall:cli": "npm unlink --global green-tunnel",
-    "clean": "tsc --build --clean && node -e \"for (const p of ['packages/core/dist','packages/cli/dist','apps/desktop/out','apps/desktop/release']) require('node:fs').rmSync(p, { recursive: true, force: true })\""
+    "clean": "tsc --build --clean && node -e \"for (const p of ['packages/cli/dist','apps/desktop/out','apps/desktop/release']) require('node:fs').rmSync(p, { recursive: true, force: true })\""
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

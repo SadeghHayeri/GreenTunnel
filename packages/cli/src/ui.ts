@@ -1,5 +1,5 @@
 import process from 'node:process';
-import type { ProxyAddress, ProxySettings } from '@green-tunnel/core';
+import type { ProxyAddress, ProxySettings } from './core/index.js';
 
 const BRAND: readonly [number, number, number] = [132, 198, 111];
 

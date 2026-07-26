@@ -5,7 +5,7 @@ import {
   recoverSystemProxy,
   stderrSink,
   type LogRecord,
-} from '@green-tunnel/core';
+} from 'green-tunnel';
 import { type BrowserWindow, type Tray, app, dialog, shell } from 'electron';
 import { PROJECT_URL } from '../shared/share.js';
 import type { AppSettings, AppState } from '../shared/types.js';
