@@ -493,6 +493,18 @@ Actually run, not assumed:
   outside it. Unsigned — that is what CI produces too. Re-run since with
   `GH_TOKEN` set, which is what CI does and what used to crash it: four
   artifacts, no `latest-mac.yml`, and no `app-update.yml` in the bundle.
+- **`electron-builder --linux`**, cross-built on macOS — fpm and the AppImage
+  tooling are downloaded per-host, so no Docker or Linux box is needed. Both the
+  `.AppImage` and the `.deb` build, the deb's control file carries the
+  `Homepage`, and the launcher it installs reads
+  `StartupWMClass=green-tunnel-desktop`, matching the app_id Electron derives
+  from the manifest `name`. Extract it with `ar x` and `tar -xJf control.tar.xz`
+  — and **cd somewhere else first**: `asar extract-file … package.json` writes
+  to the working directory, and run from `apps/desktop` it overwrites the
+  manifest with the stripped copy from inside the bundle.
+  Built, not **run**: nothing here says the app works on a Linux desktop, and
+  `StartupWMClass` in particular is only verifiable there, with `xprop WM_CLASS`
+  against a running window.
 - **Both workflows**, on the first v3 tag push. `hadolint`, the real Docker build
   and `curl` through the container all passed, as did the multi-arch Docker Hub
   push. The `npm ci --workspace …` filtering in the image was fine. What failed is
@@ -510,9 +522,9 @@ Actually run, not assumed:
 
 - `SystemProxy` on **Linux and Windows**. Those drivers were updated alongside
   the macOS one but have still never been executed. Test deliberately.
-- `electron-builder` **signing and notarization**, and packaging on **Windows and
-  Linux** — the `--win` / `--linux` targets have still only ever been configured,
-  not run.
+- `electron-builder` **signing and notarization**. The `--win` target has now
+  built in CI, and `--linux` cross-builds on macOS (see [Verified](#verified)),
+  but neither ships signed.
 - Windows and Linux at all.
 - The log panel's **Save** button (it opens a native dialog, so it needs a human)
   and the tray's **Show Logs** item — the same `showLogs()` the row calls, but
@@ -692,6 +704,15 @@ only one of them was visible in the error the release actually stopped on:
    `GH_TOKEN=x electron-builder --mac --publish never` and cannot otherwise: no
    token on a laptop, no inference, no crash.
 
+7. And on the one after that, Linux only: `Please specify project homepage` out
+   of `FpmTarget`. Same underlying gap as 6 — `apps/desktop/package.json` is a
+   stub, and electron-builder reads its metadata from there, never from the root
+   manifest. `deb` is the only target that insists on a homepage, so macOS and
+   Windows had already gone green; `AppImage` builds without one too, which is
+   why the log shows it succeeding one line above the failure. Fixed by giving
+   the manifest a `homepage`. `linux.maintainer` was already set and quietly
+   suppressed a second error in the same list, for an author with an email.
+
 Number 6 is the one to internalise if you only keep one. Every other entry fails
 _the same way_ on a laptop as in CI; that one is a bug you can only provoke by
 setting a CI environment variable, in code that runs after the build has visibly
@@ -740,7 +761,7 @@ Roughly in order:
    `build/icon.{icns,ico,png}` for the installer and `resources/icon.png` for
    the windows Linux and Windows draw themselves, plus the dev dock.
 3. CI: both workflows have run, and the tag pushes so far have failed
-   [six ways](#what-the-first-v3-tag-taught-us-in-one-place). All six are fixed.
+   [seven ways](#what-the-first-v3-tag-taught-us-in-one-place). All seven are fixed.
    Auto-update is deliberately not configured — `publish: null` — so adding it
    means giving `electron-builder.yml` a real provider block and uploading the
    `latest-*.yml` files, which the artifact globs do not currently match.

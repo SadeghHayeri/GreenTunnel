@@ -79,7 +79,22 @@ nsis:
 linux:
   icon: build/icon.png
   category: Network
+  # `deb` (fpm) refuses to build without a homepage, and it looks for one in
+  # apps/desktop/package.json — falling back to the repository, which it cannot
+  # find for the same reason the publish target could not. Hence `homepage`
+  # there. `maintainer` is likewise not optional: without it fpm demands an
+  # author *with an email address*, which the manifest does not carry.
   maintainer: Sadegh Hayeri
+  # Pairs with `desktopName` in package.json, and both are needed. Electron sets
+  # its Linux app_id (the window's WM_CLASS) from `desktopName`, or from
+  # `${app.name}.desktop` when it is unset — and app.name is the manifest's
+  # `name`, green-tunnel-desktop, because the package.json inside the asar
+  # carries no productName. electron-builder meanwhile wrote
+  # `StartupWMClass=GreenTunnel` from productName, so the two disagreed and no
+  # desktop environment could match a running window to the installed launcher:
+  # generic icon in the dash, wrong name in the top bar. Naming it explicitly
+  # settles both sides on green-tunnel-desktop.
+  syncDesktopName: true
   target:
     - AppImage
     - deb

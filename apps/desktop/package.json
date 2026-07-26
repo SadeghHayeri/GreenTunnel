@@ -5,6 +5,8 @@
   "description": "GreenTunnel desktop app",
   "license": "MIT",
   "author": "Sadegh Hayeri",
+  "homepage": "https://github.com/SadeghHayeri/GreenTunnel",
+  "desktopName": "green-tunnel-desktop.desktop",
   "type": "module",
   "main": "./out/main/index.js",
   "scripts": {
