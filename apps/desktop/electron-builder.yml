@@ -33,6 +33,26 @@ extraResources:
 
 asar: true
 
+# There is no publish target, and saying so explicitly is load bearing. Left
+# unset, electron-builder *infers* one from the environment: any `GH_TOKEN` in
+# scope makes it assume a GitHub release, and it then tries to work out which
+# repository from `<projectDir>/.git/config` — where projectDir is `apps/desktop`,
+# which is not a git root and carries no `repository` field either. Resolution
+# fails, and because `errorIfCannot` is false it returns *null* rather than
+# throwing, landing a `[null]` in the publish-config list. The length-0 guard
+# does not catch a list of one, so every artifact then dies in
+# `computeChannelNames` on `null.channel` — four times on macOS, once per
+# dmg/zip × arch — under the heading "Cannot cleanup", after the app has already
+# been packaged. Nothing in that message names publishing, tokens or the
+# repository.
+#
+# `null` short-circuits all of it: no auto-update metadata (latest-*.yml), no
+# `app-update.yml` inside the bundle, and the same output on CI as on a laptop.
+# The GitHub release is created by publish.yml's own job from the uploaded
+# artifacts, not by electron-builder. Give this a real provider block if and
+# when auto-update ships — see the roadmap.
+publish: null
+
 mac:
   category: public.app-category.utilities
   icon: build/icon.icns

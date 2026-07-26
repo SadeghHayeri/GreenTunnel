@@ -490,7 +490,9 @@ Actually run, not assumed:
   `CSC_IDENTITY_AUTO_DISCOVERY=false`: both `.dmg`s (arm64 and x64) and the two
   matching `-mac.zip`s all build, and the asar carries `out/main/index.js`,
   `out/preload/index.cjs` and the renderer, with `resources/` correctly left
-  outside it. Unsigned — that is what CI produces too.
+  outside it. Unsigned — that is what CI produces too. Re-run since with
+  `GH_TOKEN` set, which is what CI does and what used to crash it: four
+  artifacts, no `latest-mac.yml`, and no `app-update.yml` in the bundle.
 - **Both workflows**, on the first v3 tag push. `hadolint`, the real Docker build
   and `curl` through the container all passed, as did the multi-arch Docker Hub
   push. The `npm ci --workspace …` filtering in the image was fine. What failed is
@@ -679,6 +681,21 @@ only one of them was visible in the error the release actually stopped on:
    with the problem: the manifests no longer carry a version for a tag to
    disagree with. See
    [Cutting a release](#cutting-a-release-push-a-tag-nothing-else).
+6. Then, on a later tag: `Cannot cleanup:` followed by four
+   `TypeError: Cannot read properties of null (reading 'channel')` out of
+   `computeChannelNames`, after the `.app` had already been packaged. Nothing in
+   that message mentions publishing — the cause is that `--publish never` does
+   **not** stop electron-builder from _resolving_ a publish target, and the
+   `GH_TOKEN` the step passed for no reason made it resolve a GitHub one. See
+   the comment on `publish:` in `electron-builder.yml`; the fix is that key plus
+   dropping the token. It reproduces locally with
+   `GH_TOKEN=x electron-builder --mac --publish never` and cannot otherwise: no
+   token on a laptop, no inference, no crash.
+
+Number 6 is the one to internalise if you only keep one. Every other entry fails
+_the same way_ on a laptop as in CI; that one is a bug you can only provoke by
+setting a CI environment variable, in code that runs after the build has visibly
+succeeded, reported under a heading about cleanup.
 
 That 404 is also silent about ordering: the tarball is packed and the provenance
 statement is signed and **published to the sigstore transparency log** before the
@@ -722,8 +739,11 @@ Roughly in order:
    in `electron-builder.yml`. Regenerate all four together if it ever changes:
    `build/icon.{icns,ico,png}` for the installer and `resources/icon.png` for
    the windows Linux and Windows draw themselves, plus the dev dock.
-3. CI: both workflows have run, and the first two tag pushes failed
-   [five ways](#what-the-first-v3-tag-taught-us-in-one-place). All five are fixed.
+3. CI: both workflows have run, and the tag pushes so far have failed
+   [six ways](#what-the-first-v3-tag-taught-us-in-one-place). All six are fixed.
+   Auto-update is deliberately not configured — `publish: null` — so adding it
+   means giving `electron-builder.yml` a real provider block and uploading the
+   `latest-*.yml` files, which the artifact globs do not currently match.
    The release still needs a **trusted publisher configured for `green-tunnel`** on
    npmjs.com (`SadeghHayeri/GreenTunnel`, workflow `publish.yml`) — the workflow
    carries no token, so without it `npm publish` cannot authenticate. Then push a

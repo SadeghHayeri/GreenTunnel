@@ -171,10 +171,15 @@ jobs:
       - name: Build the engine
         run: npm run build --workspace packages/cli
 
+      # No GH_TOKEN here, deliberately. `--publish never` means nothing uploads,
+      # so the token had no job to do — but electron-builder reads it as "publish
+      # to GitHub" and starts resolving a release target it cannot find from
+      # apps/desktop, which is what crashed this step on the first attempt. See
+      # the comment on `publish:` in electron-builder.yml. The release itself is
+      # made by the new-release job below, from the artifacts.
       - name: Package
         run: npm run ${{ matrix.script }} --workspace apps/desktop -- --publish never
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # No Developer ID certificate in CI — without this, electron-builder
           # finds an unusable identity and fails instead of shipping unsigned.
           CSC_IDENTITY_AUTO_DISCOVERY: false
