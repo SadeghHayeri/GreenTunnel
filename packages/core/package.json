@@ -2,6 +2,24 @@
   "name": "@green-tunnel/core",
   "version": "3.0.0",
   "description": "GreenTunnel engine — DPI-evading TCP proxy with TLS fragmentation and encrypted DNS",
+  "keywords": [
+    "dpi",
+    "censorship",
+    "sni",
+    "tls",
+    "proxy",
+    "doh",
+    "dot"
+  ],
+  "homepage": "https://github.com/SadeghHayeri/GreenTunnel#readme",
+  "bugs": {
+    "url": "https://github.com/SadeghHayeri/GreenTunnel/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SadeghHayeri/GreenTunnel.git",
+    "directory": "packages/core"
+  },
   "license": "MIT",
   "author": "Sadegh Hayeri",
   "type": "module",

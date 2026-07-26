@@ -11,18 +11,22 @@
 
 GreenTunnel bypasses DPI (Deep Packet Inspection) systems found in many ISPs (Internet Service Providers) which block access to certain websites.
 
-> **Note:** GreenTunnel does not hide your IP address. It only bypasses DPI-based censorship.
+It runs a local proxy that splits the TLS ClientHello so the hostname you are visiting never appears whole in a single packet, and resolves DNS over an encrypted channel so your resolver cannot be used to block or observe you either.
+
+> **Note:** GreenTunnel does not hide your IP address and is not a VPN. It defeats hostname-based blocking, nothing more.
 
 ---
 
 <table>
 <tr>
-<td width="340"><img src="assets/new-version.png" alt="GreenTunnel v2.0.0 new UI" width="320"></td>
+<td width="340"><img src="assets/new-version.png" alt="GreenTunnel desktop app" width="320"></td>
 <td valign="top" style="padding-left: 24px;">
 
-**GreenTunnel v2 is out now.**
+**GreenTunnel v3 is out now.**
 
-The entire codebase has been rebuilt from the ground up: native ESM, Node.js 20+, a brand new dark UI, and a clean dependency tree with zero known vulnerabilities.
+A ground-up TypeScript rewrite: a new engine with real backpressure and timeouts, RFC 8484 DoH and DoT, a system-proxy layer that snapshots your settings and puts them back — even after a crash — and a rebuilt Electron app with a live log panel.
+
+Runtime dependencies are down to two. `yargs`, `chalk`, `ora`, `debug`, `dns-socket`, `validator` and `winreg` are all gone, replaced by things Node ships with.
 
 Open-source tools that help people reach the free internet shouldn't die — and with AI-assisted development, they don't have to. We'll keep doing our best to help people access the open internet, one packet at a time.
 
@@ -40,7 +44,7 @@ Open-source tools that help people reach the free internet shouldn't die — and
 
 ### Requirements
 
-- **Node.js 20+**
+- **Node.js 24+** (for the CLI and the library; the desktop app and the Docker image bring their own)
 
 ### npm (recommended)
 
@@ -49,6 +53,10 @@ npm install -g green-tunnel
 ```
 
 After installation, run with `gt` or `green-tunnel`.
+
+### Desktop app
+
+Download the installer for your OS from the [releases](https://github.com/SadeghHayeri/GreenTunnel/releases) page — `.dmg` for macOS, `.exe` for Windows, `.AppImage` or `.deb` for Linux.
 
 ### Docker
 
@@ -63,43 +71,58 @@ docker run -p 8000:8000 sadeghhayeri/green-tunnel
 ### CLI
 
 ```
-Usage: green-tunnel [options]
 Usage: gt [options]
 
-Options:
-  --ip                   IP address to bind proxy server     [string]  [default: "127.0.0.1"]
-  --port                 Port to bind proxy server           [number]  [default: 8000]
-  --https-only           Block insecure HTTP requests        [boolean] [default: false]
-  --dns-type             DNS resolver type                   [string]  [choices: "https", "tls", "unencrypted"] [default: "https"]
-  --dns-server           DNS server URL                      [string]  [default: "https://cloudflare-dns.com/dns-query"]
-  --dns-ip               IP for unencrypted DNS              [string]  [default: "127.0.0.1"]
-  --dns-port             Port for unencrypted DNS            [number]  [default: 53]
-  --tls-record-frag...   Enable TLS record fragmentation     [boolean] [default: false]
-  --silent, -s           Run in silent mode                  [boolean] [default: false]
-  --verbose, -v          Debug mode (e.g. 'green-tunnel:*')  [string]
-  --system-proxy         Auto-set system proxy               [boolean] [default: true]
-  --help, -h             Show help
-  --version, -V          Show version number
+Server
+  --host <ip>              Address to bind          (default: 127.0.0.1)
+  -p, --port <n>           Port to bind, 0 = random (default: 8000)
+  --https-only             Reject plain HTTP requests
+
+Fragmentation
+  --no-fragment            Forward the ClientHello untouched
+  --fragment-size <n>      Bytes per piece          (default: 40)
+  --tls-records            Re-frame pieces as valid TLS records
+  --fragment-delay <ms>    Pause between pieces     (default: 0)
+
+DNS
+  --dns <mode>             doh | dot | plain        (default: doh)
+  --doh-url <url>          DoH endpoint             (default: Cloudflare)
+  --dot-host <host>        DoT server               (default: 1.1.1.1)
+  --dot-port <n>           DoT port                 (default: 853)
+  --dns-server <ip>        Plain resolver, repeatable
+  --family <pref>          ipv4 | ipv6 | ipv4-first | ipv6-first
+
+Other
+  --no-system-proxy        Do not touch the OS proxy settings
+  --log-level <level>      silent | error | warn | info | debug | trace
+  -q, --quiet              No banner, no logs
+  -h, --help               Show this help
+  -V, --version            Show the version
 ```
 
 **Examples:**
 
 ```bash
-# Basic usage (auto-sets system proxy)
+# Basic usage (auto-sets the system proxy)
 gt
 
 # Custom port
 gt --port 9000
 
-# Use a different DoH server
-gt --dns-server https://doh.securedns.eu/dns-query
+# Stricter fragmentation, for DPI that reassembles TCP
+gt --tls-records
 
-# Enable TLS record fragmentation (for stricter DPI)
-gt --tls-record-fragmentation
+# DNS over TLS via Quad9
+gt --dns dot --dot-host 9.9.9.9
+
+# Leave the OS alone and configure your client yourself
+gt --no-system-proxy
 
 # Debug mode
-gt --verbose 'green-tunnel:*'
+gt --log-level debug
 ```
+
+**If a site is still blocked**, try in this order: a smaller `--fragment-size`, then `--tls-records`, then `--fragment-delay 10`.
 
 ### Docker
 
@@ -114,38 +137,101 @@ docker run -e PORT=9000 -p 9000:9000 sadeghhayeri/green-tunnel
 docker run -d --restart unless-stopped -p 8000:8000 sadeghhayeri/green-tunnel
 ```
 
+The container never touches a system proxy — point your client at it.
+
 **Environment variables:**
 
-| Variable | Description | Default |
-|---|---|---|
-| `PORT` | Proxy port | `8000` |
-| `HTTPS_ONLY` | Block HTTP traffic | `false` |
-| `DNS_TYPE` | `https`, `tls`, or `unencrypted` | `https` |
-| `DNS_SERVER` | DNS server URL | Cloudflare DoH |
-| `SILENT` | Suppress output | `false` |
-| `VERBOSE` | Debug namespace | — |
+| Variable         | Description                                | Default    |
+| ---------------- | ------------------------------------------ | ---------- |
+| `HOST`           | Address to bind inside the container       | `0.0.0.0`  |
+| `PORT`           | Proxy port                                 | `8000`     |
+| `DNS_MODE`       | `doh`, `dot` or `plain`                    | `doh`      |
+| `DOH_URL`        | DoH endpoint                               | Cloudflare |
+| `DOT_HOST`       | DoT server, when `DNS_MODE=dot`            | `1.1.1.1`  |
+| `DNS_SERVER`     | Plain resolver, when `DNS_MODE=plain`      | system     |
+| `FRAGMENT_SIZE`  | Bytes per ClientHello piece                | `40`       |
+| `FRAGMENT_DELAY` | Milliseconds between pieces                | `0`        |
+| `TLS_RECORDS`    | Set to any value to re-frame as TLS records | off        |
+| `NO_FRAGMENT`    | Set to any value to disable fragmentation  | off        |
+| `HTTPS_ONLY`     | Set to any value to block plain HTTP       | off        |
+| `LOG_LEVEL`      | `silent`…`trace`                           | `info`     |
 
-### Graphical Interface (GUI)
+Boolean variables are on when set to _anything_ and off when unset — `HTTPS_ONLY=false` still turns it on.
 
-Download the pre-built installer for your OS from the [releases](https://github.com/SadeghHayeri/GreenTunnel/releases) page.
+### Desktop app
+
+A 340 px window with an on/off switch, a tray icon, and an Advanced panel for DNS transport, port, fragmentation and log level. It snapshots your system proxy settings before changing them and restores them when it stops — including after a crash, on the next launch.
+
+### Library
+
+```ts
+import { Proxy, SystemProxy, DEFAULT_BYPASS } from '@green-tunnel/core';
+
+const proxy = new Proxy({
+  port: 8000,
+  fragment: { size: 40, tlsRecords: true },
+  dns: { mode: 'doh' },
+});
+
+const { host, port } = await proxy.start();
+
+const system = new SystemProxy();
+await system.enable({ host, port, bypass: DEFAULT_BYPASS });
+
+proxy.on('tunnel:open', ({ kind, host }) => {
+  console.log(`${kind} → ${host}`);
+});
+
+// later
+await system.disable();
+await proxy.stop();
+```
+
+`green-tunnel` re-exports `@green-tunnel/core`, so v2's `import { Proxy } from 'green-tunnel'` still works.
 
 ---
 
 ## How It Works
 
+### HTTPS / SNI fragmentation
+
+TLS's Server Name Indication (SNI) extension sends the target hostname in plaintext during the handshake — the one part of an HTTPS connection a DPI box can still read. GreenTunnel splits that handshake at the moment it forwards it:
+
+- **TCP split** — the ClientHello is written across several small segments, so no single packet contains the whole hostname.
+- **Record split** (`--tls-records`) — the handshake is re-framed into several individually valid TLS records. A box that reassembles TCP but inspects record-by-record still never sees a complete SNI. Legal per RFC 8446 §5.1.
+
 ### HTTP
 
-Some DPI systems fail to detect blocked content when an HTTP request is split across multiple TCP segments. GreenTunnel splits the request so the `Host` header straddles a segment boundary, preventing the DPI from matching the blocked hostname.
-
-### HTTPS / SNI Fragmentation
-
-TLS's Server Name Indication (SNI) extension sends the target hostname in plaintext during the handshake. DPI systems use this to block HTTPS connections. GreenTunnel splits the initial `ClientHello` TLS record into small fragments so the DPI cannot reassemble and inspect the SNI field.
-
-Optionally, `--tls-record-fragmentation` breaks the TLS record at a lower level for stricter DPI environments.
+Plain HTTP requests carry the hostname in the `Host` header, in the clear. GreenTunnel relays them through the same split, so the header straddles a segment boundary and the DPI cannot match the blocked hostname.
 
 ### Encrypted DNS
 
-Standard DNS lookups can be intercepted or spoofed by ISPs to block domains at the DNS level. GreenTunnel uses **DNS over HTTPS (DoH)** or **DNS over TLS (DoT)** to get the real IP address, bypassing DNS-based blocking.
+Standard DNS lookups can be intercepted or spoofed by ISPs to block domains at the DNS level. GreenTunnel resolves over **DNS over HTTPS** (RFC 8484 wire format) or **DNS over TLS**, so your ISP's resolver cannot return a poisoned answer or log the lookup.
+
+---
+
+## Repository layout
+
+```
+packages/core/   @green-tunnel/core — the engine: proxy, TLS fragmentation, DNS, system proxy
+packages/cli/    green-tunnel — the `gt` command
+apps/desktop/    the Electron app
+```
+
+## Development
+
+```bash
+npm install      # workspaces: packages/*, apps/*
+
+npm run check    # typecheck + lint + test
+npm run build    # core, cli, desktop
+npm run dev      # the desktop app, with HMR
+npm run dev:cli  # build the CLI and run it
+```
+
+⚠️ `npm run dev` points your **real** system proxy at the app. See
+[CLAUDE.md](./CLAUDE.md) for a throwaway-profile recipe, plus architecture
+notes, conventions, and what is and is not verified.
 
 ---
 
@@ -155,7 +241,7 @@ Pull requests and issues are always welcome.
 
 - Use `FIX:`, `ADD:`, `UPDATE:` prefixes in PR titles.
 - Keep commits focused and descriptive.
-- Make sure `npm install` passes and `node -e "import('./src/index.js')"` works.
+- Make sure `npm run check` passes.
 
 ---
 

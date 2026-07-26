@@ -1,36 +1,73 @@
+---
 name: Publish
 
+# v2 used `on: create` with a `tags:` filter, which the create event does not
+# support — it fired for every branch too. A tag push is the real trigger.
 on:
-  create:
+  push:
     tags:
       - v*
 
 jobs:
-  publish-npm:
+  verify:
+    name: Verify tag matches package version
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: version
+        run: |
+          TAG="${GITHUB_REF#refs/tags/v}"
+          PKG=$(node -p "require('./packages/cli/package.json').version")
+          CORE=$(node -p "require('./packages/core/package.json').version")
+          echo "tag=$TAG cli=$PKG core=$CORE"
+          if [ "$TAG" != "$PKG" ] || [ "$TAG" != "$CORE" ]; then
+            echo "::error::Tag v$TAG does not match packages/cli ($PKG) / packages/core ($CORE)"
+            exit 1
+          fi
+          echo "version=$TAG" >> $GITHUB_OUTPUT
+
+  publish-npm:
+    name: Publish to npm
+    needs: [verify]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # npm provenance
+    env:
+      ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
+          cache: npm
           registry-url: https://registry.npmjs.org/
+
       - run: npm ci
-      - run: npm publish
+      - run: npx tsc --build packages/cli
+
+      # Order matters: `green-tunnel` depends on this exact version of the core.
+      - name: Publish @green-tunnel/core
+        run: npm publish --workspace packages/core --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish green-tunnel
+        run: npm publish --workspace packages/cli --access public --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   publish-docker-hub:
+    name: Publish to Docker Hub
+    needs: [verify]
     runs-on: ubuntu-latest
     steps:
-      - name: Retrieve tag
-        id: retrieve
-        run: |
-          DOCKER_IMAGE=sadeghhayeri/green-tunnel
-          VERSION=${GITHUB_REF#refs/tags/}
-          TAGS="${DOCKER_IMAGE}:${VERSION}"
-          echo "tags=${TAGS}" >> $GITHUB_OUTPUT
-
       - uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -41,182 +78,75 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and push Docker image
+      # One multi-arch manifest instead of v2's separate `arm-*` tags built from
+      # a sed-patched Dockerfile: `docker run sadeghhayeri/green-tunnel` now
+      # picks the right architecture by itself. 32-bit ARM (Pi 2/3 on a 32-bit
+      # OS) is gone — `node:24-alpine` has no armv7 variant to build on.
+      - name: Build and push
         uses: docker/build-push-action@v6
         with:
           file: Dockerfile
           push: true
-          tags: ${{ steps.retrieve.outputs.tags }},sadeghhayeri/green-tunnel:latest
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            sadeghhayeri/green-tunnel:${{ needs.verify.outputs.version }}
+            sadeghhayeri/green-tunnel:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-  publish-docker-hub-for-arm:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Retrieve tag
-        id: retrieve
-        run: |
-          DOCKER_IMAGE=sadeghhayeri/green-tunnel
-          VERSION=${GITHUB_REF#refs/tags/}
-          TAGS="${DOCKER_IMAGE}:arm-${VERSION}"
-          echo "tags=${TAGS}" >> $GITHUB_OUTPUT
-
-      - uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to DockerHub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Change Base Image
-        run: sed -i 's/node:20-alpine/balenalib\/raspberry-pi-alpine-node/g' Dockerfile
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v6
-        with:
-          file: Dockerfile
-          push: true
-          tags: ${{ steps.retrieve.outputs.tags }},sadeghhayeri/green-tunnel:arm-latest
-          platforms: linux/amd64,linux/armhf,linux/arm64
-
-  build-for-mac:
-    runs-on: macos-latest
-    needs: [publish-npm]
+  build-desktop:
+    name: Build desktop (${{ matrix.os }})
+    needs: [verify]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            script: package:mac
+            artifact: builds-mac
+            glob: |
+              apps/desktop/release/*.dmg
+              apps/desktop/release/*.zip
+          - os: windows-latest
+            script: package:win
+            artifact: builds-windows
+            glob: apps/desktop/release/*.exe
+          - os: ubuntu-latest
+            script: package:linux
+            artifact: builds-linux
+            glob: |
+              apps/desktop/release/*.AppImage
+              apps/desktop/release/*.deb
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
+          cache: npm
 
-      - name: Install Dependencies
-        working-directory: ./gui
-        run: npm ci
+      - run: npm ci
 
-      - name: Update GreenTunnel Core
-        working-directory: ./gui
-        run: npm install green-tunnel@latest --save
+      - name: Package
+        run: npm run ${{ matrix.script }} --workspace apps/desktop -- --publish never
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # No Developer ID certificate in CI — without this, electron-builder
+          # finds an unusable identity and fails instead of shipping unsigned.
+          CSC_IDENTITY_AUTO_DISCOVERY: false
 
-      - name: Fix GUI Naming
-        working-directory: ./gui
-        run: |
-          sed -i '' 's/green-tunnel-gui/green-tunnel/g' package.json
-          sed -i '' 's/green-tunnel-gui/green-tunnel/g' package-lock.json
-
-      - name: Generate icons
-        working-directory: ./gui
-        run: npm run generate-icons
-
-      - name: Build for macOS
-        working-directory: ./gui
-        run: npm run package-mac
-
-      - name: Zip
-        working-directory: ./gui/release-builds/green-tunnel-darwin-x64
-        run: zip -r green-tunnel-macos.zip green-tunnel.app
-
-      - name: Save artifact
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
-          name: builds-mac
-          path: ./gui/release-builds/green-tunnel-darwin-x64/green-tunnel-macos.zip
-
-  build-for-windows:
-    runs-on: windows-latest
-    needs: [publish-npm]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install Dependencies
-        working-directory: ./gui
-        run: npm ci
-
-      - name: Update GreenTunnel Core
-        working-directory: ./gui
-        run: npm install green-tunnel@latest --save
-
-      - name: Fix GUI Naming
-        working-directory: ./gui
-        run: |
-          powershell -Command "(gc package.json) -replace 'green-tunnel-gui', 'green-tunnel' | Out-File -encoding ASCII package.json"
-          powershell -Command "(gc package-lock.json) -replace 'green-tunnel-gui', 'green-tunnel' | Out-File -encoding ASCII package-lock.json"
-
-      - name: Generate icons
-        working-directory: ./gui
-        run: npm run generate-icons
-
-      - name: Build for Windows
-        working-directory: ./gui
-        run: npm run package-win
-
-      - name: Add Windows Installer
-        working-directory: ./gui
-        run: npm run windows-installer
-
-      - name: Zip
-        working-directory: ./gui/release-builds/green-tunnel/windows-installer
-        run: Compress-Archive -Path green-tunnel-installer.exe -DestinationPath green-tunnel-windows.zip
-
-      - name: Save artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: builds-windows
-          path: ./gui/release-builds/green-tunnel/windows-installer/green-tunnel-windows.zip
-
-  build-for-linux:
-    runs-on: ubuntu-latest
-    needs: [publish-npm]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install Dependencies
-        working-directory: ./gui
-        run: |
-          npm ci
-          npm install -g electron-installer-debian
-
-      - name: Update GreenTunnel Core
-        working-directory: ./gui
-        run: npm install green-tunnel@latest --save
-
-      - name: Fix GUI Naming
-        working-directory: ./gui
-        run: |
-          sed -i 's/green-tunnel-gui/green-tunnel/g' package.json
-          sed -i 's/green-tunnel-gui/green-tunnel/g' package-lock.json
-
-      - name: Generate icons
-        working-directory: ./gui
-        run: npm run generate-icons
-
-      - name: Build for Linux
-        working-directory: ./gui
-        run: npm run package-linux
-
-      - name: Add Linux Installer
-        working-directory: ./gui
-        run: npm run linux-installer
-
-      - name: Zip
-        working-directory: ./gui/release-builds
-        run: zip -r green-tunnel-debian.zip *.deb
-
-      - name: Save artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: builds-linux
-          path: ./gui/release-builds/green-tunnel-debian.zip
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.glob }}
+          if-no-files-found: error
 
   new-release:
+    name: Create GitHub release
+    needs: [publish-npm, build-desktop]
     runs-on: ubuntu-latest
-    needs: [build-for-mac, build-for-windows, build-for-linux]
+    permissions:
+      contents: write
     steps:
       - name: Download all build artifacts
         uses: actions/download-artifact@v4
@@ -228,9 +158,8 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            builds/green-tunnel-macos.zip
-            builds/green-tunnel-windows.zip
-            builds/green-tunnel-debian.zip
+          draft: true
+          generate_release_notes: true
+          files: builds/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

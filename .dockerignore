@@ -1,0 +1,15 @@
+node_modules
+**/node_modules
+**/dist
+**/out
+**/release
+coverage
+*.tsbuildinfo
+.git
+.github
+.idea
+assets
+apps/desktop/build
+apps/desktop/resources
+apps/desktop/src
+*.md

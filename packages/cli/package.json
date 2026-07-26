@@ -16,7 +16,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/SadeghHayeri/GreenTunnel.git"
+    "url": "git+https://github.com/SadeghHayeri/GreenTunnel.git",
+    "directory": "packages/cli"
   },
   "license": "MIT",
   "author": "Sadegh Hayeri",
