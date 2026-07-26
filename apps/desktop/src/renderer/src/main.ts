@@ -1,5 +1,10 @@
 import { PROJECT_URL } from '../../shared/share.js';
-import type { AppSettings, AppState, DnsMode } from '../../shared/types.js';
+import {
+  DEFAULT_UI_STATE,
+  type AppSettings,
+  type AppState,
+  type DnsMode,
+} from '../../shared/types.js';
 import { anySheetOpen, initAdvocacy, openShareSheet } from './advocacy.js';
 
 const api = window.greenTunnel;
@@ -206,7 +211,9 @@ const observer = new ResizeObserver(() => {
 
 // ── Advanced panel ────────────────────────────────────────────────────────
 
-let advancedOpen = false;
+// Only the state of the very first frame — `getUiState()` below replaces it with
+// what the user last left. The shared default is what makes those two agree.
+let advancedOpen = DEFAULT_UI_STATE.advancedOpen;
 
 function setAdvanced(open: boolean, animate: boolean): void {
   advancedOpen = open;
@@ -311,12 +318,13 @@ function bindNumber(input: HTMLInputElement, commit: (value: number) => Promise<
 
 wire();
 
-const { advancedOpen: openAtBoot } = await api.getUiState();
-if (openAtBoot) {
-  advancedOpen = true;
-  ui.advanced.hidden = false;
-  ui.disclosure.setAttribute('aria-expanded', 'true');
-}
+// Restore the panel as the user last left it: closed on a fresh install, open if
+// that is what they chose. Written straight onto the DOM rather than through
+// `setAdvanced`, which animates and writes the state back — neither belongs in a
+// first paint, and the height below is measured from the result either way.
+advancedOpen = (await api.getUiState()).advancedOpen;
+ui.advanced.hidden = !advancedOpen;
+ui.disclosure.setAttribute('aria-expanded', String(advancedOpen));
 
 render(await api.getState());
 limitPanel();

@@ -1,5 +1,5 @@
 import { LOG_LEVELS, isLogLevel } from '@green-tunnel/core';
-import type { AppSettings, DnsMode } from '../shared/types.js';
+import { DEFAULT_UI_STATE, type AppSettings, type DnsMode } from '../shared/types.js';
 import { JsonStore, asBoolean, asInteger, asOneOf } from './json-store.js';
 
 const DNS_MODES: readonly DnsMode[] = ['doh', 'dot', 'plain'];
@@ -89,7 +89,11 @@ export function pickSettingsPatch(raw: unknown): SettingsPatch {
 export interface WindowState {
   readonly x: number | null;
   readonly y: number | null;
-  /** Whether the advanced panel was open when the window last closed. */
+  /**
+   * Whether the advanced panel was open when the window last closed. Persisted
+   * so the user's choice survives a restart; the default it falls back to is
+   * `DEFAULT_UI_STATE`, shared with the renderer.
+   */
   readonly advancedOpen: boolean;
   /**
    * The log window *is* ordinary and resizable, so its size is worth keeping —
@@ -108,7 +112,7 @@ export interface LogsBounds {
 export const DEFAULT_WINDOW_STATE: WindowState = {
   x: null,
   y: null,
-  advancedOpen: false,
+  advancedOpen: DEFAULT_UI_STATE.advancedOpen,
   logsBounds: null,
 };
 

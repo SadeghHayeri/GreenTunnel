@@ -4,7 +4,7 @@ import { BrowserWindow, app, screen, shell } from 'electron';
 import { ALLOWED_EXTERNAL_ORIGINS } from '../shared/ipc.js';
 import type { JsonStore } from './json-store.js';
 import type { WindowState } from './settings.js';
-import { preloadFile, rendererDir } from './paths.js';
+import { appIconFile, preloadFile, rendererDir } from './paths.js';
 
 const SAVE_DEBOUNCE_MS = 400;
 
@@ -51,6 +51,9 @@ export function createMainWindow(state: JsonStore<WindowState>): BrowserWindow {
     // near-black field — so the window never follows the system theme.
     backgroundColor: '#0d1117',
     title: 'Green Tunnel',
+    // Windows and Linux take the taskbar/window icon from here. macOS ignores
+    // it and uses the bundle's icon.icns, which is the same artwork.
+    icon: appIconFile,
     webPreferences: {
       preload: preloadFile,
       sandbox: true,

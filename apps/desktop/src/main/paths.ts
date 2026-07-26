@@ -13,3 +13,11 @@ export const resourcesDir: string = app.isPackaged
 
 export const rendererDir: string = join(import.meta.dirname, '../renderer');
 export const preloadFile: string = join(import.meta.dirname, '../preload/index.cjs');
+
+/**
+ * The GreenTunnel mark, for the places a running process has to supply its own
+ * icon: every window on Linux and Windows, and the dock during `npm run dev`,
+ * which has no `.app` bundle to take one from. Same artwork as `build/icon.*`,
+ * all of it generated from `assets/logo.png`.
+ */
+export const appIconFile: string = join(resourcesDir, 'icon.png');

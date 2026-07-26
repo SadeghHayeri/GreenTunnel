@@ -11,10 +11,25 @@ files:
   - package.json
 
 # Tray icons are loaded by path at runtime (so macOS can pick up the @2x
-# variants), which means they must stay real files outside the asar.
+# variants), which means they must stay real files outside the asar. `icon.png`
+# is here for the same reason: Linux and Windows windows carry their own icon,
+# and the dev dock has no bundle to take one from.
 extraResources:
   - from: resources
     to: resources
+
+# Every icon below — and resources/icon.png — is generated from the one source
+# of truth, assets/logo.png (2000×2000, the same artwork v2 shipped):
+#
+#   for s in 16 32 128 256 512; do
+#     sips -z $s $s assets/logo.png --out icon.iconset/icon_${s}x${s}.png
+#     sips -z $((s*2)) $((s*2)) assets/logo.png --out icon.iconset/icon_${s}x${s}@2x.png
+#   done
+#   iconutil -c icns icon.iconset -o build/icon.icns
+#   sips -z 1024 1024 assets/logo.png --out build/icon.png
+#   sips -z 512  512  assets/logo.png --out resources/icon.png
+#
+# icon.ico holds 16/24/32/48/64/128/256 as 32bpp BMP entries.
 
 asar: true
 

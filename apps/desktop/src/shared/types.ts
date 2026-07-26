@@ -57,6 +57,23 @@ export interface UiState {
 }
 
 /**
+ * What a fresh install starts from: the advanced panel **closed**, so the window
+ * opens as the short column and the disclosure is the user's own first move.
+ *
+ * It lives here, beside the type, because both sides need it and each used to
+ * spell it out separately — `DEFAULT_WINDOW_STATE` in the main process and a
+ * bare `false` in the renderer. Two copies of a default is one too many: the
+ * renderer's copy is what the page is laid out against for the moment before
+ * `getUiState()` resolves, so a disagreement would show as a panel that flickers
+ * open, or a window measured against the wrong height on the very first frame.
+ *
+ * A *default* is all this is. The user's actual choice is persisted in
+ * `window-state.json` and restored at boot, so toggling the panel still survives
+ * a restart — see `main/settings.ts`.
+ */
+export const DEFAULT_UI_STATE: UiState = { advancedOpen: false };
+
+/**
  * How the user answered the occasional "star or share" prompt.
  *
  * `star` and `share` both mean *they have already helped*, and both retire the

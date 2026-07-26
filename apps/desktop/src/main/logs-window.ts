@@ -2,7 +2,7 @@ import { join } from 'node:path';
 import process from 'node:process';
 import { BrowserWindow, app, screen } from 'electron';
 import type { JsonStore } from './json-store.js';
-import { preloadFile, rendererDir } from './paths.js';
+import { appIconFile, preloadFile, rendererDir } from './paths.js';
 import type { LogsBounds, WindowState } from './settings.js';
 import { lockDownNavigation } from './window.js';
 
@@ -37,6 +37,7 @@ export function createLogsWindow(state: JsonStore<WindowState>): BrowserWindow {
       : {}),
     backgroundColor: '#0d1117',
     title: 'Green Tunnel — Logs',
+    icon: appIconFile,
     webPreferences: {
       preload: preloadFile,
       sandbox: true,

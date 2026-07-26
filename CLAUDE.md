@@ -247,6 +247,14 @@ tunnel, and a disclosure triangle must not drop live connections. For the same
 reason `TunnelService.applySettings` restarts only when a key the engine
 actually reads has changed (`affectsEngine`), so "Launch at login" is free.
 
+The panel starts **closed** on a fresh install, and the user's own choice is
+persisted to `window-state.json` and restored at boot — both directions, so
+closing it sticks too. The default is `DEFAULT_UI_STATE` in `shared/types.ts`,
+shared by `DEFAULT_WINDOW_STATE` and the renderer rather than spelled out in
+each: the renderer's copy is what the page is laid out against for the moment
+before `getUiState()` resolves, so a disagreement between the two would show as
+a panel that flickers open, or a first frame measured at the wrong height.
+
 ## Asking for a star, without becoming nagware
 
 Two popups, both `<dialog>` + `showModal()`: **Share Green Tunnel** (X, Telegram,
@@ -529,6 +537,11 @@ Roughly in order:
    first; those bugs live in the Linux/Windows drivers' shape too.
 2. Packaging: an actual electron-builder run, signing, notarization,
    auto-update. Icons and the builder config exist; nothing has been built.
+   The icons are all generated from `assets/logo.png` — the same 2000×2000
+   artwork v2 shipped as `gui/icon.png`, byte for byte — by the recipe recorded
+   in `electron-builder.yml`. Regenerate all four together if it ever changes:
+   `build/icon.{icns,ico,png}` for the installer and `resources/icon.png` for
+   the windows Linux and Windows draw themselves, plus the dev dock.
 3. CI: both workflows exist but have never run — watch the first push, and the
    first tag separately.
 4. More tests: `http/head.ts`, the DNS resolvers against a stub server, an

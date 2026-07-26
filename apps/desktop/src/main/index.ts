@@ -24,6 +24,7 @@ import {
 } from './ipc.js';
 import { LogBuffer } from './log-buffer.js';
 import { createLogsWindow } from './logs-window.js';
+import { appIconFile } from './paths.js';
 import { createSettingsStore, createWindowStateStore } from './settings.js';
 import { TunnelService } from './tunnel-service.js';
 import { createTray, updateTray, type TrayHandlers } from './tray.js';
@@ -186,6 +187,14 @@ app.on('activate', showWindow);
 
 app.whenReady().then(async () => {
   app.setAppUserModelId('com.greentunnel.desktop');
+
+  // A dev run is `electron .`, with no `.app` bundle to take an icon from, so
+  // the dock shows Electron's. Only in dev: a packaged app already has
+  // icon.icns, and setting it here would replace the bundle's icon with a raw
+  // square that has none of the masking macOS applies to the real one.
+  if (process.platform === 'darwin' && !app.isPackaged) {
+    app.dock?.setIcon(appIconFile);
+  }
 
   service.on('state', render);
 
