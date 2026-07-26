@@ -43,6 +43,7 @@
   ],
   "scripts": {
     "build": "tsc --build tsconfig.build.json",
+    "prepack": "node ../../scripts/npm-readme.js",
     "dev": "tsc --build tsconfig.build.json && node dist/main.js",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },

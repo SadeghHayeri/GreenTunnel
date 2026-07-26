@@ -76,6 +76,13 @@ export default tseslint.config(
     },
   },
 
+  // Repository scripts are plain Node ESM, outside every TS project — so they get
+  // no Node globals from a lib the way the .ts files do.
+  {
+    files: ['scripts/**/*.js'],
+    languageOptions: { globals: globals.node },
+  },
+
   // Renderer runs in the browser, not Node.
   {
     files: ['apps/desktop/src/renderer/**/*.ts'],

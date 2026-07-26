@@ -9,27 +9,6 @@
     <img src="https://img.shields.io/github/repo-size/SadeghHayeri/GreenTunnel.svg?color=Green&style=for-the-badge">
 </p>
 
-> ### A note from the maintainer
->
-> **Contribute prompts, not pull requests.**
->
-> I don't take large diffs anymore. If you want to change something in
-> GreenTunnel, send the **prompt** instead — the final one, the one you'd hand to
-> your own agent. Open an issue, label it **`PROMPT REQUEST`**, and paste it in.
->
-> I'll run it against the codebase, review what comes out, and open the PR for
-> you — **committed with your email**, so it lands in the history as your
-> contribution, because it is one.
->
-> Write it like you'd run it yourself: name the files, say what _done_ looks
-> like, say how to verify it. Several prompts in sequence are welcome — that's
-> usually how real work goes. A sharp prompt is worth more to this project than a
-> big patch: it's the part I can't write for you, and it's the part that decides
-> what the code becomes.
->
-> Small, focused PRs — a bug fix, a typo, a dead link — are as welcome as they
-> ever were. The world is changing. Let's build with it.
-
 GreenTunnel bypasses DPI (Deep Packet Inspection) systems found in many ISPs (Internet Service Providers) which block access to certain websites.
 
 It runs a local proxy that splits the TLS ClientHello so the hostname you are visiting never appears whole in a single packet, and resolves DNS over an encrypted channel so your resolver cannot be used to block or observe you either.
@@ -58,6 +37,29 @@ Open-source tools that help people reach the free internet shouldn't die — and
 <p align="center">
     <img src="assets/demo.gif" alt="green tunnel demo">
 </p>
+
+---
+
+> ### A note from the maintainer
+>
+> **Contribute prompts, not pull requests.**
+>
+> I don't take large diffs anymore. If you want to change something in
+> GreenTunnel, send the **prompt** instead — the final one, the one you'd hand to
+> your own agent. Open an issue, label it **`PROMPT REQUEST`**, and paste it in.
+>
+> I'll run it against the codebase, review what comes out, and open the PR for
+> you — **committed with your email**, so it lands in the history as your
+> contribution, because it is one.
+>
+> Write it like you'd run it yourself: name the files, say what _done_ looks
+> like, say how to verify it. Several prompts in sequence are welcome — that's
+> usually how real work goes. A sharp prompt is worth more to this project than a
+> big patch: it's the part I can't write for you, and it's the part that decides
+> what the code becomes.
+>
+> Small, focused PRs — a bug fix, a typo, a dead link — are as welcome as they
+> ever were. The world is changing. Let's build with it.
 
 ---
 
@@ -311,14 +313,6 @@ Still open for the small stuff: a bug fix, a typo, a dead link, a doc correction
 
 Large rewrites and sweeping refactors won't be merged. Send them as a prompt
 request instead — same work, and you still get the commit.
-
----
-
-## Donation
-
-> Love GreenTunnel? Please consider donating to sustain development.
-
-**Ethereum / USDT (ERC-20):** `0xB116a6AE50c38a455944A65f9cEE4D54CEceF080`
 
 ---
 

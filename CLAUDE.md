@@ -510,7 +510,7 @@ Actually run, not assumed:
   push. The `npm ci --workspace …` filtering in the image was fine. What failed is
   [recorded in full](#what-the-first-v3-tag-taught-us-in-one-place).
 - **The published package, from its own tarball.** `npm pack` → install into an
-  empty directory → run the installed binary. 133 files, 64.5 kB, and the only
+  empty directory → run the installed binary. 134 files, 67.7 kB, and the only
   things npm pulled were `dns-packet`, `lru-cache` and one transitive: no
   `@green-tunnel/core` to resolve, and no `.tsbuildinfo` shipped. `gt --version`
   reported the stamped version, and `gt --port 18777 --no-system-proxy` proxied
@@ -621,6 +621,33 @@ that is over — npm forbids republishing the same one, so from then on the only
 forward is a new number. Prerelease tags are allowed by the regex but get no
 special handling: they would still move Docker's `latest` and npm's `latest`
 dist-tag, so treat them as unsupported for now.
+
+### The npm page's README is generated, not written
+
+npm reads the README from the **package** root and never looks above it, so
+`packages/cli` needs one of its own — v2 got this for free by publishing from the
+repository root. There is still only one README anybody edits: `prepack` in
+`packages/cli` runs `scripts/npm-readme.js`, which rewrites the root `README.md`
+into `packages/cli/README.md` on the way into the tarball. The generated copy is
+gitignored and in `.prettierignore`; regenerate it by hand with
+`node scripts/npm-readme.js` if you want to look at it.
+
+The rewrite exists because npm resolves relative links against `repository.url`
+**plus `repository.directory`**, which here is `packages/cli`. Left alone,
+`assets/logo.png` would be fetched from `packages/cli/assets/logo.png` and every
+image on the npm page would be broken. So repo-relative targets become absolute:
+images to `raw.githubusercontent.com` (a `blob` URL serves the HTML page around
+the image, not the bytes), everything else to `github.com/…/blob/main/…`. Anchors,
+`mailto:` and already-absolute URLs are left alone. The current README has five
+such links — three assets and two to `CLAUDE.md` — and the diff against the root
+file should never be anything but those rewrites plus the banner comment.
+
+`files: ["dist"]` does not need `README.md` added to it: npm always includes the
+manifest, the README and a `LICENSE` **if one sits beside them**, whatever `files`
+says. That is what takes the tarball from 133 files to 134 — and note the same rule
+means the published package still carries **no LICENSE**, because there is no
+`packages/cli/LICENSE`; the root one is not in the package and npm will not reach
+for it.
 
 **`Dockerfile`** is two-stage and covers `packages/cli` only; `apps/desktop` would
 drag ~200 MB of Electron build tooling into a CLI image. Two things about it are

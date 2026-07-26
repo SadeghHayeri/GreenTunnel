@@ -1,5 +1,7 @@
 node_modules/
 dist/
+# Generated from the root README at prepack time by scripts/npm-readme.js.
+packages/cli/README.md
 out/
 release/
 coverage/
