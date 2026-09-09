@@ -7,6 +7,7 @@ export interface AppSettings {
   /** Turn the tunnel on as soon as the app launches. */
   readonly startOnLaunch: boolean;
   readonly launchAtLogin: boolean;
+  readonly launchInTray: boolean;
   /** Let the app point the OS at the proxy while it is running. */
   readonly manageSystemProxy: boolean;
   readonly port: number;
