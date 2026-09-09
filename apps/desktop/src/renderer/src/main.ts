@@ -52,6 +52,7 @@ const ui = {
   systemProxy: element('system-proxy', HTMLInputElement),
   startOnLaunch: element('start-on-launch', HTMLInputElement),
   launchAtLogin: element('launch-at-login', HTMLInputElement),
+  launchInTray: element('launch-in-tray', HTMLInputElement),
 };
 
 const CONTROLS = [
@@ -62,6 +63,7 @@ const CONTROLS = [
   ui.systemProxy,
   ui.startOnLaunch,
   ui.launchAtLogin,
+  ui.launchInTray,
 ];
 
 /** v2's wording, extended to the states v2 could not report. */
@@ -138,6 +140,7 @@ function render(state: AppState): void {
   ui.systemProxy.checked = state.settings.manageSystemProxy;
   ui.startOnLaunch.checked = state.settings.startOnLaunch;
   ui.launchAtLogin.checked = state.settings.launchAtLogin;
+  ui.launchInTray.checked = state.settings.launchInTray;
 
   // Most of these restart the tunnel, so lock them while it is mid-flight.
   for (const control of CONTROLS) control.disabled = busy;
@@ -287,6 +290,7 @@ function wire(): void {
   bindSwitch(ui.systemProxy, (manageSystemProxy) => update({ manageSystemProxy }));
   bindSwitch(ui.startOnLaunch, (startOnLaunch) => update({ startOnLaunch }));
   bindSwitch(ui.launchAtLogin, (launchAtLogin) => update({ launchAtLogin }));
+  bindSwitch(ui.launchInTray, (launchInTray) => update({ launchInTray }));
 
   // Numbers commit on blur / Enter so we do not restart on every keystroke.
   bindNumber(ui.port, (port) => update({ port }));

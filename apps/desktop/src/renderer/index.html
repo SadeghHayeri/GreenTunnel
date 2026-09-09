@@ -135,10 +135,15 @@
           <input id="launch-at-login" class="switch" type="checkbox" role="switch" />
         </label>
 
-        <p class="group" style="--i: 10">Diagnostics</p>
+        <label class="row" style="--i: 10">
+          <span class="row__label">Launch in tray</span>
+          <input id="launch-in-tray" class="switch" type="checkbox" role="switch" />
+        </label>
+
+        <p class="group" style="--i: 11">Diagnostics</p>
 
         <!-- Opens its own window: a log is a table, and this column is 340px. -->
-        <button id="open-logs" class="row row--button" type="button" style="--i: 11">
+        <button id="open-logs" class="row row--button" type="button" style="--i: 12">
           <span class="row__label">
             Logs
             <small class="row__hint">Live engine log, with the level to record at</small>
@@ -146,7 +151,7 @@
           <span class="row__action">Open</span>
         </button>
 
-        <div class="links" style="--i: 12">
+        <div class="links" style="--i: 13">
           <button id="share" class="link" type="button">Share ↗</button>
           <button id="source" class="link" type="button">Source code ↗</button>
         </div>

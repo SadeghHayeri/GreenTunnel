@@ -8,6 +8,7 @@ export interface TrayHandlers {
   readonly showWindow: () => void;
   readonly showLogs: () => void;
   readonly setLaunchAtLogin: (enabled: boolean) => void;
+  readonly setLaunchInTray: (enabled: boolean) => void;
   readonly openSource: () => void;
   readonly quit: () => void;
 }
@@ -56,6 +57,14 @@ export function updateTray(tray: Tray, state: AppState, handlers: TrayHandlers):
         checked: state.settings.launchAtLogin,
         click: (item) => {
           handlers.setLaunchAtLogin(item.checked);
+        },
+      },
+      {
+        label: 'Launch in Tray',
+        type: 'checkbox',
+        checked: state.settings.launchInTray,
+        click: (item) => {
+          handlers.setLaunchInTray(item.checked);
         },
       },
       { type: 'separator' },
