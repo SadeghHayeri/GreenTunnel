@@ -20,7 +20,7 @@
     "package:linux": "electron-vite build && electron-builder --linux"
   },
   "devDependencies": {
-    "electron": "43.2.0",
+    "electron": "43.5.0",
     "electron-builder": "^26.15.3",
     "electron-vite": "^5.0.0",
     "green-tunnel": "*",
