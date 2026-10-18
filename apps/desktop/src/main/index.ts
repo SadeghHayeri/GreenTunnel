@@ -306,7 +306,7 @@ app.whenReady().then(async () => {
   // regardless of `manageSystemProxy`: the leftover exists either way.
   if (isSystemProxySupported()) {
     try {
-      await recoverSystemProxy();
+      await recoverSystemProxy({ logger: logger.child('system-proxy') });
     } catch (error) {
       console.error('Could not undo a leftover system proxy:', error);
     }

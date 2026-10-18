@@ -461,6 +461,11 @@ and worked with it off. Each of these cost a wrong theory first.
    whole write with "The parameter is incorrect". `[::1]` is accepted. The
    mirror validates nothing, which is how v3.0 got away with it, so snapshots
    from the old driver can still hold `::1` and are converted on restore.
+   What else it rejects varies by Windows build, and a user's machine failed
+   to start with this error when ours did not. So a rejected write now
+   re-adds the bypass entries one at a time, keeps the accepted ones, and
+   logs a `warn` naming the ones it left out. It rethrows only if the list
+   itself was not the problem.
 3. **Auto-detect and PAC live in the same record**, so rewriting the proxy
    without them silently changes them. Snapshots now record both.
 4. **Sandboxed apps cannot reach `127.0.0.1`.** Windows blocks AppContainer

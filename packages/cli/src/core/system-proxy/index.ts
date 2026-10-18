@@ -1,5 +1,6 @@
 import { platform } from 'node:process';
 import { SystemProxyError, toError } from '../errors.js';
+import type { Logger } from '../logger.js';
 import type {
   ProxyEndpointState,
   SystemProxySettings,
@@ -29,14 +30,14 @@ export function isSystemProxySupported(): boolean {
   return platform === 'darwin' || platform === 'linux' || platform === 'win32';
 }
 
-export function createSystemProxyDriver(): SystemProxyDriver {
+export function createSystemProxyDriver(logger?: Logger): SystemProxyDriver {
   switch (platform) {
     case 'darwin':
       return new DarwinSystemProxy();
     case 'linux':
       return new LinuxSystemProxy();
     case 'win32':
-      return new WindowsSystemProxy();
+      return new WindowsSystemProxy(logger);
     default:
       throw new SystemProxyError(`Setting the system proxy is not supported on ${platform}`);
   }
@@ -49,6 +50,8 @@ export interface SystemProxyOptions {
    * cleaned up. `null` disables persistence (used by tests).
    */
   readonly recoveryFile?: string | null;
+  /** Where a driver reports what it had to work around. Silent if omitted. */
+  readonly logger?: Logger;
 }
 
 /**
@@ -64,7 +67,7 @@ export class SystemProxy {
   #snapshot: SystemProxySnapshot | null = null;
 
   constructor(options: SystemProxyOptions = {}) {
-    this.#driver = options.driver ?? createSystemProxyDriver();
+    this.#driver = options.driver ?? createSystemProxyDriver(options.logger);
     this.#recoveryFile =
       options.recoveryFile === undefined ? defaultRecoveryPath() : options.recoveryFile;
   }
@@ -132,7 +135,7 @@ export async function recoverSystemProxy(
   const snapshot = await readRecoveryFile(path);
   if (!snapshot) return null;
 
-  const driver = options.driver ?? createSystemProxyDriver();
+  const driver = options.driver ?? createSystemProxyDriver(options.logger);
   try {
     await driver.restore(snapshot);
   } catch (error) {

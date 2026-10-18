@@ -1,5 +1,6 @@
 import type { SystemProxySettings, SystemProxySnapshot } from '../types.js';
 import { SystemProxyError } from '../errors.js';
+import { Logger } from '../logger.js';
 import type { SystemProxyDriver } from './driver.js';
 import { exec } from './exec.js';
 
@@ -35,6 +36,11 @@ interface WinInetProxy {
  */
 export class WindowsSystemProxy implements SystemProxyDriver {
   readonly platform: NodeJS.Platform = 'win32';
+  readonly #log: Logger;
+
+  constructor(logger: Logger = new Logger('system-proxy', { level: 'silent' })) {
+    this.#log = logger;
+  }
 
   async snapshot(): Promise<SystemProxySnapshot> {
     const current = await queryProxy();
@@ -64,13 +70,14 @@ export class WindowsSystemProxy implements SystemProxyDriver {
     // when it sets a manual proxy. A PAC script is switched off while we run —
     // Windows consults it *before* the manual proxy, so leaving it on would
     // route around the tunnel — and comes back on restore.
-    await setProxy({
+    const dropped = await setProxy({
       flags:
         PROXY_TYPE_DIRECT | PROXY_TYPE_PROXY | (previous?.autoDetect ? PROXY_TYPE_AUTO_DETECT : 0),
       server: `${settings.host}:${String(settings.port)}`,
       bypass: settings.bypass.length > 0 ? toBypassList(settings.bypass) : '<local>',
       autoConfigUrl: previous?.autoConfigUrl ?? '',
     });
+    this.#warnDropped(dropped);
   }
 
   async restore(snapshot: SystemProxySnapshot): Promise<void> {
@@ -86,7 +93,7 @@ export class WindowsSystemProxy implements SystemProxyDriver {
     // One write sets every field together, so there is no half-restored state
     // to order around — v3.0 needed "disable first" because it wrote three
     // registry values one at a time.
-    await setProxy({
+    const dropped = await setProxy({
       flags:
         PROXY_TYPE_DIRECT |
         (on ? PROXY_TYPE_PROXY : 0) |
@@ -97,6 +104,20 @@ export class WindowsSystemProxy implements SystemProxyDriver {
       bypass: toBypassList(previous.bypass ?? []),
       autoConfigUrl: previous.autoConfigUrl ?? '',
     });
+    this.#warnDropped(dropped);
+  }
+
+  /**
+   * Some Windows builds reject bypass entries that others accept, and one bad
+   * entry used to fail the whole write — the tunnel then refused to start at
+   * all. The rest of the list is still applied; say which entries were not.
+   */
+  #warnDropped(dropped: readonly string[]): void {
+    if (dropped.length > 0) {
+      this.#log.warn(
+        `Windows rejected these proxy bypass entries, left out: ${dropped.join(', ')}`,
+      );
+    }
   }
 }
 
@@ -125,6 +146,7 @@ function toBypassList(entries: readonly string[]): string {
  */
 const WININET_TYPE = `
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 
@@ -200,7 +222,9 @@ public static class GtWinInet {
     return new string[] { Flags().ToString(), Text(SERVER), Text(BYPASS), Text(AUTOCONFIG_URL) };
   }
 
-  public static void Set(int flags, string server, string bypass, string autoConfigUrl) {
+  const int ERROR_INVALID_PARAMETER = 87;
+
+  static void Write(int flags, string server, string bypass, string autoConfigUrl) {
     IntPtr s = Marshal.StringToHGlobalUni(server);
     IntPtr b = Marshal.StringToHGlobalUni(bypass);
     IntPtr u = Marshal.StringToHGlobalUni(autoConfigUrl);
@@ -210,9 +234,36 @@ public static class GtWinInet {
     } finally {
       Marshal.FreeHGlobal(s); Marshal.FreeHGlobal(b); Marshal.FreeHGlobal(u);
     }
+  }
+
+  // Returns the bypass entries Windows refused and that were left out.
+  public static string[] Set(int flags, string server, string bypass, string autoConfigUrl) {
+    List<string> dropped = new List<string>();
+    try {
+      Write(flags, server, bypass, autoConfigUrl);
+    } catch (Win32Exception e) {
+      if (e.NativeErrorCode != ERROR_INVALID_PARAMETER || bypass.Length == 0) throw;
+      // One bad entry fails the whole write, and which entries count as bad
+      // differs between Windows builds. Add them back one at a time and keep
+      // whatever is accepted. If even the empty list fails, the fault is not
+      // in the bypass list and this rethrows the same error.
+      Write(flags, server, "", autoConfigUrl);
+      List<string> kept = new List<string>();
+      foreach (string entry in bypass.Split(';')) {
+        if (entry.Length == 0) continue;
+        kept.Add(entry);
+        try { Write(flags, server, string.Join(";", kept.ToArray()), autoConfigUrl); }
+        catch (Win32Exception again) {
+          if (again.NativeErrorCode != ERROR_INVALID_PARAMETER) throw;
+          kept.RemoveAt(kept.Count - 1);
+          dropped.Add(entry);
+        }
+      }
+    }
     // Tell every WinINet client to re-read, as the Settings app does.
     SetRaw(IntPtr.Zero, SETTINGS_CHANGED, IntPtr.Zero, 0);
     SetRaw(IntPtr.Zero, REFRESH, IntPtr.Zero, 0);
+    return dropped.ToArray();
   }
 }
 `;
@@ -232,8 +283,12 @@ async function queryProxy(): Promise<WinInetProxy> {
   };
 }
 
-async function setProxy(state: WinInetProxy): Promise<void> {
-  await runWinInet({ op: 'set', ...state });
+/** Write the LAN proxy configuration; returns the bypass entries Windows refused. */
+async function setProxy(state: WinInetProxy): Promise<string[]> {
+  const output = await runWinInet({ op: 'set', ...state });
+  if (output.length === 0) return [];
+  const parsed: unknown = JSON.parse(output);
+  return Array.isArray(parsed) ? parsed.map(String) : [];
 }
 
 /**
@@ -253,7 +308,7 @@ $request = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('${payloa
 if ($request.op -eq 'get') {
   ConvertTo-Json -Compress -InputObject @([GtWinInet]::Get())
 } else {
-  [GtWinInet]::Set([int]$request.flags, [string]$request.server, [string]$request.bypass, [string]$request.autoConfigUrl)
+  ConvertTo-Json -Compress -InputObject @([GtWinInet]::Set([int]$request.flags, [string]$request.server, [string]$request.bypass, [string]$request.autoConfigUrl))
 }
 `.trim();
 

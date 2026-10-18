@@ -54,7 +54,7 @@ async function run(options: RunOptions): Promise<number> {
   // must happen whether or not this run manages the system proxy at all.
   if (isSystemProxySupported()) {
     try {
-      const recovered = await recoverSystemProxy();
+      const recovered = await recoverSystemProxy({ logger: logger.child('system-proxy') });
       if (recovered) {
         printNotice(
           `Restored the system proxy left behind by a previous run (${String(recovered.entries.length)} ` +
@@ -75,7 +75,10 @@ async function run(options: RunOptions): Promise<number> {
 
   const address = await proxy.start();
 
-  const system = options.systemProxy && isSystemProxySupported() ? new SystemProxy() : undefined;
+  const system =
+    options.systemProxy && isSystemProxySupported()
+      ? new SystemProxy({ logger: logger.child('system-proxy') })
+      : undefined;
 
   if (options.systemProxy && !system) {
     printNotice(`System proxy is not supported on ${process.platform}; configure it manually.`);

@@ -103,7 +103,7 @@ export class TunnelService extends EventEmitter<TunnelServiceEvents> {
       this.#proxy = proxy;
 
       if (this.#settings.manageSystemProxy && isSystemProxySupported()) {
-        const system = new SystemProxy();
+        const system = new SystemProxy({ logger: this.#logger.child('system-proxy') });
         const bypass = [...new Set([...DEFAULT_BYPASS, ...this.#settings.bypass])];
         await system.enable({ host: address.host, port: address.port, bypass });
         this.#system = system;
