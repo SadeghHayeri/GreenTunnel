@@ -442,6 +442,39 @@ interface comes back down.
    routed through `app.quit()`. Teardown also has a 15 s timeout so a wedged
    `networksetup` cannot block quit forever.
 
+## Windows
+
+Found by debugging a real machine where OneDrive spun forever with the tunnel on
+and worked with it off. Each of these cost a wrong theory first.
+
+1. **The registry values are a mirror, not the setting.** `ProxyEnable`,
+   `ProxyServer` and `ProxyOverride` under `Internet Settings` are kept for old
+   programs. What Windows actually reads is the binary
+   `Connections\DefaultConnectionSettings` record beside them, and only
+   `InternetSetOption(INTERNET_OPTION_PER_CONNECTION_OPTION)` writes it. v3.0
+   wrote the mirror with `reg.exe`, so the two disagreed: the Settings app showed
+   the proxy as **off** while WinINet apps used it, and WinHTTP clients —
+   OneDrive, the certificate revocation fetcher — read the other copy. The same
+   proxy set through the Settings app (which writes both) worked. The driver now
+   uses the per-connection API for every read and write.
+2. **That API rejects a bare IPv6 literal** in the bypass list — `::1` fails the
+   whole write with "The parameter is incorrect". `[::1]` is accepted. The
+   mirror validates nothing, which is how v3.0 got away with it, so snapshots
+   from the old driver can still hold `::1` and are converted on restore.
+3. **Auto-detect and PAC live in the same record**, so rewriting the proxy
+   without them silently changes them. Snapshots now record both.
+4. **Sandboxed apps cannot reach `127.0.0.1`.** Windows blocks AppContainer
+   processes (Windows Search's web results, the account broker) from loopback,
+   so they cannot use the tunnel at all — their SYNs to the proxy sit in
+   `SynSent` forever and the engine never sees them. An admin can lift it per
+   app with `CheckNetIsolation LoopbackExempt -a "-n=<package family>"`, or a
+   bypass entry sends them direct.
+5. **Debugging: decode the record, not the registry.** Bytes 8–11 are the flags
+   (`1` direct, `2` proxy, `4` PAC, `8` auto-detect), then length-prefixed ASCII
+   strings: server, bypass, PAC URL. And in PowerShell 5.1 an unquoted argument
+   starting with `-` is split at its first dot — `-n=Microsoft.AAD.…` reaches the
+   program as `-n=Microsoft .AAD.…` — so quote such arguments.
+
 ## Verified
 
 Actually run, not assumed:
@@ -520,12 +553,15 @@ Actually run, not assumed:
 
 **Not yet verified — do not assume these work:**
 
-- `SystemProxy` on **Linux and Windows**. Those drivers were updated alongside
-  the macOS one but have still never been executed. Test deliberately.
+- `SystemProxy` on **Linux**. That driver was updated alongside the macOS one
+  but has still never been executed. Test deliberately. Windows is now verified
+  on one Windows 11 machine — see [Windows](#windows) — but never on a
+  locked-down one: a PowerShell restricted to Constrained Language Mode blocks
+  `Add-Type`, which the driver needs (it fails before changing anything).
 - `electron-builder` **signing and notarization**. The `--win` target has now
   built in CI, and `--linux` cross-builds on macOS (see [Verified](#verified)),
   but neither ships signed.
-- Windows and Linux at all.
+- Linux at all.
 - The log panel's **Save** button (it opens a native dialog, so it needs a human)
   and the tray's **Show Logs** item — the same `showLogs()` the row calls, but
   never clicked.
@@ -545,6 +581,12 @@ Actually run, not assumed:
   for a background window, which also delays `ResizeObserver` callbacks. Trust
   the pixel dimensions of `Page.captureScreenshot` instead — that comes from the
   compositor. Costs an hour if you assume the resize code is broken.
+- **Microsoft's account and OneDrive front ends never answer a ClientHello split
+  across TLS records** — `--tls-records` makes `login.live.com`,
+  `graph.microsoft.com`, `api.onedrive.com` and friends hang until timeout, even
+  at two records. Plain TCP splitting is fine. Google, GitHub, Cloudflare and
+  `www.microsoft.com` accept records. The desktop's "Microsoft sign-in &
+  OneDrive" bypass preset exists for this.
 - **Quad9 DoH does not work** and cannot: it answers `505 HTTP Version Not
 Supported` to HTTP/1.1, and Node's `fetch` has no HTTP/2. Use
   `--dns dot --dot-host 9.9.9.9`.
@@ -777,9 +819,10 @@ target list ever wants one.
 
 Roughly in order:
 
-1. Exercise and fix the `SystemProxy` drivers on **Linux and Windows** — macOS is
-   now done (see [Verified](#verified)). Re-read the stranded-proxy section above
-   first; those bugs live in the Linux/Windows drivers' shape too.
+1. Exercise and fix the `SystemProxy` driver on **Linux** — macOS and Windows are
+   now done (see [Verified](#verified) and [Windows](#windows)). Re-read the
+   stranded-proxy section above first; those bugs live in the Linux driver's
+   shape too.
 2. Packaging: signing, notarization, auto-update, and a Windows/Linux run.
    macOS now builds (see [Verified](#verified)) but ships unsigned.
    The icons are all generated from `assets/logo.png` — the same 2000×2000
@@ -798,8 +841,9 @@ Roughly in order:
    tag.
 4. More tests: `http/head.ts`, the DNS resolvers against a stub server, an
    integration test that drives `Proxy` over a loopback TLS server.
-5. Features worth considering — per-site rules, a bypass list in the UI,
-   SNI-aware split points (split _inside_ the hostname rather than at a fixed
+5. Features worth considering — per-site rules, a bypass list in the CLI (the
+   desktop has one), a fallback that retries a `--tls-records` connection with
+   plain TCP splitting when the server never answers, SNI-aware split points (split _inside_ the hostname rather than at a fixed
    offset), QUIC/HTTP3 handling, PAC-file mode instead of a blunt system proxy.
    The live connection log that was on this list is now the
    [log panel](#the-log-panel).
