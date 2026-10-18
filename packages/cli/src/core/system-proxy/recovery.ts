@@ -141,11 +141,20 @@ function parseEntry(value: unknown): SystemProxySnapshotEntry | undefined {
     bypass = rawBypass as string[];
   }
 
+  const { autoDetect, autoConfigUrl, autoConfig } = {
+    autoDetect: raw['autoDetect'],
+    autoConfigUrl: raw['autoConfigUrl'],
+    autoConfig: raw['autoConfig'],
+  };
+
   return {
     target,
     ...endpoint,
     ...(secure ? { secure } : {}),
     ...(bypass ? { bypass } : {}),
+    ...(typeof autoDetect === 'boolean' ? { autoDetect } : {}),
+    ...(typeof autoConfigUrl === 'string' ? { autoConfigUrl } : {}),
+    ...(typeof autoConfig === 'boolean' ? { autoConfig } : {}),
   };
 }
 

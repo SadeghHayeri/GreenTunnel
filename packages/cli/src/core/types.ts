@@ -168,4 +168,14 @@ export interface SystemProxySnapshotEntry extends ProxyEndpointState {
    * service it touched.
    */
   readonly bypass?: readonly string[];
+  /**
+   * Windows only: "Automatically detect settings". Recorded because the proxy
+   * is written as one record holding this flag too — rewriting the proxy
+   * without it would silently switch the user's auto-detect off.
+   */
+  readonly autoDetect?: boolean;
+  /** Windows only: the auto-config (PAC) script URL, kept even while unused. */
+  readonly autoConfigUrl?: string;
+  /** Windows only: whether that script was switched on. */
+  readonly autoConfig?: boolean;
 }
