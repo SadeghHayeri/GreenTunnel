@@ -71,7 +71,9 @@ export class DotResolver extends CachingDnsResolver {
         }
       });
 
-      socket.once('error', (cause) => {
+      // `on`, not `once`: a consumed one-shot listener leaves the socket bare,
+      // and a second error event on a bare socket is an uncaught exception.
+      socket.on('error', (cause) => {
         finish(
           new DnsError(hostname, `DoT connection failed: ${toError(cause).message}`, { cause }),
         );

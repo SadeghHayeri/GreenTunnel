@@ -4,7 +4,7 @@ import { assertValidSettings, resolveSettings } from '../config.js';
 import { createDnsResolver, type DnsResolver } from '../dns/index.js';
 import { GreenTunnelError, toError } from '../errors.js';
 import { Logger } from '../logger.js';
-import { destroyAll } from '../net/socket.js';
+import { destroyAll, guardErrors } from '../net/socket.js';
 import type {
   ProxyAddress,
   ProxyEventMap,
@@ -150,7 +150,7 @@ export class Proxy extends EventEmitter<ProxyEventMap> {
   async #onConnection(client: net.Socket, signal: AbortSignal): Promise<void> {
     this.#sockets.add(client);
     // A socket that errors with no listener would take the process down.
-    client.on('error', () => undefined);
+    guardErrors(client);
     client.once('close', () => this.#sockets.delete(client));
 
     let info: TunnelInfo | undefined;

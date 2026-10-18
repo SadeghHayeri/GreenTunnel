@@ -38,6 +38,14 @@ export async function connect(options: ConnectOptions): Promise<net.Socket> {
 
     function onConnect(): void {
       cleanup();
+      // `cleanup` just removed the only 'error' listener, and the next one is
+      // not attached until `pipeline` runs inside `tunnel()` — several awaits
+      // later (the 200 write, the wait for the client's ClientHello, the
+      // fragment delays). An RST landing in that window is an unhandled
+      // 'error' event, which takes the whole process down: on the desktop app
+      // that is Electron's "A JavaScript error occurred in the main process"
+      // box reading `read ECONNRESET at TCP.onStreamRead`.
+      guardErrors(socket);
       resolve(socket);
     }
     function onError(error: Error): void {
@@ -84,6 +92,19 @@ export function write(socket: net.Socket, chunk: Buffer): Promise<void> {
     });
     if (!flushed) socket.once('drain', resolve);
   });
+}
+
+/**
+ * Keep a permanent no-op `error` listener on a socket.
+ *
+ * An `error` event with no listener is rethrown by Node as an uncaught
+ * exception, so a socket is only ever as safe as its *current* listeners. Real
+ * handlers (`pipeline`, `connect`) come and go; this one never does, so there
+ * is no gap between them. It does not swallow anything: extra listeners don't
+ * stop `pipeline` or `once('error')` from seeing the same event.
+ */
+export function guardErrors(socket: net.Socket): void {
+  socket.on('error', () => undefined);
 }
 
 /** Destroy every socket, ignoring already-destroyed ones. */

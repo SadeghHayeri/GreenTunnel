@@ -61,6 +61,54 @@ const logger = createLogger({
 
 const service = new TunnelService(settings.value, logger);
 
+/**
+ * Network errors that mean "the other end hung up". Routine for a proxy —
+ * every reset upstream and every browser tab closed mid-request produces one.
+ */
+const BENIGN_NETWORK_CODES = new Set([
+  'ECONNRESET',
+  'ECONNABORTED',
+  'EPIPE',
+  'ETIMEDOUT',
+  'ECANCELED',
+  'ERR_STREAM_PREMATURE_CLOSE',
+  'ERR_STREAM_DESTROYED',
+  'ABORT_ERR',
+]);
+
+/**
+ * Last line of defence for the main process.
+ *
+ * Electron's default handler for an uncaught exception is a modal box reading
+ * "A JavaScript error occurred in the main process", and the app is dead behind
+ * it. For a background proxy that is the wrong trade twice over: the errors
+ * that reach here are almost always a socket that reset a moment before its
+ * handler was attached, and even a real bug is better survived in the tray than
+ * announced in a dialog the user can only dismiss.
+ *
+ * Anything unrecognised is still logged at `error`, so the log window keeps the
+ * evidence instead of the crash box.
+ */
+function onFatal(kind: string, cause: unknown): void {
+  const error = cause instanceof Error ? cause : new Error(String(cause));
+  const code = (error as NodeJS.ErrnoException).code;
+
+  if (code !== undefined && BENIGN_NETWORK_CODES.has(code)) {
+    logger.debug(`${kind}: ${code} (connection dropped)`);
+    return;
+  }
+
+  logger.error(`${kind}: ${error.message}`, error);
+  console.error(`Uncaught ${kind}:`, error);
+}
+
+process.on('uncaughtException', (error) => {
+  onFatal('uncaughtException', error);
+});
+process.on('unhandledRejection', (reason) => {
+  onFatal('unhandledRejection', reason);
+});
+
 let window: BrowserWindow | null = null;
 let logsWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
