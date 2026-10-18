@@ -212,6 +212,18 @@ async function updateSettings(patch: Partial<AppSettings>): Promise<void> {
   await service.applySettings(next);
 }
 
+/**
+ * Whether this launch should stay in the tray rather than open the window.
+ *
+ * Only when *both* are on: "Launch at login" alone still wants the window, so
+ * the user can see the tunnel is off and switch it on; "Turn on at launch"
+ * alone is a manual launch, and someone who opened the app by hand wants to
+ * see it.
+ */
+function startsInTray(value: AppSettings): boolean {
+  return value.startOnLaunch && value.launchAtLogin;
+}
+
 function applyLaunchAtLogin(enabled: boolean): void {
   try {
     // Writing the login item needs a signed, installed app on macOS, so skip
@@ -257,6 +269,10 @@ app.whenReady().then(async () => {
 
   window = createMainWindow(windowState);
   window.once('ready-to-show', () => {
+    // With both on, the user has asked for a tunnel that is simply there after
+    // login, so boot straight into the tray. The window is still created — just
+    // not shown — so the tray's "Show" opens it instantly, already measured.
+    if (startsInTray(settings.value)) return;
     window?.show();
     maybePromptAdvocacy();
   });
