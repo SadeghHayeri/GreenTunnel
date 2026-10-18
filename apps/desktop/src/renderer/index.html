@@ -105,9 +105,32 @@
           <input id="system-proxy" class="switch" type="checkbox" role="switch" />
         </label>
 
-        <p class="group" style="--i: 4">Fragmentation</p>
+        <!-- A fixed row count and no resize handle: the window's height follows
+             this column, and a textarea that grew as you typed would drag it. -->
+        <label class="row row--stacked" style="--i: 4">
+          <span class="row__label">
+            Bypass proxy for
+            <small class="row__hint">Hosts that connect directly, one per line</small>
+          </span>
+          <textarea
+            id="bypass"
+            class="input input--list"
+            rows="3"
+            spellcheck="false"
+            autocapitalize="off"
+            placeholder="*.example.com"
+          ></textarea>
+        </label>
 
-        <label class="row" style="--i: 5">
+        <div class="links links--start" style="--i: 5">
+          <button id="bypass-microsoft" class="link" type="button">
+            + Microsoft sign-in &amp; OneDrive
+          </button>
+        </div>
+
+        <p class="group" style="--i: 6">Fragmentation</p>
+
+        <label class="row" style="--i: 7">
           <span class="row__label">
             Fragment size
             <small class="row__hint">Bytes per piece of the ClientHello</small>
@@ -115,7 +138,7 @@
           <input id="fragment-size" class="input" type="number" min="1" max="1400" step="1" />
         </label>
 
-        <label class="row" style="--i: 6">
+        <label class="row" style="--i: 8">
           <span class="row__label">
             TLS records
             <small class="row__hint">Re-frame each piece as its own record</small>
@@ -123,22 +146,22 @@
           <input id="tls-records" class="switch" type="checkbox" role="switch" />
         </label>
 
-        <p class="group" style="--i: 7">Startup</p>
+        <p class="group" style="--i: 9">Startup</p>
 
-        <label class="row" style="--i: 8">
+        <label class="row" style="--i: 10">
           <span class="row__label">Turn on at launch</span>
           <input id="start-on-launch" class="switch" type="checkbox" role="switch" />
         </label>
 
-        <label class="row" style="--i: 9">
+        <label class="row" style="--i: 11">
           <span class="row__label">Launch at login</span>
           <input id="launch-at-login" class="switch" type="checkbox" role="switch" />
         </label>
 
-        <p class="group" style="--i: 10">Diagnostics</p>
+        <p class="group" style="--i: 12">Diagnostics</p>
 
         <!-- Opens its own window: a log is a table, and this column is 340px. -->
-        <button id="open-logs" class="row row--button" type="button" style="--i: 11">
+        <button id="open-logs" class="row row--button" type="button" style="--i: 13">
           <span class="row__label">
             Logs
             <small class="row__hint">Live engine log, with the level to record at</small>
@@ -146,7 +169,7 @@
           <span class="row__action">Open</span>
         </button>
 
-        <div class="links" style="--i: 12">
+        <div class="links" style="--i: 14">
           <button id="share" class="link" type="button">Share ↗</button>
           <button id="source" class="link" type="button">Source code ↗</button>
         </div>

@@ -1,4 +1,5 @@
 import { LOG_LEVELS, isLogLevel } from 'green-tunnel';
+import { parseBypassList } from '../shared/bypass.js';
 import { DEFAULT_UI_STATE, type AppSettings, type DnsMode } from '../shared/types.js';
 import { JsonStore, asBoolean, asInteger, asOneOf } from './json-store.js';
 
@@ -12,6 +13,7 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
   dnsMode: 'doh',
   fragmentSize: 40,
   tlsRecords: false,
+  bypass: [],
   // Enough to see the tunnel come up, the system proxy change hands and
   // anything fail, and quiet enough to leave on forever. `debug` adds a line
   // per connection, which is what you actually want while reproducing a bug.
@@ -36,6 +38,7 @@ export function normalizeSettings(raw: unknown): AppSettings {
     dnsMode: asOneOf(input['dnsMode'], DNS_MODES, DEFAULT_APP_SETTINGS.dnsMode),
     fragmentSize: asInteger(input['fragmentSize'], DEFAULT_APP_SETTINGS.fragmentSize, 1, 1400),
     tlsRecords: asBoolean(input['tlsRecords'], DEFAULT_APP_SETTINGS.tlsRecords),
+    bypass: parseBypassList(input['bypass']),
     logLevel: asOneOf(input['logLevel'], LOG_LEVELS, DEFAULT_APP_SETTINGS.logLevel),
   };
 }
@@ -67,6 +70,7 @@ export function pickSettingsPatch(raw: unknown): SettingsPatch {
   if (typeof input['tlsRecords'] === 'boolean') patch.tlsRecords = input['tlsRecords'];
   if (typeof input['port'] === 'number') patch.port = input['port'];
   if (typeof input['fragmentSize'] === 'number') patch.fragmentSize = input['fragmentSize'];
+  if (Array.isArray(input['bypass'])) patch.bypass = parseBypassList(input['bypass']);
 
   const dnsMode = input['dnsMode'];
   if (dnsMode === 'doh' || dnsMode === 'dot' || dnsMode === 'plain') {

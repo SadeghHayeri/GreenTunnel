@@ -543,6 +543,36 @@ select,
   color: var(--green);
 }
 
+/* The bypass list is the one control too wide for the label's right-hand side,
+   so its row stacks the box under the label instead. */
+.row--stacked {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.input--list {
+  width: 100%;
+  height: auto;
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 11px;
+  line-height: 1.45;
+  text-align: left;
+  white-space: pre;
+  overflow-x: auto;
+  resize: none;
+}
+
+.links--start {
+  margin-top: 0;
+}
+
+.links--start .link {
+  flex: 0 0 auto;
+  padding: 2px 0;
+  text-align: left;
+}
+
 .link:focus-visible {
   outline: 2px solid var(--green);
   outline-offset: -2px;

@@ -1,3 +1,4 @@
+import { MICROSOFT_HOSTS, parseBypassList } from '../../shared/bypass.js';
 import { PROJECT_URL } from '../../shared/share.js';
 import {
   DEFAULT_UI_STATE,
@@ -50,6 +51,8 @@ const ui = {
   fragmentSize: element('fragment-size', HTMLInputElement),
   tlsRecords: element('tls-records', HTMLInputElement),
   systemProxy: element('system-proxy', HTMLInputElement),
+  bypass: element('bypass', HTMLTextAreaElement),
+  bypassMicrosoft: element('bypass-microsoft', HTMLButtonElement),
   startOnLaunch: element('start-on-launch', HTMLInputElement),
   launchAtLogin: element('launch-at-login', HTMLInputElement),
 };
@@ -60,6 +63,8 @@ const CONTROLS = [
   ui.fragmentSize,
   ui.tlsRecords,
   ui.systemProxy,
+  ui.bypass,
+  ui.bypassMicrosoft,
   ui.startOnLaunch,
   ui.launchAtLogin,
 ];
@@ -131,6 +136,7 @@ function render(state: AppState): void {
   if (editing !== ui.dnsMode) ui.dnsMode.value = state.settings.dnsMode;
   if (editing !== ui.port) ui.port.value = String(state.settings.port);
   if (editing !== ui.fragmentSize) ui.fragmentSize.value = String(state.settings.fragmentSize);
+  if (editing !== ui.bypass) ui.bypass.value = state.settings.bypass.join('\n');
 
   // Switches commit on the spot, so there is never anything of the user's to
   // preserve — always show what the main process says.
@@ -291,6 +297,17 @@ function wire(): void {
   // Numbers commit on blur / Enter so we do not restart on every keystroke.
   bindNumber(ui.port, (port) => update({ port }));
   bindNumber(ui.fragmentSize, (fragmentSize) => update({ fragmentSize }));
+
+  // The list commits on blur only: Enter is a new line here, and committing on
+  // every keystroke would restart the tunnel once per character.
+  ui.bypass.addEventListener('blur', () => {
+    void update({ bypass: parseBypassList(ui.bypass.value) });
+  });
+  ui.bypassMicrosoft.addEventListener('click', () => {
+    void update({
+      bypass: parseBypassList([...parseBypassList(ui.bypass.value), ...MICROSOFT_HOSTS]),
+    });
+  });
 
   api.onStateChanged(render);
   initAdvocacy();

@@ -104,7 +104,8 @@ export class TunnelService extends EventEmitter<TunnelServiceEvents> {
 
       if (this.#settings.manageSystemProxy && isSystemProxySupported()) {
         const system = new SystemProxy();
-        await system.enable({ host: address.host, port: address.port, bypass: DEFAULT_BYPASS });
+        const bypass = [...new Set([...DEFAULT_BYPASS, ...this.#settings.bypass])];
+        await system.enable({ host: address.host, port: address.port, bypass });
         this.#system = system;
         this.#log.info(`system proxy pointed at ${address.host}:${String(address.port)}`);
       }
@@ -224,6 +225,10 @@ export class TunnelService extends EventEmitter<TunnelServiceEvents> {
 /**
  * The subset of the settings a running tunnel is built from. Everything else —
  * `startOnLaunch`, `launchAtLogin` — is read somewhere other than here.
+ *
+ * `bypass` is only read when the system proxy is applied, but a restart is how
+ * it gets re-applied, and an edited exception list is rare enough that dropping
+ * live connections for it is the right price for one code path instead of two.
  */
 function affectsEngine(a: AppSettings, b: AppSettings): boolean {
   return (
@@ -231,7 +236,8 @@ function affectsEngine(a: AppSettings, b: AppSettings): boolean {
     a.dnsMode !== b.dnsMode ||
     a.fragmentSize !== b.fragmentSize ||
     a.tlsRecords !== b.tlsRecords ||
-    a.manageSystemProxy !== b.manageSystemProxy
+    a.manageSystemProxy !== b.manageSystemProxy ||
+    a.bypass.join(';') !== b.bypass.join(';')
   );
 }
 

@@ -14,6 +14,13 @@ export interface AppSettings {
   readonly fragmentSize: number;
   readonly tlsRecords: boolean;
   /**
+   * Extra hosts the OS reaches directly, added to the engine's built-in
+   * `DEFAULT_BYPASS` whenever the app sets the system proxy. Without it every
+   * start overwrote the list, so an exception added by hand lasted only until
+   * the next restart. Clean entries only — see `shared/bypass.ts`.
+   */
+  readonly bypass: readonly string[];
+  /**
    * How much the engine records into the log panel.
    *
    * Deliberately part of the settings — a user who is chasing a problem wants
