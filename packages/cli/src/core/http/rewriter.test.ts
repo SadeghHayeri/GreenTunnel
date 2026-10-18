@@ -99,6 +99,27 @@ describe('HttpRequestRewriter', () => {
     expect(feed(rewriter, framed)).toBe(framed);
   });
 
+  it('marks the segment that starts each request with the head as sent', () => {
+    const rewriter = new HttpRequestRewriter();
+    const body = 'GET http://evil.example/ HTTP/1.1\r\n\r\n';
+
+    const segments = rewriter.segments(
+      Buffer.from(
+        `POST http://one.example/ HTTP/1.1\r\nContent-Length: ${String(body.length)}\r\n\r\n` +
+          body +
+          'GET http://two.example/ HTTP/1.1\r\n\r\n',
+        'latin1',
+      ),
+    );
+
+    // The body must not be mistaken for a third request.
+    expect(segments.map((segment) => segment.head?.target)).toEqual([
+      'http://one.example/',
+      undefined,
+      'http://two.example/',
+    ]);
+  });
+
   it('rejects a malformed Content-Length', () => {
     expect(() =>
       feed(

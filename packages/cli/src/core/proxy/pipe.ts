@@ -30,11 +30,10 @@ export async function tunnel(
   client: net.Socket,
   server: net.Socket,
   idleTimeoutMs: number,
-  transform?: NodeJS.ReadWriteStream,
 ): Promise<void> {
   const disarm = [armIdleTimeout(client, idleTimeoutMs), armIdleTimeout(server, idleTimeoutMs)];
 
-  const upstream = transform ? pipeline(client, transform, server) : pipeline(client, server);
+  const upstream = pipeline(client, server);
   const downstream = pipeline(server, client);
 
   try {

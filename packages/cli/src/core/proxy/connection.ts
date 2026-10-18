@@ -1,7 +1,7 @@
 import { on } from 'node:events';
 import type net from 'node:net';
 import { ProtocolError } from '../errors.js';
-import { parseRequestHead, resolveUpstream, splitAuthority } from '../http/head.js';
+import { parseRequestHead, splitAuthority } from '../http/head.js';
 import { openConnectTunnel } from './connect-tunnel.js';
 import { openPlainTunnel } from './plain-tunnel.js';
 import type { TunnelContext } from './context.js';
@@ -30,7 +30,7 @@ export async function handleConnection(client: net.Socket, ctx: TunnelContext): 
   }
 
   const initial = Buffer.concat([Buffer.from(raw + HEAD_TERMINATOR, 'latin1'), rest]);
-  await openPlainTunnel(client, initial, resolveUpstream(head, 80), ctx);
+  await openPlainTunnel(client, initial, ctx);
 }
 
 /** Accumulate bytes until the blank line that ends an HTTP head. */

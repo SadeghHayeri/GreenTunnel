@@ -1,10 +1,26 @@
 import { Transform, type TransformCallback } from 'node:stream';
 import { ProtocolError, toError } from '../errors.js';
-import { getHeader, parseRequestHead, serializeRequestHead, toOriginForm } from './head.js';
+import {
+  getHeader,
+  parseRequestHead,
+  serializeRequestHead,
+  toOriginForm,
+  type RequestHead,
+} from './head.js';
 
 const MAX_HEAD_BYTES = 64 * 1024;
 const CRLF = '\r\n';
 const HEAD_TERMINATOR = '\r\n\r\n';
+
+/**
+ * One piece of rewritten output. `head` is set on the piece that begins a
+ * request, and holds that request as the client sent it — before the rewrite to
+ * origin-form, so the absolute URI still says which host it is for.
+ */
+export interface RewrittenSegment {
+  readonly data: Buffer;
+  readonly head?: RequestHead;
+}
 
 type State =
   'head' | 'body-length' | 'chunk-size' | 'chunk-data' | 'chunk-crlf' | 'trailers' | 'passthrough';
@@ -25,13 +41,22 @@ export class HttpRequestRewriter {
 
   /** Feed raw client bytes in, get rewritten bytes out. */
   transform(chunk: Buffer): Buffer[] {
+    return this.segments(chunk).map((segment) => segment.data);
+  }
+
+  /**
+   * Like `transform`, but marks where each request begins. A proxy connection
+   * may carry requests for several hosts, so the caller needs to know which
+   * bytes belong to which request in order to route them.
+   */
+  segments(chunk: Buffer): RewrittenSegment[] {
     this.#buffer = this.#buffer.length === 0 ? chunk : Buffer.concat([this.#buffer, chunk]);
-    const out: Buffer[] = [];
+    const out: RewrittenSegment[] = [];
 
     for (;;) {
       if (this.#state === 'passthrough') {
         if (this.#buffer.length > 0) {
-          out.push(this.#buffer);
+          out.push({ data: this.#buffer });
           this.#buffer = Buffer.alloc(0);
         }
         return out;
@@ -51,7 +76,7 @@ export class HttpRequestRewriter {
   }
 
   /** Returns false when it needs more bytes. */
-  #step(out: Buffer[]): boolean {
+  #step(out: RewrittenSegment[]): boolean {
     switch (this.#state) {
       case 'head':
         return this.#stepHead(out);
@@ -69,7 +94,7 @@ export class HttpRequestRewriter {
     }
   }
 
-  #stepHead(out: Buffer[]): boolean {
+  #stepHead(out: RewrittenSegment[]): boolean {
     const end = this.#buffer.indexOf(HEAD_TERMINATOR);
     if (end < 0) {
       if (this.#buffer.length > MAX_HEAD_BYTES) {
@@ -81,8 +106,9 @@ export class HttpRequestRewriter {
     const raw = this.#buffer.subarray(0, end).toString('latin1');
     this.#consume(end + HEAD_TERMINATOR.length);
 
-    const head = toOriginForm(parseRequestHead(raw));
-    out.push(Buffer.from(serializeRequestHead(head), 'latin1'));
+    const original = parseRequestHead(raw);
+    const head = toOriginForm(original);
+    out.push({ data: Buffer.from(serializeRequestHead(head), 'latin1'), head: original });
 
     // A successful Upgrade turns the rest of the connection into an opaque
     // tunnel — stop trying to parse it as HTTP.
@@ -113,10 +139,10 @@ export class HttpRequestRewriter {
   }
 
   /** Forward exactly `#remaining` bytes verbatim, then advance. */
-  #stepCountedBytes(out: Buffer[]): boolean {
+  #stepCountedBytes(out: RewrittenSegment[]): boolean {
     const take = Math.min(this.#remaining, this.#buffer.length);
     if (take > 0) {
-      out.push(this.#buffer.subarray(0, take));
+      out.push({ data: this.#buffer.subarray(0, take) });
       this.#consume(take);
       this.#remaining -= take;
     }
@@ -125,7 +151,7 @@ export class HttpRequestRewriter {
     return true;
   }
 
-  #stepChunkSize(out: Buffer[]): boolean {
+  #stepChunkSize(out: RewrittenSegment[]): boolean {
     const end = this.#buffer.indexOf(CRLF);
     if (end < 0) {
       if (this.#buffer.length > MAX_HEAD_BYTES) {
@@ -135,7 +161,7 @@ export class HttpRequestRewriter {
     }
 
     const line = this.#buffer.subarray(0, end).toString('latin1');
-    out.push(this.#buffer.subarray(0, end + CRLF.length));
+    out.push({ data: this.#buffer.subarray(0, end + CRLF.length) });
     this.#consume(end + CRLF.length);
 
     const size = Number.parseInt(line.split(';', 1)[0]?.trim() ?? '', 16);
@@ -152,18 +178,18 @@ export class HttpRequestRewriter {
     return true;
   }
 
-  #stepChunkCrlf(out: Buffer[]): boolean {
+  #stepChunkCrlf(out: RewrittenSegment[]): boolean {
     if (this.#buffer.length < CRLF.length) return false;
-    out.push(this.#buffer.subarray(0, CRLF.length));
+    out.push({ data: this.#buffer.subarray(0, CRLF.length) });
     this.#consume(CRLF.length);
     this.#state = 'chunk-size';
     return true;
   }
 
-  #stepTrailers(out: Buffer[]): boolean {
+  #stepTrailers(out: RewrittenSegment[]): boolean {
     const end = this.#buffer.indexOf(CRLF);
     if (end < 0) return false;
-    out.push(this.#buffer.subarray(0, end + CRLF.length));
+    out.push({ data: this.#buffer.subarray(0, end + CRLF.length) });
     this.#consume(end + CRLF.length);
     if (end === 0) this.#state = 'head';
     return true;
