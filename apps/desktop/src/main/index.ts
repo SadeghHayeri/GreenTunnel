@@ -77,6 +77,9 @@ const handlers: TrayHandlers = {
   setLaunchAtLogin: (enabled) => {
     void updateSettings({ launchAtLogin: enabled });
   },
+  setLaunchInTray: (enabled) => {
+    void updateSettings({ launchInTray: enabled });
+  },
   openSource: () => void shell.openExternal(PROJECT_URL),
   quit: () => {
     app.quit();
@@ -209,8 +212,10 @@ app.whenReady().then(async () => {
 
   window = createMainWindow(windowState);
   window.once('ready-to-show', () => {
-    window?.show();
-    maybePromptAdvocacy();
+    if (!settings.value.launchInTray) {
+      window?.show();
+      maybePromptAdvocacy();
+    }
   });
   window.on('closed', () => {
     window = null;

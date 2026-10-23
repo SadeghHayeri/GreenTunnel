@@ -7,6 +7,7 @@ const DNS_MODES: readonly DnsMode[] = ['doh', 'dot', 'plain'];
 export const DEFAULT_APP_SETTINGS: AppSettings = {
   startOnLaunch: true,
   launchAtLogin: false,
+  launchInTray: false,
   manageSystemProxy: true,
   port: 8000,
   dnsMode: 'doh',
@@ -28,6 +29,7 @@ export function normalizeSettings(raw: unknown): AppSettings {
   return {
     startOnLaunch: asBoolean(input['startOnLaunch'], DEFAULT_APP_SETTINGS.startOnLaunch),
     launchAtLogin: asBoolean(input['launchAtLogin'], DEFAULT_APP_SETTINGS.launchAtLogin),
+    launchInTray: asBoolean(input['launchInTray'], DEFAULT_APP_SETTINGS.launchInTray),
     manageSystemProxy: asBoolean(
       input['manageSystemProxy'],
       DEFAULT_APP_SETTINGS.manageSystemProxy,
@@ -61,6 +63,7 @@ export function pickSettingsPatch(raw: unknown): SettingsPatch {
 
   if (typeof input['startOnLaunch'] === 'boolean') patch.startOnLaunch = input['startOnLaunch'];
   if (typeof input['launchAtLogin'] === 'boolean') patch.launchAtLogin = input['launchAtLogin'];
+  if (typeof input['launchInTray'] === 'boolean') patch.launchInTray = input['launchInTray'];
   if (typeof input['manageSystemProxy'] === 'boolean') {
     patch.manageSystemProxy = input['manageSystemProxy'];
   }
